@@ -1,26 +1,184 @@
-<!doctype html>
-<html lang="vi">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Maneasily</title>
-  <link rel="stylesheet" href="src/css/main.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maneasily - Easily Done, Perfectly Managed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <div id="app">
-    <header class="site-header">
-      <h1>Maneasily</h1>
-    </header>
+  <header>
+    <div class="logo">
+      <img src="../imgs/logo.png" alt="Maneasily Logo">
+      <h2>Maneasily</h2>
+    </div>
+    <nav>
+      <a href="../Features/features.html">Features</a>
+      <a href="../Download/download.html">Download</a>
+      <a href="../Resources/resources.html">Resources</a>
+      <a href="../SignIn/signin.html">Sign In</a>
+      <a href="../SignUp/signup.html" class="signup-btn">Sign up for free</a>
+    </nav>
+    <button class="mobile-nav-toggle" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button>
+  </header>
 
-    <main id="main-content">
-      <p>Chào mừng — cấu trúc mới đã sẵn sàng.</p>
-    </main>
+  <main>
+    <div class="hero-text">
+      <h1><span class="green">Easily Done,</span> <span class="orange">Perfectly Managed.</span></h1>
+      <p class="description">Your smart companion for effortless organization and perfect execution.</p>
 
-    <footer class="site-footer">
-      <small>&copy; 2025 Maneasily</small>
-    </footer>
+      <div class="buttons">
+        <a href="../SignUp/signup.html" class="btn btn-orange">Get started</a>
+        <a href="../Download/download.html"class="btn btn-green">Download</a>
+      </div>
+    </div>
+
+    <div class="hero-image-container">
+      <img src="../imgs/home.jpg" alt="Desktop App Interface" class="hero-image">
+    </div>
+  </main>
+
+  <section class="info-section">
+  <div class="info-container">
+    <div class="info-text">
+      <p class="subtitle">Informations about Maneasily</p>
+      <h2>From <span class="green">To-Do</span> to <span class="orange">Done.</span></h2>
+      <p class="description">
+        Easily manage your tasks, stay on schedule with smart reminders, 
+        and track your progress with clear, visual insights.
+      </p>
+
+      <div class="features">
+        <div class="feature-box active" data-img="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=900">
+          <h3>Task Management</h3>
+          <p>Create, edit, and organize tasks with ease. Add deadlines, priorities, and statuses to stay on top of your work.</p>
+        </div>
+
+        <div class="feature-box" data-img="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=900">
+          <h3>Smart Reminders</h3>
+          <p>Receive intelligent reminders via email or notifications so you never miss an important deadline.</p>
+        </div>
+
+        <div class="feature-box" data-img="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900">
+          <h3>Progress Tracking</h3>
+          <p>Monitor your progress with visual charts and a dashboard overview, giving you clarity on what’s done and what’s next.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-image">
+      <img id="feature-image" src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=900" alt="Task Preview">
+    </div>
+  </div>
+</section>
+
+  <section class="one-for-all">
+    <div class="one-for-all-bg">
+      <h2>One For All</h2>
+      <p>Assign tasks, share projects, and track responsibilities — to work seamlessly with your team.</p>
+
+      <div class="one-for-all-cards">
+        <div class="card-content">
+          <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800" alt="Integration">
+          <div class="card-text">
+            <h3>✨ Smart Integration</h3>
+            <h4>Turn Messages into Actions</h4>
+            <p>Quickly transform your team’s communication into actionable tasks. Seamlessly connect your tools and keep every project on track in one place.</p>
+          </div>
+        </div>
+
+        <div class="card-content reverse">
+          <div class="card-text">
+            <h3>💬 Team Collaboration</h3>
+            <h4>Work Together Effortlessly</h4>
+            <p>Sync your workflow with your teammates. Assign, track, and complete tasks faster with visual clarity and smart reminders.</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800" alt="Chat example">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="do-more-section">
+    <div class="do-more-container">
+      <p class="subtitle">Work Smarter, not Harder</p>
+      <h2><span class="green">Maneasily</span> helps you do more</h2>
+      <p class="description">Visualize, analyze, and integrate your workflow for smarter, seamless productivity.</p>
+
+      <div class="feature-cards">
+        <div class="card small-card">
+          <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800" alt="Smart Scheduling">
+          <div class="card-inner">
+            <h3>📅 Smart Scheduling</h3>
+            <p>Plan ahead with AI-powered suggestions. Your day stays organized, and your time works for you.</p>
+          </div>
+        </div>
+
+        <div class="card small-card">
+          <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800" alt="Collaboration">
+          <div class="card-inner">
+            <h3>🤝 Team Collaboration</h3>
+            <p>Bring your team together in one view. Track progress, assign roles, and celebrate wins in real time.</p>
+          </div>
+        </div>
+
+        <div class="card small-card">
+          <img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=800" alt="Analytics">
+          <div class="card-inner">
+            <h3>📊 Insightful Analytics</h3>
+            <p>Visualize performance, discover trends, and make smarter decisions with intuitive dashboards.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+  <div class="footer-container">
+    <div class="footer-col about">
+      <h3>Maneasily</h3>
+      <p>All-in-one task and workflow manager that helps teams organize, collaborate, and achieve more efficiently.</p>
+    </div>
+
+    <div class="footer-col links">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="../Features/features.html">Features</a></li>
+        <li><a href="#">How It Works</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="../Download/download.html">Download</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col contact">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">Support Center</a></li>
+        <li><a href="#">Email Us</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Community</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col social">
+      <h4>Follow Us</h4>
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
   </div>
 
-  <script type="module" src="src/js/main.js"></script>
+  <div class="footer-bottom">
+    <p>© 2025 Maneasily — Designed for productivity and simplicity.</p>
+  </div>
+</footer>
+<script src="../common.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>

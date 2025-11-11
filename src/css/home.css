@@ -1,16 +1,4 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-}
-:root {
-  --color-orange: #ff7f32;
-  --color-text-dark: #333;
-}
 body {
-  background-color: #fff7ef;
-  color: var(--color-text-dark);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,51 +263,6 @@ p { margin-top: 15px; color: white; font-size: 16px; }
 .card.small-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-/* --- Footer Layout --- */
-.footer {
-  width: 100%; /* Thêm width 100% */
-  background: linear-gradient(90deg, #0d1b1e 0%, #112c2f 100%);
-  color: #fff;
-  padding: 70px 12%;
-  margin-top: 80px;
-}
-/* ... (các style footer giữ nguyên) ... */
-.footer-container {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 50px;
-  align-items: flex-start;
-}
-.footer-col h3 { font-size: 1.5rem; color: #ff7f32; margin-bottom: 15px; }
-.footer-col h4 { font-size: 1.1rem; color: #32b768; margin-bottom: 15px; }
-.footer-col p { font-size: 0.95rem; line-height: 1.6; color: #ccc; }
-.footer-col ul { list-style: none; padding: 0; }
-.footer-col ul li { margin-bottom: 10px; }
-.footer-col ul li a { color: #ccc; text-decoration: none; transition: color 0.3s ease; }
-.footer-col ul li a:hover { color: #ff7f32; }
-.social-links { display: flex; gap: 12px; }
-.social-links a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background-color: #32b768;
-  color: #fff;
-  border-radius: 50%;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-.social-links a:hover { background-color: #ff7f32; transform: translateY(-3px); }
-.footer-bottom {
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  margin-top: 40px;
-  padding-top: 20px;
-  color: #aaa;
-  font-size: 0.9rem;
 }
 
 /* --- Responsive --- */

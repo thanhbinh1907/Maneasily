@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: './', // đường dẫn cơ sở cho tài nguyên tĩnh
   root: '.', // gốc dự án
   build: {
     rollupOptions: {

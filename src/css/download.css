@@ -1,0 +1,257 @@
+/* --- Global & Fonts --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+:root {
+  --color-orange: #ff7f32;
+  --color-orange-hover: #e26f28;
+  --color-green: #2e8b57;
+  --color-green-dark: #3d7050;
+  --color-bg: #fff7ef;
+  --color-text-dark: #333;
+  --color-text-light: #555;
+  --color-border: #ddd;
+}
+body { background-color: var(--color-bg); color: var(--color-text-dark); }
+.green { color: var(--color-green); }
+.orange { color: var(--color-orange); }
+
+/* --- 1. Header --- */
+.sticky-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 80px;
+  position: sticky;
+  top: 0;
+  background-color: var(--color-bg);
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+.logo { display: flex; align-items: center; }
+.logo img { width: 110px; margin-right: 10px; }
+.sticky-header nav { display: flex; align-items: center; }
+.sticky-header nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: var(--color-text-dark);
+  font-weight: 500;
+  padding: 8px 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+.sticky-header nav a:hover { color: var(--color-orange); }
+.sticky-header nav a.active-nav {
+  color: var(--color-orange);
+  font-weight: 600;
+  border-bottom-color: var(--color-orange);
+}
+.signup-btn {
+  background-color: var(--color-orange);
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px !important;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  border-bottom: none !important;
+  transition: background-color 0.2s ease;
+}
+.signup-btn:hover { background-color: var(--color-orange-hover); }
+
+/* --- Mobile Nav Toggle (Hamburger) --- */
+.mobile-nav-toggle {
+  display: none; /* Ẩn trên desktop */
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  z-index: 1100;
+}
+
+/* --- 2. Download Hero Section --- */
+.download-hero {
+  text-align: center;
+  padding: 80px 40px;
+  background-color: #fff;
+}
+.download-hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 15px; }
+.download-hero p {
+  font-size: 1.1rem;
+  color: var(--color-text-light);
+  max-width: 650px; /* Đã sửa */
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* --- 3. Download Grid Container --- */
+.download-container {
+  max-width: 1100px;
+  margin: 60px auto;
+  padding: 0 40px;
+  text-align: center;
+}
+.download-container h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+.platform-grid {
+  display: grid;
+  gap: 30px;
+  margin-bottom: 80px;
+}
+.platform-grid.desktop { grid-template-columns: repeat(3, 1fr); }
+.platform-grid.mobile { grid-template-columns: repeat(2, 1fr); }
+
+/* --- Platform Cards (Desktop) --- */
+.platform-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  text-decoration: none;
+  color: var(--color-text-dark);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 1px solid transparent;
+}
+.platform-card.visible { opacity: 1; transform: translateY(0); }
+.platform-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-orange);
+}
+.platform-card i { font-size: 4rem; margin-bottom: 20px; }
+.platform-card.windows i { color: #0078D6; }
+.platform-card.macos i { color: #555; }
+.platform-card.linux i { color: #E95420; }
+.platform-card h3 { font-size: 1.5rem; margin-bottom: 5px; }
+.platform-card p { color: var(--color-text-light); font-size: 0.95rem; }
+
+/* --- Nút Download chung --- */
+.btn-download {
+  display: inline-block;
+  margin-top: 25px;
+  padding: 12px 30px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+}
+.btn-orange { background-color: var(--color-orange); }
+.btn-orange:hover { background-color: var(--color-orange-hover); transform: scale(1.05); }
+.btn-dark { background-color: var(--color-text-dark); }
+.btn-dark:hover { background-color: #000; transform: scale(1.05); }
+
+/* --- Platform Cards (Mobile) --- */
+.mobile-card {
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: left;
+}
+.mobile-card i { font-size: 3rem; margin-bottom: 0; }
+.mobile-card.apple i { color: #000; }
+.mobile-card.google i { color: #4285F4; }
+.mobile-card .store-text span { font-size: 0.9rem; font-weight: 500; }
+.mobile-card .store-text h4 { font-size: 1.6rem; font-weight: 600; }
+
+/* --- 4. Footer --- */
+.footer {
+  background: linear-gradient(90deg, #0d1b1e 0%, #112c2f 100%);
+  color: #fff;
+  padding: 70px 12%;
+  margin-top: 80px;
+}
+/* ... (toàn bộ style footer giữ nguyên) ... */
+.footer-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 50px;
+  align-items: flex-start;
+}
+.footer-col h3 { font-size: 1.5rem; color: #ff7f32; margin-bottom: 15px; }
+.footer-col h4 { font-size: 1.1rem; color: #32b768; margin-bottom: 15px; }
+.footer-col p { font-size: 0.95rem; line-height: 1.6; color: #ccc; }
+.footer-col ul { list-style: none; padding: 0; }
+.footer-col ul li { margin-bottom: 10px; }
+.footer-col ul li a { color: #ccc; text-decoration: none; transition: color 0.3s ease; }
+.footer-col ul li a:hover { color: #ff7f32; }
+.social-links { display: flex; gap: 12px; }
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: #32b768;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+.social-links a:hover { background-color: #ff7f32; transform: translateY(-3px); }
+.footer-bottom {
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin-top: 40px;
+  padding-top: 20px;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1000px) {
+  .sticky-header { padding: 15px 30px; } /* Thêm */
+  .platform-grid.desktop { grid-template-columns: 1fr; }
+  .platform-grid.mobile { grid-template-columns: 1fr; }
+  .footer-container { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .download-hero h1 { font-size: 2.2rem; }
+  .download-container h2 { font-size: 2rem; }
+  .footer { padding: 50px 8%; } /* Thêm */
+  .footer-container { grid-template-columns: 1fr; }
+
+  /* --- Hamburger Menu Styles --- */
+  .mobile-nav-toggle {
+    display: block; /* Hiển thị nút hamburger */
+  }
+  .sticky-header nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 80px; /* Chiều cao header */
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    z-index: 1050;
+  }
+  .sticky-header nav.nav-visible {
+    display: flex; /* Hiển thị nav khi được click */
+  }
+  .sticky-header nav a {
+    margin: 10px 0;
+    width: 100%;
+    padding: 10px;
+  }
+  .signup-btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px !important;
+  }
+}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Project</title>
+    <link rel="stylesheet" href="Board.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="header-left">
+            <i class="fa-solid fa-grip-vertical"></i>
+            <div class="logo"><img src="../imgs/logo.png" alt="Maneasily Logo"></div>
+        </div>
+        <div class="header-center">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="search" placeholder="Search">
+        </div>
+        <div class="header-right">
+            <button class="btn-create">Create</button>
+            <i class="fa-solid fa-volume-high"></i>
+            <i class="fa-solid fa-question-circle"></i>
+        </div>
+    </header>
+
+    <main class="board-container" id="main-container">
+
+        <section id="task-column" class="board-column task-col">
+            <div class="column-header">
+                <h3>Task</h3>
+                <i class="fa-solid fa-ellipsis"></i>
+            </div>
+            <div class="add-card-container">
+                <div class="add-card-trigger">Add a card</div>
+                <form class="add-card-form">
+                    <textarea placeholder="Enter card text..."></textarea>
+                    <div class="form-controls">
+                        <button type="submit">Create</button>
+                        <button type="button" class="cancel-card-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-list" id="task-card-list">
+            </div>
+        </section>
+
+        <div class="resizer" data-prev-id="task-column"></div>
+
+        <section id="calendar-column" class="board-column calendar-col hidden">
+            <div class="column-header">
+                <h3>Calendar</h3>
+                <i class="fa-solid fa-ellipsis"></i>
+            </div>
+        </section>
+
+        <div class="resizer hidden" data-prev-id="calendar-column"></div>
+
+        <section id="board-column" class="board-column board-col">
+            <div class="column-header">
+                <h3>Board Name</h3>
+                <div class="header-right-icons">
+                    <button class="btn-share"><i class="fa-solid fa-user-plus"></i> Share</button>
+                    <i class="fa-solid fa-ellipsis"></i>
+                </div>
+            </div>
+            <div class="list-container" id="board-lists">
+                <div class="list">
+                    <h4>Today</h4>
+                    <div class="card-list">
+                        <div class="card" draggable="true">name card</div>
+                    </div>
+                    <div class="add-card-container">
+                        <div class="add-card-trigger">Add a card</div>
+                        <form class="add-card-form">
+                            <textarea placeholder="Enter card text..."></textarea>
+                            <div class="form-controls">
+                                <button type="submit">Create</button>
+                                <button type="button" class="cancel-card-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="add-list-container">
+                <div class="add-list-trigger">
+                    <i class="fa-solid fa-plus"></i> Add another list
+                </div>
+                <form class="add-list-form">
+                    <input type="text" placeholder="Enter list title..." required />
+                    <div class="form-controls">
+                        <button type="submit">Add List</button>
+                        <button type="button" class="cancel-list-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <button id="toggle-task">
+            <i class="fa-solid fa-list-check"></i>
+            <span class="btn-text">Task</span>
+        </button>
+        
+        <button id="toggle-calendar">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span class="btn-text">Calendar</span>
+        </button>
+        
+        <button id="toggle-board" class="active">
+            <i class="fa-solid fa-table-columns"></i>
+            <span class="btn-text">Board</span>
+        </button>
+        
+        <span class="footer-divider">|</span>
+        
+        <button id="switch-boards-btn"> 
+            <i class="fa-solid fa-table-list"></i> <span class="btn-text">Switch Boards</span>
+        </button>
+    </footer>
+
+    <script src="Board.js"></script>
+</body>
+</html>

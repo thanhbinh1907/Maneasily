@@ -1,0 +1,212 @@
+/* --- Global & Variables --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+:root {
+  --color-orange: #ff7f32;
+  --color-orange-hover: #e26f28;
+  --color-bg: #fff7ef;
+  --color-text-dark: #333;
+  --color-text-light: #555;
+  --color-border: #ddd;
+  --color-error: #d93025; /* Màu đỏ cho lỗi */
+}
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-dark);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Navigation --- */
+.signup-nav {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+}
+.logo { display: flex; align-items: center; }
+.logo img { width: 110px; margin-right: 10px; }
+.logo h2 { font-size: 1.6rem; color: var(--color-text-dark); }
+.signin-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-light);
+}
+.btn-signin {
+  background-color: var(--color-orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+.btn-signin:hover { background-color: var(--color-orange-hover); }
+
+/* --- Mobile Nav Toggle (Hamburger) --- */
+.mobile-nav-toggle {
+  display: none; /* Ẩn trên desktop */
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  z-index: 1100;
+}
+
+/* --- Signup Form Container --- */
+.signup-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.signup-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+}
+.signup-card h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+/* --- Form Elements --- */
+form { display: flex; flex-direction: column; gap: 20px; }
+.input-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  gap: 6px; 
+}
+.input-group label {
+  font-weight: 600;
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+}
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-group input:focus {
+  outline: none;
+  border-color: var(--color-orange);
+  box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.2);
+}
+
+/* --- Style Lỗi --- */
+.input-group input.input-error { border-color: var(--color-error); }
+.input-group input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.2);
+}
+.error-message {
+  color: var(--color-error);
+  font-size: 0.85rem;
+  font-weight: 500;
+  min-height: 1.2em;
+}
+.btn-signup-main {
+  width: 100%;
+  background-color: var(--color-orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+}
+.btn-signup-main:hover { background-color: var(--color-orange-hover); }
+
+/* --- Separator --- */
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 30px 0;
+}
+.separator span { flex-grow: 1; border-bottom: 1px solid #eee; }
+
+/* --- Social Auth --- */
+.social-auth { display: flex; flex-direction: column; gap: 15px; }
+.btn-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background-color: #fff;
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-social:hover {
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.btn-social i { font-size: 1.2rem; }
+.btn-social .fa-google { color: #DB4437; }
+.btn-social .fa-facebook { color: #4267B2; }
+.btn-social .fa-apple { color: #000000; }
+
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .signup-nav {
+    padding: 20px 30px;
+  }
+  .logo img { width: 90px; }
+  .logo h2 { font-size: 1.4rem; }
+  
+  /* Ẩn chữ, chỉ để lại nút Sign in */
+  .signin-link span {
+    display: none;
+  }
+  
+  .signup-card {
+    padding: 25px;
+    box-shadow: none;
+    border: 1px solid var(--color-border);
+  }
+  
+  .signup-card h1 {
+    font-size: 1.8rem;
+  }
+
+  /* Trang này không có nav chính,
+    vì vậy chúng ta ẩn nút hamburger đi
+  */
+  .mobile-nav-toggle {
+    display: none;
+  }
+}

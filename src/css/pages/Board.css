@@ -1,412 +1,151 @@
-/* Thiết lập cơ bản */
-* {
+/* Tùy chỉnh main cho trang board */
+.board-page-main {
+    height: calc(100vh - 70px); /* 70px là chiều cao header (ước lượng) */
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+    overflow: hidden; /* Ngăn trang chính bị cuộn */
+  }
+  
+  /* Header của board (dưới header chính) */
+  .board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0; /* Không co lại */
+  }
+  
+  .board-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  #board-title {
+    font-size: 1.25rem;
+    font-weight: 600;
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #FDFBF6; /* Màu nền be nhạt */
-    color: #333;
-    overflow-x: hidden; /* Chống cuộn ngang */
-    padding-bottom: 0px; 
-}
-
-/* 1. Header */
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #FDFBF6;
-    border-bottom: 1px solid #EBEBEB;
-}
-
-.header-left, .header-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.logo { display: flex; align-items: center; }
-.logo img { width: 48px; margin-right: 10px; }
-
-.header-center {
-    flex-grow: 1;
-    max-width: 600px;
-    position: relative;
-    margin: 0 20px;
-}
-.header-center input {
-    width: 100%;
-    padding: 8px 8px 8px 30px;
-    border: 1px solid #DDD;
-    border-radius: 4px;
-    background-color: #F8F8F8;
-}
-.header-center .fa-magnifying-glass {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #777;
-}
-.btn-create {
-    background-color: #EB7158; /* Màu cam */
-    color: white;
+  }
+  
+  .btn-star {
+    background: none;
     border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-weight: bold;
+    font-size: 1.1rem;
+    color: #6c757d;
     cursor: pointer;
-}
-.header-right i { cursor: pointer; }
-
-/* 2. Board Container */
-.board-container {
+  }
+  
+  /* Vùng chứa board chính (quan trọng) */
+  .board-content-wrapper {
+    flex-grow: 1; /* Lấp đầy không gian còn lại */
+    overflow-x: auto; /* Cho phép cuộn ngang */
+    overflow-y: hidden;
+    padding: 1.5rem;
+  }
+  
+  .board-content {
+    display: flex; /* Hiển thị các cột theo hàng ngang */
+    gap: 1.5rem;
+    height: 100%; /* Đảm bảo các cột có thể cao tối đa */
+  }
+  
+  /* Định dạng một cột */
+  .board-column {
+    width: 300px;
+    min-width: 300px; /* Cố định chiều rộng */
     display: flex;
-    padding: 20px;
-    align-items: stretch; 
-    height: calc(100vh - 51px);
-}
-.board-column {
-    flex-basis: 300px;
-    flex-shrink: 1; 
-    flex-grow: 1;  
+    flex-direction: column;
+    background-color: #ebecf0; /* Màu nền giống Trello/Jira */
     border-radius: 8px;
-    padding: 15px;
-    margin-right: 15px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; 
-}
-.board-column:last-child { margin-right: 0; }
-.board-column.hidden { display: none; }
-
-/* Kiểu cột */
-.task-col { background-color: #7C9A74;}
-.calendar-col { background-color: #2C2C2C; color: white;}
-.board-col { background-color: #B3D4DB;}
-
-.column-header {
+    height: fit-content; /* Chỉ cao vừa đủ nội dung */
+    max-height: 100%; /* Nhưng không vượt quá màn hình */
+  }
+  
+  .column-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-}
-.column-header h3 { font-size: 16px; font-weight: 600; }
-.column-header i { cursor: pointer; }
-.btn-share {
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.5);
+    padding: 0.75rem 1rem;
+  }
+  
+  .column-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #5e6c84;
+  }
+  
+  .column-options-btn {
+    background: none;
     border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
     cursor: pointer;
-}
-
-/* Danh sách (list) bên trong cột Board */
-.list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
-    padding-right: 5px; 
-}
-.list {
-    background-color: #F5EEBA; /* Màu vàng nhạt */
-    padding: 10px;
+    color: #5e6c84;
+    padding: 5px;
     border-radius: 4px;
-}
-.list h4 { font-size: 14px; margin-bottom: 10px; }
-
-/* Thẻ (Card) */
-.card-list {
-    min-height: 50px; 
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    flex-grow: 1; 
-    padding-right: 5px;
-}
-.card {
-    background-color: white;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #EEE;
-    cursor: grab;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-.card.dragging { opacity: 0.5; transform: rotate(3deg); }
-
-/* Form thêm thẻ (Add Card) */
-.add-card-container, .add-list-container {
-    margin-top: 10px;
-    padding-right: 5px;
-    margin-bottom: 8px;
-}
-.add-card-trigger, .add-list-trigger {
-    background-color: rgba(255, 255, 255, 0.3);
-    padding: 8px;
-    border-radius: 4px;
+  }
+  .column-options-btn:hover {
+    background-color: #dcdfe4;
+  }
+  
+  /* Danh sách các task */
+  .task-list {
+    flex-grow: 1;
+    padding: 0 0.75rem;
+    min-height: 20px; /* Chiều cao tối thiểu khi rỗng */
+    overflow-y: auto; /* Cho phép cuộn dọc nếu nhiều task */
+  }
+  
+  /* Định dạng một thẻ task */
+  .task-card {
+    background-color: #ffffff;
+    border-radius: 5px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    cursor: pointer; /* Sau này dùng để kéo thả */
+    font-size: 0.95rem;
+    color: #172b4d;
+  }
+  
+  .task-card:hover {
+    background-color: #f4f5f7;
+  }
+  
+  /* Footer của cột (chứa nút "Add task") */
+  .column-footer {
+    padding: 0.75rem 1rem;
+  }
+  
+  .btn-add-task {
+    background: none;
+    border: none;
     cursor: pointer;
-    color: #333;
-}
-.add-list-trigger { background-color: rgba(0, 0, 0, 0.1); }
-.task-col .add-card-trigger {
-    background-color: rgba(255, 255, 255, 0.3);
-    color: white;
-}
-.board-col .add-card-trigger { color: #555; }
-.add-card-form, .add-list-form {
-    display: none; 
-    background-color: white;
-    border-radius: 4px;
+    color: #5e6c84;
     padding: 8px;
-}
-.task-col .add-card-form { background: none; }
-.add-card-form textarea, .add-list-form input {
     width: 100%;
-    border: 1px solid #CCC;
+    text-align: left;
     border-radius: 4px;
-    padding: 8px;
-    margin-bottom: 8px;
-    font-family: inherit;
-}
-.task-col .add-card-form textarea { background-color: white; }
-.form-controls { display: flex; gap: 8px; }
-.form-controls button {
-    border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.form-controls button[type="submit"] {
-    background-color: #EB7158;
-    color: white;
-}
-.form-controls button[type="button"] {
-    background-color: #E0E0E0;
-    color: #333;
-}
-
-/* Style cho Resizer */
-.resizer {
-    flex-basis: 15px;
-    flex-shrink: 0;
-    flex-grow: 0;
-    cursor: col-resize; 
-    position: relative;
-    margin-left: -15px; 
-    margin-right: 0;
-}
-.resizer::after {
-    content: '';
-    position: absolute;
-    top: 20px; 
-    bottom: 20px; 
-    left: 7px; 
-    width: 1px;
-    background-color: rgba(0,0,0,0.1); 
-}
-.resizer:hover::after,
-.resizer.is-dragging::after {
-    width: 3px;
-    left: 6px;
-    background-color: #EB7158; 
-}
-.resizer.hidden { display: none; }
-
-/* 3. Footer (ĐÃ CẬP NHẬT CHO DESKTOP) */
-.app-footer {
-    position: fixed;
-    bottom: 20px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: auto; 
-    display: flex;
-    align-items: center;
-    gap: 5px; 
-    padding: 8px; 
-    background-color: #E9E9E9; 
-    border-radius: 25px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-    cursor: grab; 
-    z-index: 1000; 
-}
-.app-footer button {
-    background: none; 
-    border: none;
-    padding: 8px 16px; 
-    border-radius: 20px; 
-    cursor: pointer;
-    font-size: 14px;
     font-weight: 500;
-    color: #333; 
-    transition: background-color 0.2s ease;
-    
-    /* CẬP NHẬT: Thêm để icon và chữ hiển thị */
-    display: inline-flex;
-    align-items: center;
-    gap: 8px; 
-}
-.app-footer button.active {
-    background-color: #EB7158; /* Màu cam active (desktop) */
-    color: white;
-}
-/* CẬP NHẬT: Style cho dấu gạch đứng */
-.app-footer .footer-divider {
-    color: #999; 
-    margin: 0 5px;
-}
-.app-footer.dragging {
-    cursor: grabbing;
-    user-select: none; 
-}
-
-
-/* ============================================= */
-/* === RESPONSIVE STYLES (TABLET & MOBILE) === */
-/* ============================================= */
-
-/* --- 1. Tablet View (<= 1024px) --- */
-@media (max-width: 1024px) {
-    .app-header { padding: 10px 15px; }
-    .header-left, .header-right { gap: 10px; }
-    .header-center { margin: 0 15px; }
-    .board-container {
-        padding: 15px;
-        height: calc(100vh - 51px); 
-    }
-    .board-column {
-        flex-basis: 280px; 
-        padding: 12px;
-    }
-    body { padding-bottom: 0px; }
-    .app-footer {
-        position: fixed !important;
-        bottom: 20px !important;
-        left: 50% !important;
-        width: auto !important;
-        transform: translateX(-50%) !important;
-        border-radius: 25px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-        cursor: grab !important;
-    }
-    /* Hiện lại chữ và dấu | (nếu bị mobile ẩn) */
-    .app-footer .btn-text,
-    .app-footer .footer-divider {
-        display: inline-block;
-    }
-    /* Căn lề lại cho nút */
-    .app-footer button {
-        justify-content: flex-start;
-    }
-}
-
-
-/* --- 2. Mobile View (<= 768px) --- */
-/* (Thiết kế lại toàn bộ layout thành dạng TAB full-screen) */
-@media (max-width: 768px) {
-
-    /* (A) Layout Body chính */
-    body {
-        display: flex;
-        flex-direction: column;
-        height: 100vh; 
-        overflow: hidden; 
-        padding-bottom: 0; 
-    }
-
-    /* (B) Header: Co lại */
-    .app-header {
-        flex-shrink: 0;
-        flex-wrap: wrap; 
-        padding: 10px;
-        row-gap: 10px;
-        height: auto;
-        position: static; 
-    }
-    .header-left { order: 1; }
-    .header-right { order: 2; }
-    .header-center {
-        order: 3;
-        width: 100%;
-        margin: 0;
-        max-width: 100%;
-    }
-
-    /* (C) Main Container: Lấp đầy */
-    .board-container {
-        flex-grow: 1; 
-        padding: 0; 
-        overflow-y: hidden; 
-        height: 100%; 
-        flex-direction: column; 
-        align-items: stretch;
-    }
-
-    /* (D) Columns: Ẩn/hiện theo Tab */
-    .board-column {
-        display: none; /* Ẩn tất cả */
-        width: 100% !important;
-        height: 100%; 
-        margin-bottom: 0;
-        margin-right: 0;
-        flex-basis: auto !important;
-        overflow-y: auto; 
-    }
-    .board-column.mobile-active {
-        display: flex; /* CHỈ HIỆN CỘT ACTIVE */
-    }
-    .resizer { display: none !important; }
-
-    /* (E) Footer: Biến thành Tab Bar */
-    .app-footer {
-        position: static !important; 
-        width: 100% !important;
-        transform: none !important;
-        border-radius: 0;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        cursor: default !important;
-        flex-shrink: 0; 
-        background-color: #FFFFFF; 
-        padding: 4px 0; 
-        justify-content: space-around; 
-    }
-    .app-footer.dragging { cursor: default !important; }
-
-    .app-footer button {
-        background: none;
-        border: none;
-        color: #5E6C84; 
-        font-size: 20px; 
-        padding: 10px 15px;
-        border-radius: 3px;
-        flex-grow: 1; 
-        flex-basis: 0;
-    }
-
-    /* Style cho nút active MỚI (mobile) */
-    .app-footer button.active {
-        background-color: #E6F0FF; /* Nền xanh nhạt */
-        color: #0052CC; /* Màu icon xanh đậm */
-    }
-    .app-footer button:not(.active) {
-        background-color: transparent;
-        color: #5E6C84;
-    }
-
-    /* Ẩn chữ và dấu gạch đứng trên mobile */
-    .app-footer .btn-text,
-    .app-footer .footer-divider {
-        display: none;
-    }
-    
-    /* Căn giữa icon (vì chữ đã bị ẩn) */
-    .app-footer button {
-        justify-content: center;
-    }
-}
+  }
+  .btn-add-task:hover {
+    background-color: #dcdfe4;
+  }
+  
+  /* Nút thêm cột mới */
+  .btn-add-column {
+    width: 300px;
+    min-width: 300px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 2px dashed #a5b4cb;
+    color: #5e6c84;
+    height: 50px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn-add-column:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+  }

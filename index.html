@@ -10,23 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="/src/assets/images/logo.png" alt="Maneasily Logo">
-      <h2>Maneasily</h2>
-    </div>
-    <nav>
-      <a href="/src/pages/features.html">Features</a>
-      <a href="/src/pages/download.html">Download</a>
-      <a href="/src/pages/resources.html">Resources</a>
-      <a href="/src/pages/signin.html">Sign In</a>
-      <a href="/src/pages/signup.html" class="signup-btn">Sign up for free</a>
-    </nav>
-    <button class="mobile-nav-toggle" aria-label="Toggle navigation">
-      <i class="fas fa-bars"></i>
-    </button>
-  </header>
-
+  {{> header }}
   <main>
     <div class="hero-text">
       <h1><span class="green">Easily Done,</span> <span class="orange">Perfectly Managed.</span></h1>
@@ -137,49 +121,8 @@
       </div>
     </div>
   </section>
-  <footer class="footer">
-  <div class="footer-container">
-    <div class="footer-col about">
-      <h3>Maneasily</h3>
-      <p>All-in-one task and workflow manager that helps teams organize, collaborate, and achieve more efficiently.</p>
-    </div>
-
-    <div class="footer-col links">
-      <h4>Explore</h4>
-      <ul>
-        <li><a href="/src/pages/features.html">Features</a></li>
-        <li><a href="#">How It Works</a></li>
-        <li><a href="#">Pricing</a></li>
-        <li><a href="/src/pages/download.html">Download</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col contact">
-      <h4>Contact</h4>
-      <ul>
-        <li><a href="#">Support Center</a></li>
-        <li><a href="#">Email Us</a></li>
-        <li><a href="#">Careers</a></li>
-        <li><a href="#">Community</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col social">
-      <h4>Follow Us</h4>
-      <div class="social-links">
-        <a href="#"><i class="fab fa-facebook-f"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2025 Maneasily — Designed for productivity and simplicity.</p>
-  </div>
-</footer>
-
+  {{> footer }}
+  <script type="module" src="/src/js/common.js"></script>
   <script type="module" src="/src/js/home.js"></script>
 </body>
 </html>

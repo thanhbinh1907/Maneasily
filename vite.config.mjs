@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'      
+import { fileURLToPath } from 'url'           
+import handlebars from 'vite-plugin-handlebars'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
-  base: './', // đường dẫn cơ sở cho tài nguyên tĩnh
-  root: '.', // gốc dự án
+  base: './',
+  root: '.',
+  plugins: [
+    handlebars({
+      partialDirectory: resolve(__dirname, 'src/components'),
+    }),
+  ],
   build: {
     rollupOptions: {
       input: {

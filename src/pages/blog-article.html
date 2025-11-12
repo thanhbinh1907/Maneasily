@@ -11,24 +11,7 @@
 </head>
 <body>
 
-  <header class="sticky-header">
-    <div class="logo">
-      <a href="/src/assets/images/home.jpg" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
-        <img src="/src/assets/images/logo.png" alt="Maneasily Logo">
-        <h2>Maneasily</h2>
-      </a>
-    </div>
-    <nav>
-      <a href="/src/pages/features.html">Features</a>
-      <a href="/src/pages/download.html">Download</a>
-      <a href="/src/pages/resources.html">Resources</a>
-      <a href="/src/pages/signin.html">Sign In</a>
-      <a href="/src/pages/signup.html" class="signup-btn">Sign up for free</a>
-    </nav>
-    <button class="mobile-nav-toggle" aria-label="Toggle navigation">
-      <i class="fas fa-bars"></i>
-    </button>
-  </header>
+  {{> header }}
 
   <main class="article-container">
     
@@ -75,7 +58,7 @@
   <section class="related-articles">
     <h2 class="section-title">You might also <span class="green">like</span></h2>
     <div class="article-grid">
-      <a href="../Blog/blog-teamwork.html" class="article-card">
+      <a href="/src/pages/blog-teamwork.html" class="article-card">
         <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=900" alt="Teamwork">
         <div class="card-content">
           <span class="tag">Teamwork</span>
@@ -84,7 +67,7 @@
         </div>
       </a>
 
-      <a href="../Blog/blog-tips.html" class="article-card">
+      <a href="/src/pages/blog-tips.html" class="article-card">
         <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=900" alt="Tips">
         <div class="card-content">
           <span class="tag">Maneasily Tips</span>
@@ -104,45 +87,9 @@
     </div>
   </section>
 
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-col about">
-        <h3>Maneasily</h3>
-        <p>All-in-one task and workflow manager that helps teams organize, collaborate, and achieve more efficiently.</p>
-      </div>
-      <div class="footer-col links">
-        <h4>Explore</h4>
-        <ul>
-          <li><a href="../Features/features.html">Features</a></li>
-          <li><a href="#">How It Works</a></li>
-          <li><a href="#">Pricing</a></li>
-          <li><a href="../Download/download.html">Download</a></li>
-        </ul>
-      </div>
-      <div class="footer-col contact">
-        <h4>Contact</h4>
-        <ul>
-          <li><a href="#">Support Center</a></li>
-          <li><a href="#">Email Us</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Community</a></li>
-        </ul>
-      </div>
-      <div class="footer-col social">
-        <h4>Follow Us</h4>
-        <div class="social-links">
-          <a href="#"><i class="fab fa-facebook-f"></i></a>
-          <a href="#"><i class="fab fa-twitter"></i></a>
-          <a href="#"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#"><i class="fab fa-instagram"></i></a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 Maneasily — Designed for productivity and simplicity.</p>
-    </div>
-  </footer>
-
+  {{> footer }}
+  
+  <script type="module" src="/src/js/common.js"></script>
   <script type="module" src="/src/js/blog-article.js"></script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 import Projects from "../models/projectModel.js";
 import Columns from "../models/columnModel.js";
 import Tasks from "../models/taskModel.js";
-// (Chúng ta sẽ cần 3 model này)
 
 const projectCtrl = {
     // Hàm này lấy 1 project VÀ tất cả dữ liệu bên trong nó
@@ -28,6 +27,21 @@ const projectCtrl = {
 
             res.json({ project });
 
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+
+    updateColumnOrder: async (req, res) => {
+        try {
+            const { id } = req.params; // ID của project
+            const { columnOrder } = req.body; // Mảng ID thứ tự cột mới
+
+            await Projects.findByIdAndUpdate(id, {
+                columnOrder: columnOrder,
+            });
+
+            res.json({ msg: "Đã cập nhật thứ tự cột!" });
         } catch (err) {
             return res.status(500).json({ err: err.message });
         }

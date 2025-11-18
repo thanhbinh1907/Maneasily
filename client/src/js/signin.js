@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Lấy các phần tử DOM cần thiết
   const signinForm = document.getElementById('signin-form');
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
@@ -17,13 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inputElement.classList.remove('input-error');
   }
 
-  function isValidEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  }
-
-  // 2. Thêm sự kiện "submit" cho form
-  signinForm.addEventListener('submit', (event) => {
+  signinForm.addEventListener('submit', async (event) => {
     event.preventDefault(); 
     
     let isValid = true;
@@ -34,33 +27,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    // --- 3. Bắt đầu kiểm tra (Validation) ---
-
+    // Kiểm tra sơ bộ
     if (email === '') {
-      showError(emailInput, emailError, 'Email cannot be empty.');
-      isValid = false;
-    } else if (!isValidEmail(email)) {
-      showError(emailInput, emailError, 'Please enter a valid email address.');
+      showError(emailInput, emailError, 'Email không được để trống.');
       isValid = false;
     }
-
     if (password === '') {
-      showError(passwordInput, passwordError, 'Password cannot be empty.');
+      showError(passwordInput, passwordError, 'Mật khẩu không được để trống.');
       isValid = false;
     }
 
-    // --- 4. Xử lý kết quả ---
+    // --- GỬI DỮ LIỆU ĐĂNG NHẬP ---
     if (isValid) {
-      console.log('Form is valid. Submitting data...');
-      alert('Sign in successful!');
-      
-      window.location.href = 'home.html';
-    } else {
-      console.log('Form is invalid. Please check errors.');
+      console.log('Đang đăng nhập...');
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Xử lý lỗi (ví dụ: sai mật khẩu, chưa kích hoạt email)
+          if (data.err) {
+             // Hiển thị lỗi chung ở dưới ô mật khẩu hoặc alert
+             showError(passwordInput, passwordError, data.err);
+          } else {
+             alert('Đăng nhập thất bại.');
+          }
+        } else {
+          // ĐĂNG NHẬP THÀNH CÔNG!
+          console.log('Token nhận được:', data.token);
+          
+          // 1. Lưu Token vào bộ nhớ trình duyệt (localStorage)
+          // Đây là "chìa khóa" để người dùng giữ trạng thái đăng nhập
+          localStorage.setItem('maneasily_token', data.token);
+          
+          // 2. Lưu thông tin user (để hiển thị tên, avatar...)
+          localStorage.setItem('maneasily_user', JSON.stringify(data.user));
+
+          alert('Đăng nhập thành công!');
+          
+          // 3. Chuyển hướng vào trang chính (Board hoặc Home)
+          // Bạn hãy sửa đường dẫn này tới trang bạn muốn user vào sau khi login
+          window.location.href = '/index.html'; 
+        }
+      } catch (err) {
+        console.error('Lỗi kết nối:', err);
+        alert('Không thể kết nối đến Server.');
+      }
     }
   });
 
   emailInput.addEventListener('input', () => clearError(emailInput, emailError));
   passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
-
 });

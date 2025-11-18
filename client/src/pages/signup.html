@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/src/css/main.css">
   <link rel="stylesheet" href="/src/css/pages/signup.css">
+  <meta name="referrer" content="no-referrer-when-downgrade" />
 </head>
 <body>
 
@@ -38,6 +39,12 @@
         </div>
 
         <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" minlength="6" maxlength="25" required>
+          <div class="error-message" id="username-error"></div>
+        </div>
+
+        <div class="input-group">
           <label for="password">Password</label>
           <input type="password" id="password" name="password" minlength="8" required>
           <div class="error-message" id="password-error"></div>
@@ -51,7 +58,7 @@
       </div>
 
       <div class="social-auth">
-        <a href="#" class="btn-social">
+        <a href="http://localhost:5000/api/auth/google" class="btn-social">
           <i class="fab fa-google"></i> Continue with Google
         </a>
         <a href="#" class="btn-social">

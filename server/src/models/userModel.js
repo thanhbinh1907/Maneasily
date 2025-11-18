@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
+            trim: true, 
         },
         username: {
             type: String,
@@ -13,10 +14,11 @@ const userSchema = new mongoose.Schema(
             unique: true,
             maxlength: 25,
             minlength: 6,
+            trim: true,
         },
         password: {
             type: String,
-            required: true,
+            required: false, 
             minlength: 6,
         },
         avatar: {
@@ -31,6 +33,19 @@ const userSchema = new mongoose.Schema(
                 default: [],
             },
         ],
+
+        // --- CÁC TRƯỜNG BỔ SUNG ---
+        googleId: { type: String },
+        facebookId: { type: String },
+        appleId: { type: String },
+
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
+        verificationToken: {
+            type: String,
+        },
     },
     {
         timestamps: true,

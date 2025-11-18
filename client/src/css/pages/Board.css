@@ -5,6 +5,7 @@
     flex-direction: column;
     background-color: #f8f9fa;
     overflow: hidden; /* Ngăn trang chính bị cuộn */
+    min-height: 100vh;
   }
   
   /* Header của board (dưới header chính) */

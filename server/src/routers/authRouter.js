@@ -12,13 +12,23 @@ router.get('/verify-email', authCtrl.verifyEmail);
 
 // POST /api/auth/login
 router.post('/login', authCtrl.login);
+// POST /api/auth/forgot-password
+router.post('/forgot-password', authCtrl.forgotPassword);
+// POST /api/auth/reset-password
+router.post('/reset-password', authCtrl.resetPassword);
 
-// 1. Khi user bấm nút "Login Google" -> Gọi route này để chuyển sang trang Google
+// 1. Router kích hoạt
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-// 2. Khi Google xác thực xong -> Gọi route này để server xử lý và cấp token
+// 2. Router callback
 router.get('/google/callback', 
     passport.authenticate('google', { failureRedirect: '/' }),
     authCtrl.googleCallback
 );
+router.get('/github/callback', 
+    passport.authenticate('github', { failureRedirect: '/' }),
+    authCtrl.googleCallback // Dùng lại hàm callback chung
+);
+
 export default router;

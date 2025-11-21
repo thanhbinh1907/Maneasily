@@ -83,4 +83,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
   emailInput.addEventListener('input', () => clearError(emailInput, emailError));
   passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
+
+  
+  // --- LOGIC MODAL FORGOT PASSWORD ---
+const forgotLink = document.querySelector('.forgot-password');
+const modal = document.getElementById('forgot-modal');
+const closeModal = document.querySelector('.close-modal');
+const forgotForm = document.getElementById('forgot-form');
+const forgotEmailInput = document.getElementById('forgot-email');
+const forgotError = document.getElementById('forgot-email-error');
+
+// Mở modal
+if (forgotLink) {
+  forgotLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    modal.style.display = 'flex';
+  });
+}
+
+// Đóng modal
+if (closeModal) {
+  closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+    forgotForm.reset();
+    forgotError.textContent = '';
+  });
+}
+
+// Click ra ngoài để đóng
+window.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// Xử lý submit form quên mật khẩu
+if (forgotForm) {
+  forgotForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = forgotEmailInput.value.trim();
+
+    if (!email) {
+      forgotError.textContent = "Vui lòng nhập email.";
+      return;
+    }
+
+    // Hiển thị trạng thái loading (tùy chọn)
+    const submitBtn = forgotForm.querySelector('button');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Sending...";
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.msg);
+        modal.style.display = 'none';
+        forgotForm.reset();
+      } else {
+        forgotError.textContent = data.err || "Có lỗi xảy ra.";
+      }
+    } catch (err) {
+      forgotError.textContent = "Lỗi kết nối server.";
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+}
 });

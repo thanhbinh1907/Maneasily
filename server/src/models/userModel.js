@@ -36,9 +36,8 @@ const userSchema = new mongoose.Schema(
 
         // --- CÁC TRƯỜNG BỔ SUNG ---
         googleId: { type: String },
-        facebookId: { type: String },
-        appleId: { type: String },
-
+        githubId: { type: String },
+        
         isVerified: {
             type: Boolean,
             default: false,
@@ -46,6 +45,9 @@ const userSchema = new mongoose.Schema(
         verificationToken: {
             type: String,
         },
+
+        resetPasswordToken: { type: String },
+        resetPasswordExpires: { type: Date },   
     },
     {
         timestamps: true,

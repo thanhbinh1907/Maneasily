@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Xóa token trên thanh địa chỉ để nhìn cho đẹp
         window.history.replaceState({}, document.title, window.location.pathname);
         
-        alert("Đăng nhập Google thành công!");
+        alert("Đăng nhập thành công!");
         // (Tùy chọn) Fetch thêm thông tin user để lưu vào localStorage nếu cần
     }
   // Logic cho Hamburger Menu

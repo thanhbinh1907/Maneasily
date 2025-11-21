@@ -2,6 +2,7 @@ import Users from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 // --- Hàm trợ giúp gửi Email ---
 const sendVerificationEmail = async (user) => {
@@ -187,6 +188,84 @@ const authCtrl = {
             const clientURL = "http://localhost:5173"; 
             
             res.redirect(`${clientURL}/index.html?token=${loginToken}`);
+
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+    forgotPassword: async (req, res) => {
+        try {
+            const { email } = req.body;
+            const user = await Users.findOne({ email });
+            if (!user) return res.status(400).json({ err: "Email này không tồn tại trong hệ thống." });
+
+            // Tạo token ngẫu nhiên (không dùng JWT để đơn giản hóa việc lưu DB)
+            const resetToken = crypto.randomBytes(32).toString("hex");
+            
+            // Lưu token và thời hạn (1 giờ) vào DB
+            user.resetPasswordToken = resetToken;
+            user.resetPasswordExpires = Date.now() + 3600000; // 1 giờ
+            await user.save();
+
+            // Link reset (Frontend URL)
+            // Lưu ý: Port 5173 là port mặc định của Vite dev server, sửa lại nếu cần
+            const resetLink = `http://localhost:5173/src/pages/reset-password.html?token=${resetToken}`;
+
+            // Cấu hình gửi mail (Sử dụng lại transporter cũ hoặc tạo mới nếu cần)
+            const transporter = nodemailer.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+            });
+
+            await transporter.sendMail({
+                from: `"Maneasily Support" <${process.env.EMAIL_USER}>`,
+                to: user.email,
+                subject: "Yêu cầu đặt lại mật khẩu Maneasily",
+                html: `
+                    <p>Bạn nhận được email này vì bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu.</p>
+                    <p>Vui lòng nhấp vào link sau để đặt lại mật khẩu:</p>
+                    <a href="${resetLink}" target="_blank">${resetLink}</a>
+                    <p>Link này sẽ hết hạn sau 1 giờ.</p>
+                `,
+            });
+
+            res.json({ msg: "Email đặt lại mật khẩu đã được gửi!" });
+
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+
+    // --- ĐẶT LẠI MẬT KHẨU MỚI ---
+    resetPassword: async (req, res) => {
+        try {
+            const { token, newPassword } = req.body;
+
+            // Tìm user có token trùng khớp và chưa hết hạn
+            const user = await Users.findOne({
+                resetPasswordToken: token,
+                resetPasswordExpires: { $gt: Date.now() }, // Hạn phải lớn hơn thời gian hiện tại
+            });
+
+            if (!user) return res.status(400).json({ err: "Token không hợp lệ hoặc đã hết hạn." });
+
+            if (newPassword.length < 6) 
+                return res.status(400).json({ err: "Mật khẩu phải có ít nhất 6 ký tự." });
+
+            // Mã hóa mật khẩu mới
+            const passwordHash = await bcrypt.hash(newPassword, 12);
+
+            user.password = passwordHash;
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+
+            res.json({ msg: "Mật khẩu đã được thay đổi thành công! Hãy đăng nhập lại." });
 
         } catch (err) {
             return res.status(500).json({ err: err.message });

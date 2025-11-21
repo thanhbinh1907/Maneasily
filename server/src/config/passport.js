@@ -1,5 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as GitHubStrategy } from "passport-github2";
 import Users from "../models/userModel.js";
 import dotenv from "dotenv";
 
@@ -55,6 +56,48 @@ passport.use(
         }
     )
 );
+
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: `${process.env.SERVER_URL}/api/auth/github/callback`,
+    scope: ['user:email'], // Quan trọng để lấy email
+    proxy: true
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+        // 1. Tìm user theo GitHub ID
+        let user = await Users.findOne({ githubId: profile.id });
+        if (user) return done(null, user);
+
+        // 2. Tìm user theo Email (GitHub có thể trả về nhiều email, lấy cái chính)
+        const email = profile.emails && profile.emails[0].value;
+        if (email) {
+            user = await Users.findOne({ email: email });
+            if (user) {
+                user.githubId = profile.id;
+                user.isVerified = true;
+                await user.save();
+                return done(null, user);
+            }
+        }
+
+        // 3. Tạo mới
+        const newUser = new Users({
+            githubId: profile.id,
+            email: email || `github_${profile.id}@maneasily.local`,
+            username: profile.username + Math.floor(Math.random() * 10000), //random để tránh trùng
+            avatar: profile.photos && profile.photos[0].value,
+            isVerified: true
+        });
+        await newUser.save();
+        return done(null, newUser);
+
+    } catch (err) {
+        return done(err, false);
+    }
+  }
+));
 
 // Passport cần 2 hàm này để quản lý session tạm thời
 passport.serializeUser((user, done) => done(null, user.id));

@@ -16,6 +16,11 @@ const projectSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "users",
     },
+    inviteId: { 
+        type: String, 
+        unique: true,
+        sparse: true // Cho phép null/undefined mà không lỗi unique
+    },
     admins: [
         {
             type: mongoose.Types.ObjectId,

@@ -75,12 +75,49 @@ function renderBoard(boardData) {
   
   // Cập nhật tiêu đề dự án
   if(boardTitleEl) boardTitleEl.textContent = boardData.title;
+
+  // --- THÊM ĐOẠN NÀY: Render Thành viên trong Modal & Header ---
   
-  // Xóa nội dung cũ và vẽ lại
+  // 1. Render vào Modal (Danh sách dọc)
+  const memberListContainer = document.getElementById('project-members-list');
+  if (memberListContainer) {
+      if (boardData.members && boardData.members.length > 0) {
+          memberListContainer.innerHTML = ''; // Xóa text "Chưa tải danh sách"
+          boardData.members.forEach(user => {
+              const item = document.createElement('div');
+              item.className = 'user-result-item'; // Dùng lại class style có sẵn
+              item.style.cursor = 'default'; // Bỏ trỏ chuột dạng click
+              item.innerHTML = `
+                  <img src="${user.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="result-avatar">
+                  <div class="result-info">
+                      <div>${user.username}</div>
+                      <div style="font-size: 0.85rem; color: #666;">${user.email}</div>
+                  </div>
+              `;
+              memberListContainer.appendChild(item);
+          });
+      } else {
+          memberListContainer.innerHTML = '<p style="padding: 10px; color: #666;">Chưa có thành viên nào.</p>';
+      }
+  }
+
+  // 2. Render vào Header (Avatar nhỏ - Tùy chọn)
+  const headerMembers = document.getElementById('board-header-members');
+  if (headerMembers && boardData.members) {
+      headerMembers.innerHTML = boardData.members.map(m => 
+          `<img src="${m.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" 
+                class="member-avatar-small" 
+                title="${m.username}" 
+                style="width:30px; height:30px; border-radius:50%; border:2px solid white; margin-left:-8px;">`
+      ).join('');
+  }
+  // -----------------------------------------------------------
+  
+  // ... (Giữ nguyên phần render cột cũ ở dưới)
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
       const columnsMap = new Map(boardData.columns.map(c => [c._id, c]));
-      
+      // ... code cũ ...
       boardData.columnOrder.forEach(columnId => {
         const column = columnsMap.get(columnId.toString());
         if (column) {
@@ -90,7 +127,6 @@ function renderBoard(boardData) {
       });
   }
 }
-
 
 /* =========================================
    PHẦN 2: KÉO THẢ (DRAG & DROP)
@@ -248,18 +284,19 @@ function initAddButtons() {
    PHẦN 4: CHIA SẺ DỰ ÁN (SHARE FEATURE)
    ========================================= */
 
-function initShareFeature() {
+   function initShareFeature() {
     const shareBtn = document.getElementById('btn-manage-members');
     const modal = document.getElementById('share-modal');
     const closeBtn = document.getElementById('close-share-modal');
     const searchInput = document.getElementById('user-search-input');
     const dropdown = document.getElementById('search-results-dropdown');
     
-    // Xử lý Tabs (nếu có dùng tabs)
+    // Tab elements
     const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
+    const linkInput = document.getElementById('share-link-input'); 
+    const btnCopyLink = document.getElementById('btn-copy-link');
 
-    // --- UI Modal ---
+    // --- 1. Mở/Đóng Modal ---
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
             modal.style.display = 'flex';
@@ -268,10 +305,6 @@ function initShareFeature() {
                 searchInput.focus();
             }
             if(dropdown) dropdown.style.display = 'none';
-            
-            // Set link copy nếu có
-            const linkInput = document.getElementById('share-link-input');
-            if(linkInput) linkInput.value = window.location.href;
         });
     }
     if (closeBtn) {
@@ -281,19 +314,72 @@ function initShareFeature() {
         if (e.target === modal) modal.style.display = 'none';
     });
 
-    // Xử lý chuyển Tab
+    // --- 2. Xử lý Tabs  ---
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            const targetId = btn.getAttribute('data-tab');
-            const targetContent = document.getElementById(targetId);
-            if(targetContent) targetContent.classList.add('active');
+      btn.addEventListener('click', async () => {
+        // UI Change: 
+        // 1. Xóa active ở tất cả nút
+        tabBtns.forEach(b => b.classList.remove('active'));
+        // 2. Ẩn tất cả nội dung (QUAN TRỌNG: phải set display = none)
+        document.querySelectorAll('.tab-content').forEach(c => {
+            c.classList.remove('active');
+            c.style.display = 'none'; // <-- Thêm dòng này để ẩn triệt để
         });
+
+        // 3. Kích hoạt nút vừa bấm
+        btn.classList.add('active');
+        
+        // 4. Hiện nội dung tương ứng
+        const targetId = btn.getAttribute('data-tab');
+        const targetContent = document.getElementById(targetId);
+        if(targetContent) {
+            targetContent.classList.add('active');
+            targetContent.style.display = 'block'; // <-- Thêm dòng này để hiện triệt để
+        }
+
+        // LOGIC: Nếu bấm sang tab "Sao chép liên kết"
+        if (targetId === 'tab-link') {
+            // ... (giữ nguyên logic gọi API của bạn ở đây)
+            if (!currentProjectId) return;
+            
+            if(linkInput) linkInput.value = "Đang tạo link...";
+            // ... phần fetch API giữ nguyên
+            const token = localStorage.getItem('maneasily_token');
+            try {
+                // ... gọi fetch ...
+                const res = await fetch(`http://localhost:5000/api/project/${currentProjectId}/invite`, {
+                    method: 'GET',
+                    headers: { 'Authorization': token }
+                });
+                const data = await res.json();
+                if (linkInput && res.ok) linkInput.value = data.inviteUrl;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+      });
     });
 
-    // --- Logic Tìm kiếm (Debounce) ---
+    // --- 3. Logic Nút Copy (Sửa lỗi ReferenceError cũ) ---
+    if(btnCopyLink) {
+        btnCopyLink.addEventListener('click', () => {
+            if(linkInput && linkInput.value && !linkInput.value.startsWith("Đang") && !linkInput.value.startsWith("Lỗi")) {
+                linkInput.select();
+                linkInput.setSelectionRange(0, 99999); // Cho mobile
+                
+                navigator.clipboard.writeText(linkInput.value).then(() => {
+                    const originalText = btnCopyLink.innerText;
+                    btnCopyLink.innerText = "Copied!";
+                    setTimeout(() => btnCopyLink.innerText = originalText, 2000);
+                }).catch(err => {
+                    console.error('Không thể copy: ', err);
+                    alert("Không thể copy, hãy thử copy thủ công!");
+                });
+            }
+        });
+    }
+
+    // --- 4. Logic Tìm kiếm user (Giữ nguyên logic cũ của bạn) ---
     let debounceTimer;
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -316,11 +402,11 @@ function initShareFeature() {
                 } catch (err) {
                     console.error("Lỗi tìm kiếm:", err);
                 }
-            }, 300); // Chờ 300ms
+            }, 300); 
         });
     }
 
-    // Render kết quả tìm kiếm
+    // Helper render search (Giữ nguyên)
     function renderSearchResults(users) {
         if (!dropdown) return;
         dropdown.innerHTML = '';
@@ -341,7 +427,6 @@ function initShareFeature() {
                     <div>${user.email}</div>
                 </div>
             `;
-            // Click để thêm thành viên
             item.addEventListener('click', () => addUserToProject(user));
             dropdown.appendChild(item);
         });
@@ -349,7 +434,7 @@ function initShareFeature() {
         dropdown.style.display = 'block';
     }
 
-    // Gọi API thêm thành viên
+    // Helper add user (Giữ nguyên)
     async function addUserToProject(userToAdd) {
         if (!confirm(`Thêm ${userToAdd.username} vào dự án này?`)) return;
 
@@ -379,19 +464,6 @@ function initShareFeature() {
             console.error(err);
             alert("Lỗi kết nối server.");
         }
-    }
-
-    // Logic Copy Link
-    const btnCopy = document.getElementById('btn-copy-link');
-    if(btnCopy) {
-        btnCopy.addEventListener('click', () => {
-            const copyText = document.getElementById("share-link-input");
-            if(copyText) {
-                copyText.select();
-                navigator.clipboard.writeText(copyText.value);
-                alert("Đã sao chép liên kết!");
-            }
-        });
     }
 }
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tham gia dự án - Maneasily</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/main.css">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; background: #f4f5f7; }
+        .invite-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; width: 90%; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #ff7f32; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .btn-home { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #ff7f32; color: white; text-decoration: none; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="invite-card">
+        <h2>Đang xử lý lời mời...</h2>
+        <div class="loader" id="loader"></div>
+        <p id="status-msg">Vui lòng chờ trong giây lát.</p>
+        <a href="/index.html" id="btn-home" class="btn-home" style="display: none;">Về trang chủ</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            const msgEl = document.getElementById('status-msg');
+            const loader = document.getElementById('loader');
+            const btnHome = document.getElementById('btn-home');
+
+            // 1. Kiểm tra đăng nhập
+            const token = localStorage.getItem('maneasily_token');
+            if (!token) {
+                // Lưu lại link hiện tại để sau khi login quay lại đúng chỗ này
+                localStorage.setItem('redirect_after_login', window.location.href);
+                alert("Bạn cần đăng nhập để tham gia dự án.");
+                window.location.href = '/src/pages/signin.html';
+                return;
+            }
+
+            if (!code) {
+                msgEl.textContent = "Đường dẫn không hợp lệ.";
+                loader.style.display = 'none';
+                btnHome.style.display = 'inline-block';
+                return;
+            }
+
+            // 2. Gọi API tham gia
+            try {
+                const res = await fetch('http://localhost:5000/api/project/join', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    msgEl.textContent = "Tham gia thành công! Đang chuyển hướng...";
+                    // Chuyển hướng vào Board sau 1s
+                    setTimeout(() => {
+                        window.location.href = `/src/pages/Board.html?id=${data.projectId}`;
+                    }, 1000);
+                } else {
+                    msgEl.textContent = data.err || "Lỗi khi tham gia dự án.";
+                    loader.style.display = 'none';
+                    btnHome.style.display = 'inline-block';
+                }
+            } catch (err) {
+                console.error(err);
+                msgEl.textContent = "Lỗi kết nối server.";
+                loader.style.display = 'none';
+                btnHome.style.display = 'inline-block';
+            }
+        });
+    </script>
+</body>
+</html>

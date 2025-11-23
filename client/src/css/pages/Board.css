@@ -297,3 +297,7 @@
       max-height: 200px; 
       overflow-y: auto; 
   }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.2s; }
+.tab-btn.active { border-bottom-color: #ff7f32 !important; color: #172b4d !important; }

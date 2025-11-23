@@ -1,22 +1,28 @@
 // File: Maneasily/server/src/controllers/projectCtrl.js
 
 import Projects from "../models/projectModel.js";
-import Users from "../models/userModel.js"; // Import thêm Users để cập nhật danh sách dự án của user
+import Users from "../models/userModel.js"; 
 import Tasks from "../models/taskModel.js";
 import Columns from "../models/columnModel.js";
+import { v4 as uuidv4 } from 'uuid';
 
 const projectCtrl = {
     // --- 1. Lấy thông tin chi tiết 1 Project (Giữ nguyên hàm cũ của bạn) ---
     getProject: async (req, res) => {
         try {
             const { id } = req.params;
-            const project = await Projects.findById(id).populate({
-                path: "columns",
-                populate: {
-                    path: "tasks",
-                    model: "tasks",
-                },
-            });
+            // --- SỬA ĐOẠN NÀY ---
+            const project = await Projects.findById(id)
+                .populate("members", "username email avatar") // Lấy thêm thông tin user
+                .populate({
+                    path: "columns",
+                    populate: {
+                        path: "tasks",
+                        model: "tasks",
+                    },
+                });
+            // --------------------
+            
             if (!project) return res.status(404).json({ err: "Không tìm thấy project" });
             res.json({ project });
         } catch (err) {
@@ -126,6 +132,59 @@ const projectCtrl = {
             await Projects.findByIdAndDelete(id);
 
             res.json({ msg: "Đã xóa dự án và toàn bộ dữ liệu liên quan!" });
+
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+    getInviteLink: async (req, res) => {
+        try {
+            const { id } = req.params;
+            let project = await Projects.findById(id);
+            if (!project) return res.status(404).json({ err: "Dự án không tồn tại" });
+
+            // Nếu chưa có inviteId thì tạo mới
+            if (!project.inviteId) {
+                project.inviteId = uuidv4();
+                await project.save();
+            }
+
+            // Trả về đường dẫn đầy đủ (Frontend URL)
+            // Ví dụ: http://localhost:5173/src/pages/invite.html?code=abcxyz
+            const inviteUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/src/pages/invite.html?code=${project.inviteId}`;
+            
+            res.json({ inviteUrl });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+
+    // --- 2. Xử lý tham gia dự án qua Link ---
+    joinProjectByLink: async (req, res) => {
+        try {
+            const { code } = req.body;
+            const userId = req.user.id; // Lấy từ middleware auth
+
+            // Tìm dự án có mã inviteId tương ứng
+            const project = await Projects.findOne({ inviteId: code });
+            if (!project) return res.status(404).json({ err: "Liên kết không hợp lệ hoặc đã hết hạn." });
+
+            // Kiểm tra xem user đã là thành viên chưa
+            if (project.members.includes(userId)) {
+                return res.json({ msg: "Bạn đã là thành viên dự án này!", projectId: project._id });
+            }
+
+            // Thêm user vào project
+            await Projects.findByIdAndUpdate(project._id, {
+                $addToSet: { members: userId }
+            });
+
+            // Thêm project vào user
+            await Users.findByIdAndUpdate(userId, {
+                $addToSet: { projects: project._id }
+            });
+
+            res.json({ msg: "Tham gia thành công!", projectId: project._id });
 
         } catch (err) {
             return res.status(500).json({ err: err.message });

@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
           // 3. Chuyển hướng vào trang chính (Board hoặc Home)
           // Bạn hãy sửa đường dẫn này tới trang bạn muốn user vào sau khi login
           window.location.href = '/index.html'; 
+
+          // LOGIC MỚI: Kiểm tra xem có cần redirect lại trang invite không
+          const redirectUrl = localStorage.getItem('redirect_after_login');
+          if (redirectUrl) {
+              localStorage.removeItem('redirect_after_login'); // Xóa đi sau khi dùng
+              window.location.href = redirectUrl; // Quay lại trang invite
+          } else {
+              // Mặc định vào trang chủ
+              window.location.href = '/index.html'; 
+          }
         }
       } catch (err) {
         console.error('Lỗi kết nối:', err);

@@ -1,0 +1,176 @@
+:root {
+    --sidebar-width: 260px;
+    --header-height: 64px;
+    --bg-color: #f4f5f7;
+    --hover-color: #ebecf0;
+    --active-color: #e9f2ff;
+    --active-text: #0c66e4;
+}
+
+body {
+    background-color: var(--bg-color);
+    overflow-x: hidden;
+}
+
+/* --- KẾT CẤU CHUNG (LAYOUT) --- */
+.app-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- 1. SIDEBAR (Thanh dọc) --- */
+.app-sidebar {
+    width: var(--sidebar-width);
+    background-color: #ffffff;
+    border-right: 1px solid #dfe1e6;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+}
+
+.sidebar-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid #dfe1e6;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.sidebar-logo img { width: 32px; margin-right: 10px; }
+
+.sidebar-menu {
+    padding: 20px 10px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #42526e;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+}
+
+.menu-item i { width: 24px; font-size: 1.1rem; margin-right: 10px; text-align: center; }
+
+.menu-item:hover { background-color: var(--hover-color); color: #172b4d; }
+
+.menu-item.active {
+    background-color: var(--active-color);
+    color: var(--active-text);
+}
+
+/* --- 2. MAIN AREA (Phần bên phải) --- */
+.app-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* --- 3. NAV TOP (Header ngang) --- */
+.app-nav-top {
+    height: var(--header-height);
+    background-color: #ffffff;
+    border-bottom: 1px solid #dfe1e6;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+}
+
+/* Search Bar */
+.nav-search {
+    position: relative;
+    width: 300px;
+}
+.nav-search input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid #dfe1e6;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.9rem;
+}
+.nav-search i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b778c;
+}
+
+/* Nav Right (User Info) */
+.nav-right { display: flex; align-items: center; gap: 20px; }
+
+.nav-icon-btn {
+    position: relative;
+    font-size: 1.2rem;
+    color: #42526e;
+    cursor: pointer;
+}
+.nav-icon-btn .badge {
+    position: absolute; top: -5px; right: -5px;
+    background: #ff5630; color: #fff; font-size: 0.7rem;
+    padding: 2px 5px; border-radius: 10px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.user-info:hover { background-color: var(--hover-color); }
+.user-avatar {
+    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+}
+.user-name { font-weight: 600; font-size: 0.9rem; color: #172b4d; }
+
+/* Dropdown User */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; right: 0;
+    margin-top: 8px;
+    background: #fff;
+    border: 1px solid #dfe1e6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    width: 200px;
+    display: none; /* JS sẽ toggle cái này */
+    z-index: 100;
+}
+.dropdown-menu.show { display: block; }
+.dropdown-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    text-decoration: none; color: #172b4d; font-size: 0.9rem;
+}
+.dropdown-item:hover { background-color: var(--hover-color); }
+.dropdown-item.logout { color: #de350b; border-top: 1px solid #eee; }
+
+/* --- 4. PAGE CONTENT --- */
+.page-content {
+    padding: 24px;
+    flex-grow: 1;
+    overflow-y: auto;
+}

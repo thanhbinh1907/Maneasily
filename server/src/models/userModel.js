@@ -54,4 +54,9 @@ const userSchema = new mongoose.Schema(
     }
 );
 
+// --- TỐI ƯU HÓA DATABASE (Chiến lược Prefix Search) ---
+// Tạo 2 Index riêng biệt. MongoDB sẽ sử dụng kỹ thuật "Index Intersection" khi query $or
+userSchema.index({ username: 1 });
+userSchema.index({ email: 1 });
+
 export default mongoose.model("users", userSchema);

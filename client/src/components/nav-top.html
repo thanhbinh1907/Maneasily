@@ -1,0 +1,30 @@
+<header class="app-nav-top">
+    <div class="nav-left">
+        <div class="nav-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Tìm kiếm...">
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <div class="nav-icon-btn">
+            <i class="fa-regular fa-bell"></i>
+            <span class="badge">3</span>
+        </div>
+
+        <div class="user-info" id="user-dropdown-trigger">
+            <img src="" alt="User" class="user-avatar" id="nav-user-avatar">
+            <span class="user-name" id="nav-user-name">Loading...</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: #666;"></i>
+
+            <div class="dropdown-menu" id="user-dropdown-menu">
+                <a href="/src/pages/profile.html" class="dropdown-item">
+                    <i class="fa-regular fa-user"></i> Hồ sơ cá nhân
+                </a>
+                <div class="dropdown-item logout" id="btn-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tổng quan - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/src/css/dashboard-layout.css">
+  <style>
+      .welcome-banner {
+          background: linear-gradient(135deg, #ff7f32 0%, #ffb75e 100%);
+          color: white;
+          padding: 30px;
+          border-radius: 12px;
+          margin-bottom: 30px;
+      }
+      .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+      }
+      .stat-card {
+          background: white; padding: 20px; border-radius: 8px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    {{> sidebar active_overview=true }}
+
+    <div class="app-main">
+        {{> nav-top }}
+
+        <div class="page-content">
+            <div class="welcome-banner">
+                <h2 id="welcome-msg">Xin chào!</h2>
+                <p>Chào mừng bạn quay trở lại làm việc.</p>
+            </div>
+
+            <h3>Thống kê nhanh</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Dự án đang chạy</h4>
+                    <p style="font-size: 2rem; font-weight: bold; color: #ff7f32;">3</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Công việc hôm nay</h4>
+                    <p style="font-size: 2rem; font-weight: bold; color: #2e8b57;">12</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Đã hoàn thành</h4>
+                    <p style="font-size: 2rem; font-weight: bold; color: #42526e;">85%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/js/dashboard.js"></script>
+</body>
+</html>

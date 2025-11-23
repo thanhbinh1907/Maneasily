@@ -270,6 +270,19 @@ const authCtrl = {
         } catch (err) {
             return res.status(500).json({ err: err.message });
         }
+    },
+    // --- HÀM NÀY ĐỂ LẤY THÔNG TIN USER TỪ TOKEN ---
+    getMe: async (req, res) => {
+        try {
+            // req.user sẽ được middleware xác thực gán vào (chúng ta sẽ cấu hình middleware sau)
+            // Hoặc đơn giản hơn, chúng ta tìm user dựa trên ID từ token đã giải mã
+            const user = await Users.findById(req.user.id).select('-password'); // Bỏ trường password
+            if (!user) return res.status(400).json({ err: "User không tồn tại." });
+
+            res.json({ user });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     }
 };
 

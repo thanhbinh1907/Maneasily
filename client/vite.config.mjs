@@ -29,6 +29,8 @@ export default defineConfig({
         blog2: resolve(__dirname, 'src/pages/blog-tips.html'),
         blog3: resolve(__dirname, 'src/pages/blog-teamwork.html'),
         resetPassword: resolve(__dirname, 'src/pages/reset-password.html'),
+        dashboard: resolve(__dirname, 'src/pages/dashboard.html'),
+        projects: resolve(__dirname, 'src/pages/projects.html'),
       },
     },
   },

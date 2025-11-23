@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose'; 
 import projectRouter from './routers/projectRouter.js';
 import authRouter from './routers/authRouter.js';
+import userRouter from './routers/userRouter.js';
 import session from 'express-session'; 
 import passport from 'passport';       
 import './config/passport.js';         
@@ -40,6 +41,7 @@ app.use(passport.session());
 // --- API ROUTERS ---
 app.use('/api', projectRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
 
 app.listen(PORT, () => {
     console.log(`Server Maneasily đang chạy ở http://localhost:${PORT}`);

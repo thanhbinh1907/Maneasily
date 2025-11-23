@@ -1,6 +1,7 @@
 import express from 'express';
 import authCtrl from '../controllers/authCtrl.js';
 import passport from 'passport';
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -30,5 +31,6 @@ router.get('/github/callback',
     passport.authenticate('github', { failureRedirect: '/' }),
     authCtrl.googleCallback // Dùng lại hàm callback chung
 );
-
+// GET /api/auth/me
+router.get('/me', auth, authCtrl.getMe);
 export default router;

@@ -1,0 +1,30 @@
+<aside class="app-sidebar">
+    <div class="sidebar-header">
+        <a href="/src/pages/dashboard.html" class="sidebar-logo">
+            <img src="/src/assets/images/logo.png" alt="Logo">
+            <span>Maneasily</span>
+        </a>
+    </div>
+
+    <nav class="sidebar-menu">
+        <a href="/src/pages/dashboard.html" class="menu-item {{#if active_overview}}active{{/if}}">
+            <i class="fa-solid fa-house"></i>
+            <span>Tổng quan</span>
+        </a>
+
+        <a href="/src/pages/activity.html" class="menu-item {{#if active_activity}}active{{/if}}">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Hoạt động</span>
+        </a>
+
+        <a href="/src/pages/projects.html" class="menu-item {{#if active_projects}}active{{/if}}">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Dự án</span>
+        </a>
+
+        <a href="/src/pages/schedule.html" class="menu-item {{#if active_schedule}}active{{/if}}">
+            <i class="fa-regular fa-calendar"></i>
+            <span>Lịch trình</span>
+        </a>
+    </nav>
+</aside>

@@ -3,30 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maneasily - Project Board</title>
+  <title>Chi tiết dự án - Maneasily</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/css/main.css">
-  <link rel="stylesheet" href="/src/css/pages/Board.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/src/css/components/dashboard-layout.css">
+  <link rel="stylesheet" href="/src/css/pages/Board.css">
 </head>
 <body>
-  <main class="board-page-main">
-    <header class="board-header">
-      <div class="board-info">
-        <h1 id="board-title">Tên Project...</h1>
-        <button class="btn-star"><i class="fa-regular fa-star"></i></button>
-      </div>
-      <div class="board-actions">
-        <button class="btn btn-secondary"><i class="fa-solid fa-users"></i> Chia sẻ</button>
-      </div>
-    </header>
 
-    <div class="board-content-wrapper">
-      <div id="board-content-container" class="board-content">
+  <div class="app-container">
+    {{> sidebar active_projects=true }}
+
+    <div class="app-main">
+        {{> nav-top }}
+
+        <div class="board-page-content">
+            
+            <div class="board-header">
+                <div class="board-header-left">
+                    <nav class="board-breadcrumb">
+                        <a href="/src/pages/projects.html">Dự án</a>
+                        <i class="fa-solid fa-chevron-right"></i>
+                        <span id="board-title">Đang tải...</span>
+                    </nav>
+                    <button class="btn-star"><i class="fa-regular fa-star"></i></button>
+                </div>
+
+                <div class="board-header-right">
+                    <div class="board-members" id="board-header-members"></div>
+                    <div class="divider-vertical"></div>
+                    
+                    <button class="btn-board-tool" id="btn-manage-members">
+                        <i class="fa-solid fa-user-plus"></i> Chia sẻ
+                    </button>
+                    
+                    <button class="btn-board-tool primary" id="btn-add-column-header">
+                        <i class="fa-solid fa-plus"></i> Thêm cột
+                    </button>
+                </div>
+            </div>
+
+            <div class="board-canvas" id="board-content-container">
+                </div>
+
         </div>
     </div>
-  </main>
+  </div>
 
+<!-- Share Members Modal -->
+<div id="share-modal" class="modal-overlay">
+  <div class="modal-content share-modal-size">
+      <div class="modal-header">
+          <h2>Thêm thành viên</h2>
+          <button class="close-modal" id="close-share-modal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+          <div class="search-member-container">
+              <label for="user-search-input">Tìm kiếm người dùng</label>
+              <div class="input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <input type="text" id="user-search-input" placeholder="Nhập tên hoặc email..." autocomplete="off">
+              </div>
+              
+              <div id="search-results-dropdown" class="search-dropdown"></div>
+          </div>
+
+          <div class="current-members">
+              <h4>Thành viên trong dự án:</h4>
+              <div id="project-members-list" class="members-list">
+                  <p style="color: #666; font-size: 0.9rem; font-style: italic;">Chưa có thành viên nào khác.</p>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script type="module" src="/src/js/dashboard.js"></script>
   <script type="module" src="/src/js/Board.js"></script>
 </body>
 </html>

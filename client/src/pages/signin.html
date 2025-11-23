@@ -61,22 +61,7 @@
     </div>
   </main>
 
-  <div id="forgot-modal" class="modal-overlay">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h2>Reset Password</h2>
-      <p>Enter your email address and we'll send you a link to reset your password.</p>
-      
-      <form id="forgot-form">
-        <div class="input-group">
-          <label for="forgot-email">Email Address</label>
-          <input type="email" id="forgot-email" required placeholder="name@example.com">
-          <div class="error-message" id="forgot-email-error"></div>
-        </div>
-        <button type="submit" class="btn-signup-main">Send Reset Link</button>
-      </form>
-    </div>
-  </div>
+  {{> auth-modal }}
   
   <script type="module" src="/src/js/signin.js"></script>
 </body>

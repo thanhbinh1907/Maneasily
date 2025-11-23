@@ -1,171 +1,88 @@
+import { API_BASE_URL } from './config.js';
+import { toast } from './utils/toast.js';
+import '../css/components/modal.css'; // Import CSS cho modal quên pass
+
 document.addEventListener('DOMContentLoaded', () => {
-  const signinForm = document.getElementById('signin-form');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  
-  const emailError = document.getElementById('email-error');
-  const passwordError = document.getElementById('password-error');
+    const signinForm = document.getElementById('signin-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
 
-  function showError(inputElement, errorElement, message) {
-    errorElement.textContent = message;
-    inputElement.classList.add('input-error');
-  }
-
-  function clearError(inputElement, errorElement) {
-    errorElement.textContent = '';
-    inputElement.classList.remove('input-error');
-  }
-
-  signinForm.addEventListener('submit', async (event) => {
-    event.preventDefault(); 
-    
-    let isValid = true;
-
-    clearError(emailInput, emailError);
-    clearError(passwordInput, passwordError);
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    // Kiểm tra sơ bộ
-    if (email === '') {
-      showError(emailInput, emailError, 'Email không được để trống.');
-      isValid = false;
-    }
-    if (password === '') {
-      showError(passwordInput, passwordError, 'Mật khẩu không được để trống.');
-      isValid = false;
-    }
-
-    // --- GỬI DỮ LIỆU ĐĂNG NHẬP ---
-    if (isValid) {
-      console.log('Đang đăng nhập...');
-      try {
-        const res = await fetch('http://localhost:5000/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          // Xử lý lỗi (ví dụ: sai mật khẩu, chưa kích hoạt email)
-          if (data.err) {
-             // Hiển thị lỗi chung ở dưới ô mật khẩu hoặc alert
-             showError(passwordInput, passwordError, data.err);
-          } else {
-             alert('Đăng nhập thất bại.');
-          }
-        } else {
-          // ĐĂNG NHẬP THÀNH CÔNG!
-          console.log('Token nhận được:', data.token);
-          
-          // 1. Lưu Token vào bộ nhớ trình duyệt (localStorage)
-          // Đây là "chìa khóa" để người dùng giữ trạng thái đăng nhập
-          localStorage.setItem('maneasily_token', data.token);
-          
-          // 2. Lưu thông tin user (để hiển thị tên, avatar...)
-          localStorage.setItem('maneasily_user', JSON.stringify(data.user));
-
-          alert('Đăng nhập thành công!');
-          
-          // 3. Chuyển hướng vào trang chính (Board hoặc Home)
-          // Bạn hãy sửa đường dẫn này tới trang bạn muốn user vào sau khi login
-          window.location.href = '/index.html'; 
-
-          // LOGIC MỚI: Kiểm tra xem có cần redirect lại trang invite không
-          const redirectUrl = localStorage.getItem('redirect_after_login');
-          if (redirectUrl) {
-              localStorage.removeItem('redirect_after_login'); // Xóa đi sau khi dùng
-              window.location.href = redirectUrl; // Quay lại trang invite
-          } else {
-              // Mặc định vào trang chủ
-              window.location.href = '/index.html'; 
-          }
+    // --- XỬ LÝ ĐĂNG NHẬP ---
+    signinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Validation đơn giản
+        if(!emailInput.value || !passwordInput.value) {
+            return toast.error("Vui lòng điền đầy đủ thông tin");
         }
-      } catch (err) {
-        console.error('Lỗi kết nối:', err);
-        alert('Không thể kết nối đến Server.');
-      }
-    }
-  });
 
-  emailInput.addEventListener('input', () => clearError(emailInput, emailError));
-  passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: emailInput.value.trim(), 
+                    password: passwordInput.value.trim() 
+                })
+            });
 
-  
-  // --- LOGIC MODAL FORGOT PASSWORD ---
-const forgotLink = document.querySelector('.forgot-password');
-const modal = document.getElementById('forgot-modal');
-const closeModal = document.querySelector('.close-modal');
-const forgotForm = document.getElementById('forgot-form');
-const forgotEmailInput = document.getElementById('forgot-email');
-const forgotError = document.getElementById('forgot-email-error');
+            const data = await res.json();
 
-// Mở modal
-if (forgotLink) {
-  forgotLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    modal.style.display = 'flex';
-  });
-}
+            if (res.ok) {
+                localStorage.setItem('maneasily_token', data.token);
+                localStorage.setItem('maneasily_user', JSON.stringify(data.user));
+                
+                toast.success("Đăng nhập thành công!");
+                
+                // Redirect thông minh
+                const redirect = localStorage.getItem('redirect_after_login') || '/index.html';
+                localStorage.removeItem('redirect_after_login');
+                
+                setTimeout(() => window.location.href = redirect, 1000);
+            } else {
+                toast.error(data.err || "Đăng nhập thất bại");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Không thể kết nối đến Server");
+        }
+    });
 
-// Đóng modal
-if (closeModal) {
-  closeModal.addEventListener('click', () => {
-    modal.style.display = 'none';
-    forgotForm.reset();
-    forgotError.textContent = '';
-  });
-}
+    // --- XỬ LÝ QUÊN MẬT KHẨU (GỌN GÀNG) ---
+    const forgotModal = document.getElementById('forgot-modal');
+    const forgotForm = document.getElementById('forgot-form');
+    
+    document.querySelector('.forgot-password')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        forgotModal.style.display = 'flex';
+    });
 
-// Click ra ngoài để đóng
-window.addEventListener('click', (e) => {
-  if (e.target === modal) {
-    modal.style.display = 'none';
-  }
-});
+    document.getElementById('close-forgot')?.addEventListener('click', () => {
+        forgotModal.style.display = 'none';
+    });
 
-// Xử lý submit form quên mật khẩu
-if (forgotForm) {
-  forgotForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = forgotEmailInput.value.trim();
+    forgotForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value;
+        const btn = forgotForm.querySelector('button');
+        
+        btn.innerText = "Đang gửi..."; btn.disabled = true;
 
-    if (!email) {
-      forgotError.textContent = "Vui lòng nhập email.";
-      return;
-    }
-
-    // Hiển thị trạng thái loading (tùy chọn)
-    const submitBtn = forgotForm.querySelector('button');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = "Sending...";
-    submitBtn.disabled = true;
-
-    try {
-      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(data.msg);
-        modal.style.display = 'none';
-        forgotForm.reset();
-      } else {
-        forgotError.textContent = data.err || "Có lỗi xảy ra.";
-      }
-    } catch (err) {
-      forgotError.textContent = "Lỗi kết nối server.";
-    } finally {
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    }
-  });
-}
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            
+            if(res.ok) {
+                toast.success(data.msg);
+                forgotModal.style.display = 'none';
+            } else {
+                toast.error(data.err);
+            }
+        } catch(err) { toast.error("Lỗi server"); } 
+        finally { btn.innerText = "Gửi link"; btn.disabled = false; }
+    });
 });

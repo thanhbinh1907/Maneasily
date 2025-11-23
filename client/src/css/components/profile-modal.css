@@ -1,0 +1,31 @@
+.profile-avatar-section {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* Ảnh Avatar */
+#profile-preview-img {
+    width: 100px; 
+    height: 100px; 
+    border-radius: 50%; 
+    object-fit: cover; 
+    border: 3px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    background-color: #eee;
+}
+
+/* Email hiển thị dưới ảnh */
+#profile-email-display {
+    color: #6b778c; 
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Ghi chú nhỏ */
+.form-group small {
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 5px;
+    display: block;
+}

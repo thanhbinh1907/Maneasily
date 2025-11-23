@@ -1,4 +1,5 @@
 import '../css/components/dashboard-layout.css'; // Import CSS nếu dùng Vite build styles
+import { initProfileModal } from './components/profile-modal.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Kiểm tra đăng nhập

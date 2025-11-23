@@ -47,6 +47,39 @@ const userCtrl = {
         } catch (err) {
             return res.status(500).json({ err: err.message });
         }
+    },
+    // --- CẬP NHẬT HỒ SƠ ---
+    updateProfile: async (req, res) => {
+        try {
+            const { username, avatar } = req.body;
+            const userId = req.user.id; // Lấy từ token
+
+            // 1. Validate cơ bản
+            if (!username) return res.status(400).json({ err: "Tên người dùng không được để trống." });
+            if (username.length < 6) return res.status(400).json({ err: "Tên người dùng phải có ít nhất 6 ký tự." });
+
+            // 2. Kiểm tra xem Username có bị trùng với người khác không?
+            // Tìm user có username này, NHƯNG không phải là chính mình ($ne: not equal)
+            const userExists = await Users.findOne({ 
+                username: username, 
+                _id: { $ne: userId } 
+            });
+
+            if (userExists) {
+                return res.status(400).json({ err: "Tên người dùng này đã có người sử dụng." });
+            }
+
+            // 3. Cập nhật
+            const updatedUser = await Users.findByIdAndUpdate(userId, {
+                username: username,
+                avatar: avatar
+            }, { new: true }).select("-password"); // Trả về user mới, trừ pass
+
+            res.json({ msg: "Cập nhật thành công!", user: updatedUser });
+
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     }
 };
 

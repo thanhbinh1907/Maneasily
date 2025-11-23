@@ -283,6 +283,28 @@ const authCtrl = {
         } catch (err) {
             return res.status(500).json({ err: err.message });
         }
+    },
+    fixAvatars: async (req, res) => {
+        try {
+            // Link ảnh mặc định xịn (Gravatar)
+            const newAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+            
+            // Tìm tất cả user có link chứa "scontent" (link facebook lỗi) HOẶC link chứa "googleusercontent"
+            // và thay thế bằng link mới
+            await Users.updateMany(
+                { 
+                    $or: [
+                        { avatar: { $regex: "scontent", $options: "i" } },
+                        { avatar: { $regex: "googleusercontent", $options: "i" } }
+                    ]
+                }, 
+                { $set: { avatar: newAvatar } }
+            );
+
+            res.json({ msg: "Đã sửa xong toàn bộ avatar lỗi trong Database!" });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     }
 };
 

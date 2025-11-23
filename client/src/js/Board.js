@@ -1,6 +1,8 @@
-// File: Maneasily/client/src/js/Board.js
-
 import Sortable from 'sortablejs';
+import { initProfileModal } from './components/profile-modal.js';
+import { API_BASE_URL } from './config.js';
+import { initShareFeature } from './components/share-modal.js';
+import { toast } from './utils/toast.js'; // <-- Import mới
 
 let currentProjectId = null;
 let boardContainer = null; // Biến toàn cục cho board container
@@ -19,6 +21,7 @@ function createTaskCardElement(task) {
   // Sự kiện click vào task (để sau này làm chức năng sửa/xóa task)
   card.addEventListener('click', () => {
     console.log('Clicked task:', task._id);
+    // TODO: Mở modal chi tiết task tại đây
   });
   return card;
 }
@@ -26,7 +29,7 @@ function createTaskCardElement(task) {
 // 2. Tạo HTML cho Cột (Column)
 function createColumnElement(column) {
   const columnEl = document.createElement('div');
-  columnEl.className = 'board-column'; // Class này đã set width cứng trong CSS
+  columnEl.className = 'board-column'; 
   columnEl.setAttribute('data-column-id', column._id);
 
   // Header của cột
@@ -76,48 +79,53 @@ function renderBoard(boardData) {
   // Cập nhật tiêu đề dự án
   if(boardTitleEl) boardTitleEl.textContent = boardData.title;
 
-  // --- THÊM ĐOẠN NÀY: Render Thành viên trong Modal & Header ---
-  
-  // 1. Render vào Modal (Danh sách dọc)
+  // --- Render Thành viên trong Modal ---
   const memberListContainer = document.getElementById('project-members-list');
   if (memberListContainer) {
       if (boardData.members && boardData.members.length > 0) {
-          memberListContainer.innerHTML = ''; // Xóa text "Chưa tải danh sách"
+          memberListContainer.innerHTML = ''; 
           boardData.members.forEach(user => {
-              const item = document.createElement('div');
-              item.className = 'user-result-item'; // Dùng lại class style có sẵn
-              item.style.cursor = 'default'; // Bỏ trỏ chuột dạng click
-              item.innerHTML = `
-                  <img src="${user.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="result-avatar">
-                  <div class="result-info">
-                      <div>${user.username}</div>
-                      <div style="font-size: 0.85rem; color: #666;">${user.email}</div>
-                  </div>
-              `;
-              memberListContainer.appendChild(item);
+            const fallbackAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
+            const item = document.createElement('div');
+            item.className = 'user-result-item';
+            item.style.cursor = 'default';
+            item.innerHTML = `
+                <img src="${user.avatar}" 
+                     onerror="this.onerror=null; this.src='${fallbackAvatar}'"
+                     class="result-avatar" 
+                     style="background-color: #eee;">
+                <div class="result-info">
+                    <div>${user.username}</div>
+                    <div style="font-size: 0.85rem; color: #666;">${user.email}</div>
+                </div>
+            `;
+            memberListContainer.appendChild(item);  
           });
       } else {
           memberListContainer.innerHTML = '<p style="padding: 10px; color: #666;">Chưa có thành viên nào.</p>';
       }
   }
 
-  // 2. Render vào Header (Avatar nhỏ - Tùy chọn)
+  // --- Render vào Header (Avatar nhỏ) ---
   const headerMembers = document.getElementById('board-header-members');
   if (headerMembers && boardData.members) {
+      const fallbackAvatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
       headerMembers.innerHTML = boardData.members.map(m => 
-          `<img src="${m.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" 
+          `<img src="${m.avatar}" 
+                onerror="this.onerror=null; this.src='${fallbackAvatar}'" 
                 class="member-avatar-small" 
                 title="${m.username}" 
-                style="width:30px; height:30px; border-radius:50%; border:2px solid white; margin-left:-8px;">`
+                style="width:30px; height:30px; border-radius:50%; border:2px solid white; margin-left:-8px; background-color: #fff; object-fit: cover;">`
       ).join('');
   }
-  // -----------------------------------------------------------
   
-  // ... (Giữ nguyên phần render cột cũ ở dưới)
+  // --- Render Cột ---
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
       const columnsMap = new Map(boardData.columns.map(c => [c._id, c]));
-      // ... code cũ ...
+      
       boardData.columnOrder.forEach(columnId => {
         const column = columnsMap.get(columnId.toString());
         if (column) {
@@ -138,7 +146,7 @@ function initColumnDragAndDrop() {
   new Sortable(boardContainer, {
     group: 'shared-columns',
     animation: 150,
-    handle: '.column-header', // Chỉ kéo được khi nắm vào header
+    handle: '.column-header', 
     ghostClass: 'column-ghost',
     onEnd: function (evt) {
       if (!currentProjectId) return;
@@ -146,15 +154,20 @@ function initColumnDragAndDrop() {
                                .filter(el => el.classList.contains('board-column'))
                                .map(col => col.getAttribute('data-column-id'));
 
-      // Gọi API cập nhật vị trí cột
-      fetch(`http://localhost:5000/api/project/${currentProjectId}/columnorder`, {
+      // Gọi API cập nhật vị trí cột (SỬA URL)
+      fetch(`${API_BASE_URL}/project/${currentProjectId}/columnorder`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ columnOrder: columnOrder })
       })
-      .then(res => res.json())
-      .then(data => console.log("Đã lưu vị trí cột"))
-      .catch(err => console.error("Lỗi cập nhật cột:", err));
+      .then(res => {
+          if(!res.ok) throw new Error('Lỗi server');
+          return res.json();
+      })
+      .catch(err => {
+          console.error("Lỗi cập nhật cột:", err);
+          toast.error("Không thể lưu vị trí cột");
+      });
     }
   });
 }
@@ -163,13 +176,12 @@ function initColumnDragAndDrop() {
 function initTaskDragAndDrop() {
   const taskLists = document.querySelectorAll('.task-list');
   taskLists.forEach(taskListEl => {
-    // Hủy instance cũ để tránh lỗi đè
     if (taskListEl.sortableInstance) {
         taskListEl.sortableInstance.destroy();
     }
 
     taskListEl.sortableInstance = new Sortable(taskListEl, {
-      group: 'shared-tasks', // Cho phép kéo qua lại giữa các cột
+      group: 'shared-tasks', 
       animation: 150,
       ghostClass: 'task-ghost',
       onEnd: function (evt) {
@@ -189,8 +201,8 @@ function initTaskDragAndDrop() {
                             : Array.from(oldColumnList.children)
                                    .map(card => card.getAttribute('data-task-id'));
         
-        // Gọi API cập nhật vị trí task
-        fetch('http://localhost:5000/api/column', {
+        // Gọi API cập nhật vị trí task (SỬA URL)
+        fetch(`${API_BASE_URL}/column`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -198,9 +210,14 @@ function initTaskDragAndDrop() {
                 taskOrder: taskOrder, taskOrderNew: taskOrderNew
             })
         })
-        .then(res => res.json())
-        .then(data => console.log("Đã lưu vị trí task"))
-        .catch(err => console.error("Lỗi cập nhật task:", err));
+        .then(res => {
+            if(!res.ok) throw new Error('Lỗi server');
+            return res.json();
+        })
+        .catch(err => {
+            console.error("Lỗi cập nhật task:", err);
+            toast.error("Không thể lưu vị trí công việc");
+        });
       }
     });
   });
@@ -214,7 +231,7 @@ function initTaskDragAndDrop() {
 function initAddButtons() {
     if (!boardContainer) return;
 
-    // 1. Nút "Thêm công việc" (Nằm trong mỗi cột)
+    // 1. Nút "Thêm công việc"
     boardContainer.addEventListener('click', function(event) {
         const btnAddTask = event.target.closest('.btn-add-task');
         if (btnAddTask) {
@@ -225,7 +242,8 @@ function initAddButtons() {
                 const columnId = columnEl.getAttribute('data-column-id');
                 const taskListEl = columnEl.querySelector('.task-list');
 
-                fetch('http://localhost:5000/api/task', {
+                // (SỬA URL)
+                fetch(`${API_BASE_URL}/task`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -234,27 +252,34 @@ function initAddButtons() {
                         projectId: currentProjectId
                     })
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Lỗi tạo task");
+                    return res.json();
+                })
                 .then(data => {
                     const newTaskCard = createTaskCardElement(data.task);
                     taskListEl.appendChild(newTaskCard);
+                    toast.success("Đã thêm công việc mới");
                 })
-                .catch(err => console.error("Lỗi tạo task:", err));
+                .catch(err => {
+                    console.error("Lỗi tạo task:", err);
+                    toast.error("Lỗi khi tạo công việc");
+                });
             }
         }
     });
 
-    // 2. Nút "Thêm cột" (Nằm trên Header)
+    // 2. Nút "Thêm cột"
     const headerAddBtn = document.getElementById('btn-add-column-header');
     if (headerAddBtn) {
-        // Clone nút để xóa event cũ (tránh duplicate)
         const newBtn = headerAddBtn.cloneNode(true);
         headerAddBtn.parentNode.replaceChild(newBtn, headerAddBtn);
 
         newBtn.addEventListener('click', function() {
             const title = prompt("Nhập tên cột mới:");
             if (title) {
-                fetch('http://localhost:5000/api/column', {
+                // (SỬA URL)
+                fetch(`${API_BASE_URL}/column`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -262,245 +287,63 @@ function initAddButtons() {
                         projectId: currentProjectId
                     })
                 })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("Lỗi tạo cột");
+                    return res.json();
+                })
                 .then(data => {
                     const newColumn = createColumnElement(data.column);
                     boardContainer.appendChild(newColumn);
-                    
-                    // Kích hoạt lại kéo thả cho cột mới
-                    initTaskDragAndDrop();
-                    
-                    // Cuộn sang phải để thấy cột mới
+                    initTaskDragAndDrop(); // Re-init sortable
                     boardContainer.scrollLeft = boardContainer.scrollWidth;
+                    toast.success("Đã thêm cột mới");
                 })
-                .catch(err => console.error("Lỗi tạo cột:", err));
-            }
-        });
-    }
-}
-
-
-/* =========================================
-   PHẦN 4: CHIA SẺ DỰ ÁN (SHARE FEATURE)
-   ========================================= */
-
-   function initShareFeature() {
-    const shareBtn = document.getElementById('btn-manage-members');
-    const modal = document.getElementById('share-modal');
-    const closeBtn = document.getElementById('close-share-modal');
-    const searchInput = document.getElementById('user-search-input');
-    const dropdown = document.getElementById('search-results-dropdown');
-    
-    // Tab elements
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const linkInput = document.getElementById('share-link-input'); 
-    const btnCopyLink = document.getElementById('btn-copy-link');
-
-    // --- 1. Mở/Đóng Modal ---
-    if (shareBtn) {
-        shareBtn.addEventListener('click', () => {
-            modal.style.display = 'flex';
-            if(searchInput) {
-                searchInput.value = '';
-                searchInput.focus();
-            }
-            if(dropdown) dropdown.style.display = 'none';
-        });
-    }
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    }
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
-
-    // --- 2. Xử lý Tabs  ---
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', async () => {
-        // UI Change: 
-        // 1. Xóa active ở tất cả nút
-        tabBtns.forEach(b => b.classList.remove('active'));
-        // 2. Ẩn tất cả nội dung (QUAN TRỌNG: phải set display = none)
-        document.querySelectorAll('.tab-content').forEach(c => {
-            c.classList.remove('active');
-            c.style.display = 'none'; // <-- Thêm dòng này để ẩn triệt để
-        });
-
-        // 3. Kích hoạt nút vừa bấm
-        btn.classList.add('active');
-        
-        // 4. Hiện nội dung tương ứng
-        const targetId = btn.getAttribute('data-tab');
-        const targetContent = document.getElementById(targetId);
-        if(targetContent) {
-            targetContent.classList.add('active');
-            targetContent.style.display = 'block'; // <-- Thêm dòng này để hiện triệt để
-        }
-
-        // LOGIC: Nếu bấm sang tab "Sao chép liên kết"
-        if (targetId === 'tab-link') {
-            // ... (giữ nguyên logic gọi API của bạn ở đây)
-            if (!currentProjectId) return;
-            
-            if(linkInput) linkInput.value = "Đang tạo link...";
-            // ... phần fetch API giữ nguyên
-            const token = localStorage.getItem('maneasily_token');
-            try {
-                // ... gọi fetch ...
-                const res = await fetch(`http://localhost:5000/api/project/${currentProjectId}/invite`, {
-                    method: 'GET',
-                    headers: { 'Authorization': token }
-                });
-                const data = await res.json();
-                if (linkInput && res.ok) linkInput.value = data.inviteUrl;
-            } catch (err) {
-                console.error(err);
-            }
-        }
-      });
-    });
-
-    // --- 3. Logic Nút Copy (Sửa lỗi ReferenceError cũ) ---
-    if(btnCopyLink) {
-        btnCopyLink.addEventListener('click', () => {
-            if(linkInput && linkInput.value && !linkInput.value.startsWith("Đang") && !linkInput.value.startsWith("Lỗi")) {
-                linkInput.select();
-                linkInput.setSelectionRange(0, 99999); // Cho mobile
-                
-                navigator.clipboard.writeText(linkInput.value).then(() => {
-                    const originalText = btnCopyLink.innerText;
-                    btnCopyLink.innerText = "Copied!";
-                    setTimeout(() => btnCopyLink.innerText = originalText, 2000);
-                }).catch(err => {
-                    console.error('Không thể copy: ', err);
-                    alert("Không thể copy, hãy thử copy thủ công!");
+                .catch(err => {
+                    console.error("Lỗi tạo cột:", err);
+                    toast.error("Lỗi khi tạo cột");
                 });
             }
         });
     }
-
-    // --- 4. Logic Tìm kiếm user (Giữ nguyên logic cũ của bạn) ---
-    let debounceTimer;
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const keyword = e.target.value.trim();
-            clearTimeout(debounceTimer);
-            
-            if (keyword.length < 2) {
-                if(dropdown) dropdown.style.display = 'none';
-                return;
-            }
-
-            debounceTimer = setTimeout(async () => {
-                const token = localStorage.getItem('maneasily_token');
-                try {
-                    const res = await fetch(`http://localhost:5000/api/users/search?q=${keyword}`, {
-                        headers: { 'Authorization': token }
-                    });
-                    const data = await res.json();
-                    renderSearchResults(data.users);
-                } catch (err) {
-                    console.error("Lỗi tìm kiếm:", err);
-                }
-            }, 300); 
-        });
-    }
-
-    // Helper render search (Giữ nguyên)
-    function renderSearchResults(users) {
-        if (!dropdown) return;
-        dropdown.innerHTML = '';
-
-        if (!users || users.length === 0) {
-            dropdown.style.display = 'block';
-            dropdown.innerHTML = '<div style="padding:10px; text-align:center; color:#666;">Không tìm thấy người dùng.</div>';
-            return;
-        }
-
-        users.forEach(user => {
-            const item = document.createElement('div');
-            item.className = 'user-result-item';
-            item.innerHTML = `
-                <img src="${user.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="result-avatar">
-                <div class="result-info">
-                    <div>${user.username}</div>
-                    <div>${user.email}</div>
-                </div>
-            `;
-            item.addEventListener('click', () => addUserToProject(user));
-            dropdown.appendChild(item);
-        });
-
-        dropdown.style.display = 'block';
-    }
-
-    // Helper add user (Giữ nguyên)
-    async function addUserToProject(userToAdd) {
-        if (!confirm(`Thêm ${userToAdd.username} vào dự án này?`)) return;
-
-        const token = localStorage.getItem('maneasily_token');
-        try {
-            const res = await fetch('http://localhost:5000/api/users/add-member', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': token
-                },
-                body: JSON.stringify({ 
-                    projectId: currentProjectId,
-                    userId: userToAdd._id 
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                alert("Đã thêm thành công!");
-                dropdown.style.display = 'none';
-                searchInput.value = '';
-            } else {
-                alert("Lỗi: " + data.err);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Lỗi kết nối server.");
-        }
-    }
 }
-
 
 /* =========================================
    PHẦN 5: KHỞI CHẠY (INIT)
    ========================================= */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Lấy ID từ URL
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
 
     if (!projectId) {
-        alert("Không tìm thấy ID dự án!");
+        // Thay alert bằng toast, và có thể chuyển trang nếu cần
+        toast.error("Không tìm thấy ID dự án!");
+        setTimeout(() => window.location.href = '/src/pages/projects.html', 2000);
         return;
     }
 
-    // Gọi API lấy dữ liệu dự án
-    fetch(`http://localhost:5000/api/project/${projectId}`)
-        .then(response => response.json())
+    initProfileModal();
+
+    // (SỬA URL)
+    fetch(`${API_BASE_URL}/project/${projectId}`)
+        .then(res => {
+            if(!res.ok) throw new Error("Không tìm thấy dự án");
+            return res.json();
+        })
         .then(data => {
             if (data.project) {
+                currentProjectId = data.project._id;
                 renderBoard(data.project);
                 
-                // Khởi tạo các module chức năng
                 initColumnDragAndDrop();
                 initTaskDragAndDrop();
                 initAddButtons();
-                initShareFeature(); // Kích hoạt tính năng Share
-            } else {
-                console.error("Lỗi: Không tìm thấy project", data);
-                document.getElementById('board-title').textContent = 'Dự án không tồn tại';
+                
+                initShareFeature(currentProjectId); 
             }
         })
-        .catch(error => {
-            console.error('Lỗi kết nối:', error);
-            document.getElementById('board-title').textContent = 'Lỗi tải dữ liệu';
+        .catch(err => {
+            console.error(err);
+            toast.error("Lỗi tải dự án: " + err.message);
         });
 });

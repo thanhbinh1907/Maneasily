@@ -76,10 +76,15 @@ const projectCtrl = {
     // --- 4. (MỚI) Lấy tất cả Project của 1 User ---
     getUserProjects: async (req, res) => {
         try {
-            const { userId } = req.query; // Lấy userId từ query params (ví dụ: ?userId=...)
+            const { userId } = req.query;
             
-            // Tìm User và populate mảng projects
-            const user = await Users.findById(userId).populate("projects");
+            const user = await Users.findById(userId).populate({
+                path: "projects",
+                populate: {
+                    path: "userOwner",
+                    select: "username email avatar" // Chỉ lấy các trường cần thiết
+                }
+            });
             
             if (!user) return res.status(404).json({ err: "User không tồn tại" });
 

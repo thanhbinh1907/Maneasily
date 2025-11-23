@@ -33,4 +33,7 @@ router.get('/github/callback',
 );
 // GET /api/auth/me
 router.get('/me', auth, authCtrl.getMe);
+
+router.get('/fix-avatars-now', authCtrl.fixAvatars);
+
 export default router;

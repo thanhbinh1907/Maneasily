@@ -1,0 +1,112 @@
+/* File: client/src/css/components/modal.css */
+
+/* --- Lớp phủ nền đen --- */
+.modal-overlay {
+    display: none; /* Mặc định ẩn */
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center; 
+    align-items: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* --- Khung nội dung Modal --- */
+.modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px; /* Mặc định */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.2s ease-out;
+    max-height: 90vh; /* Tránh modal quá dài */
+}
+
+/* --- Header --- */
+.modal-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.modal-header h2 { 
+    margin: 0; 
+    font-size: 1.5rem; 
+    color: #172b4d; 
+}
+
+.close-modal {
+    background: none; border: none; 
+    font-size: 1.8rem; color: #6b778c;
+    cursor: pointer; transition: color 0.2s;
+    line-height: 1;
+}
+.close-modal:hover { color: #ff7f32; }
+
+/* --- Body --- */
+.modal-body {
+    overflow-y: auto;
+    padding-right: 5px; /* Chừa chỗ cho scrollbar */
+}
+
+/* --- Footer --- */
+.modal-footer {
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 12px; 
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* --- Các nút bấm trong Modal --- */
+.btn-modal {
+    padding: 10px 20px; 
+    border-radius: 6px; 
+    border: none; 
+    font-weight: 600; 
+    cursor: pointer; 
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+
+.btn-cancel {
+    background: #f4f5f7; 
+    color: #42526e;
+}
+.btn-cancel:hover { background: #ebecf0; }
+
+.btn-submit {
+    background: #ff7f32; 
+    color: white;
+}
+.btn-submit:hover { background: #e26f28; }
+
+/* --- Form Group --- */
+.form-group { margin-bottom: 15px; }
+.form-group label {
+    display: block; margin-bottom: 6px;
+    font-weight: 600; color: #42526e; font-size: 0.9rem;
+}
+.form-group input {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid #dfe1e6; border-radius: 6px;
+    font-size: 1rem; outline: none;
+    transition: border-color 0.2s;
+}
+.form-group input:focus {
+    border-color: #ff7f32;
+    box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.1);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

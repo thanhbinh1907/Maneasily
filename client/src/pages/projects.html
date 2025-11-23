@@ -31,54 +31,8 @@
         </div>
     </div>
   </div>
-<!-- Create Project Modal -->
-  <div id="create-project-modal" class="modal-overlay">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h2>Tạo dự án mới</h2>
-              <button class="close-modal" id="btn-close-modal">&times;</button>
-          </div>
-          <form id="create-project-form">
-              <div class="form-group">
-                  <label for="p-title">Tên dự án <span style="color:red">*</span></label>
-                  <input type="text" id="p-title" placeholder="Ví dụ: Website bán hàng" required>
-              </div>
-              <div class="form-group">
-                  <label for="p-dec">Mô tả</label>
-                  <textarea id="p-dec" placeholder="Mô tả ngắn gọn về dự án..."></textarea>
-              </div>
-              <div class="form-group">
-                  <label for="p-img">Link ảnh bìa (URL)</label>
-                  <input type="url" id="p-img" placeholder="https://example.com/image.jpg">
-                  <small style="color: #6b778c; font-size: 0.8rem;">Để trống sẽ dùng ảnh mặc định.</small>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn-modal btn-cancel" id="btn-cancel-modal">Hủy bỏ</button>
-                  <button type="submit" class="btn-modal btn-submit">Tạo dự án</button>
-              </div>
-          </form>
-      </div>
-  </div>
-<!-- Delete Project Modal -->
-  <div id="delete-project-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h2 style="color: #d93025;">Xóa dự án?</h2>
-            <button class="close-modal" id="btn-close-delete-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p class="delete-warning-text">
-                Bạn có chắc chắn muốn xóa dự án này không? <br>
-                <strong>Hành động này không thể hoàn tác.</strong> <br>
-                Tất cả công việc (tasks) và cột (columns) trong dự án sẽ bị xóa vĩnh viễn.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-modal btn-cancel" id="btn-cancel-delete">Hủy</button>
-            <button type="button" class="btn-modal btn-danger" id="btn-confirm-delete">Xóa vĩnh viễn</button>
-        </div>
-    </div>
-</div>  
+ 
+  {{> project-modal }}
 
   <script type="module" src="/src/js/dashboard.js"></script>
   <script type="module" src="/src/js/projects.js"></script> 

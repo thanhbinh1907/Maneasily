@@ -1,0 +1,35 @@
+<div id="add-task-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px; padding: 25px; border-radius: 16px;">
+        <div style="position: absolute; top: 15px; right: 15px;">
+            <span class="close-modal" id="close-add-task" style="font-size: 24px; cursor: pointer; color: #999;">&times;</span>
+        </div>
+        
+        <form id="form-add-task" style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="border: 1px solid #0079bf; border-radius: 8px; overflow: hidden; display: flex; align-items: center; padding: 0 10px;">
+                <i class="fa-regular fa-building" style="color: #0079bf;"></i>
+                <input type="text" id="task-title" placeholder="Tên nhiệm vụ..." required 
+                       style="border: none; padding: 12px; width: 100%; outline: none; font-weight: 600;">
+            </div>
+
+            <div style="background: #f4f5f7; border-radius: 8px; padding: 0 10px; display: flex; align-items: center;">
+                <i class="fa-solid fa-align-left" style="color: #6b778c;"></i>
+                <input type="text" id="task-desc" placeholder="Mô tả nhiệm vụ" 
+                       style="background: transparent; border: none; padding: 12px; width: 100%; outline: none;">
+            </div>
+
+            <div style="background: #f4f5f7; border-radius: 8px; padding: 0 10px; display: flex; align-items: center;">
+                <i class="fa-solid fa-tag" style="color: #6b778c;"></i>
+                <input type="text" id="task-tag" placeholder="Tag" 
+                       style="background: transparent; border: none; padding: 12px; width: 100%; outline: none;">
+            </div>
+
+            <div>
+                <label style="font-weight: 600; color: #0079bf; margin-bottom: 8px; display:block;">Chọn màu:</label>
+                <div class="color-selector">
+                    <input type="radio" name="taskColor" value="#eb5a46" id="c1"><label for="c1" style="background: #eb5a46;"></label> <input type="radio" name="taskColor" value="#00c2e0" id="c2" checked><label for="c2" style="background: #00c2e0;"></label> <input type="radio" name="taskColor" value="#0079bf" id="c3"><label for="c3" style="background: #0079bf;"></label> <input type="radio" name="taskColor" value="#f2d600" id="c4"><label for="c4" style="background: #f2d600;"></label> <input type="radio" name="taskColor" value="#61bd4f" id="c5"><label for="c5" style="background: #61bd4f;"></label> </div>
+            </div>
+
+            <button type="submit" class="btn-modal btn-submit" style="width: 100%; background: #0079bf; color: white; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; margin-top: 10px;">Thêm nhiệm vụ</button>
+        </form>
+    </div>
+</div>

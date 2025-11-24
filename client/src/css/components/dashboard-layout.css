@@ -1,18 +1,24 @@
+* {
+    box-sizing: border-box; /* Giúp padding không cộng thêm vào kích thước phần tử */
+}
+
 :root {
     --sidebar-width: 260px;
-    --header-height: 64px;
+    --header-height: 56px;
     --bg-color: #f4f5f7;
     --hover-color: #ebecf0;
     --active-color: #e9f2ff;
     --active-text: #0c66e4;
+    --border-color: #dfe1e6;
 }
 
 body {
     background-color: var(--bg-color);
     overflow-x: hidden;
+    margin: 0; /* Reset margin body */
 }
 
-/* --- KẾT CẤU CHUNG (LAYOUT) --- */
+/* --- KẾT CẤU CHUNG --- */
 .app-container {
     display: flex;
     width: 100vw;
@@ -20,15 +26,16 @@ body {
     overflow: hidden;
 }
 
-/* --- 1. SIDEBAR (Thanh dọc) --- */
+/* --- 1. SIDEBAR --- */
 .app-sidebar {
     width: var(--sidebar-width);
     background-color: #ffffff;
-    border-right: 1px solid #dfe1e6;
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     transition: width 0.3s ease;
+    z-index: 20; 
 }
 
 .sidebar-header {
@@ -36,7 +43,7 @@ body {
     display: flex;
     align-items: center;
     padding: 0 20px;
-    border-bottom: 1px solid #dfe1e6;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-logo {
@@ -46,11 +53,12 @@ body {
     color: #333;
     font-weight: 700;
     font-size: 1.2rem;
+    line-height: 1;
 }
-.sidebar-logo img { width: 32px; margin-right: 10px; }
+.sidebar-logo img { width: 32px; margin-right: 10px; display: block; }
 
 .sidebar-menu {
-    padding: 20px 10px;
+    padding: 12px 10px;
     flex-grow: 1;
     overflow-y: auto;
 }
@@ -58,25 +66,19 @@ body {
 .menu-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: 10px 16px;
     color: #42526e;
     text-decoration: none;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: 6px;
     margin-bottom: 4px;
     transition: all 0.2s;
 }
-
 .menu-item i { width: 24px; font-size: 1.1rem; margin-right: 10px; text-align: center; }
-
 .menu-item:hover { background-color: var(--hover-color); color: #172b4d; }
+.menu-item.active { background-color: var(--active-color); color: var(--active-text); }
 
-.menu-item.active {
-    background-color: var(--active-color);
-    color: var(--active-text);
-}
-
-/* --- 2. MAIN AREA (Phần bên phải) --- */
+/* --- 2. MAIN AREA --- */
 .app-main {
     flex-grow: 1;
     display: flex;
@@ -88,89 +90,101 @@ body {
 .app-nav-top {
     height: var(--header-height);
     background-color: #ffffff;
-    border-bottom: 1px solid #dfe1e6;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 24px;
+    
+    /* SỬA: Tăng khoảng cách 2 bên để thoáng hơn (Cũ là 20px) */
+    padding: 0 32px; 
+    
+    flex-shrink: 0;
 }
 
 /* Search Bar */
 .nav-search {
     position: relative;
     width: 300px;
+    display: flex; 
+    align-items: center;
 }
 .nav-search input {
     width: 100%;
-    padding: 8px 12px 8px 36px;
-    border: 1px solid #dfe1e6;
+    height: 36px;
+    padding: 0 12px 0 36px; 
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     outline: none;
     font-size: 0.9rem;
+    line-height: normal;
 }
 .nav-search i {
     position: absolute;
-    left: 10px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: #6b778c;
+    font-size: 0.9rem;
 }
 
-/* Nav Right (User Info) */
-.nav-right { display: flex; align-items: center; gap: 20px; }
+/* Nav Right */
+.nav-right { display: flex; align-items: center; gap: 16px; height: 100%; }
 
 .nav-icon-btn {
     position: relative;
     font-size: 1.2rem;
     color: #42526e;
     cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    height: 32px; width: 32px; 
+    border-radius: 50%;
+    transition: background 0.2s;
 }
+.nav-icon-btn:hover { background-color: var(--hover-color); }
+
 .nav-icon-btn .badge {
-    position: absolute; top: -5px; right: -5px;
-    background: #ff5630; color: #fff; font-size: 0.7rem;
-    padding: 2px 5px; border-radius: 10px;
+    position: absolute; top: 0; right: 0;
+    background: #ff5630; color: #fff; font-size: 0.6rem;
+    padding: 1px 4px; border-radius: 10px; border: 2px solid #fff;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
     position: relative;
     padding: 4px 8px;
     border-radius: 6px;
+    height: 36px;
 }
 .user-info:hover { background-color: var(--hover-color); }
 .user-avatar {
-    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    display: block;
 }
 .user-name { font-weight: 600; font-size: 0.9rem; color: #172b4d; }
 
-/* Dropdown User */
+/* Dropdown */
 .dropdown-menu {
-    position: absolute;
-    top: 100%; right: 0;
-    margin-top: 8px;
-    background: #fff;
-    border: 1px solid #dfe1e6;
+    position: absolute; top: 100%; right: 0; margin-top: 4px;
+    background: #fff; border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-radius: 6px;
-    width: 200px;
-    display: none; /* JS sẽ toggle cái này */
-    z-index: 100;
+    border-radius: 6px; width: 200px;
+    display: none; z-index: 100;
 }
 .dropdown-menu.show { display: block; }
 .dropdown-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 16px;
-    text-decoration: none; color: #172b4d; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; text-decoration: none; color: #172b4d; font-size: 0.9rem;
 }
 .dropdown-item:hover { background-color: var(--hover-color); }
 .dropdown-item.logout { color: #de350b; border-top: 1px solid #eee; }
 
 /* --- 4. PAGE CONTENT --- */
 .page-content {
-    padding: 24px;
+    /* SỬA: Tăng padding trái/phải lên 32px cho cân với Header */
+    padding: 24px 32px; 
     flex-grow: 1;
     overflow-y: auto;
 }

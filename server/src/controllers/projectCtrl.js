@@ -11,17 +11,20 @@ const projectCtrl = {
     getProject: async (req, res) => {
         try {
             const { id } = req.params;
-            // --- SỬA ĐOẠN NÀY ---
             const project = await Projects.findById(id)
-                .populate("members", "username email avatar") // Lấy thêm thông tin user
+                .populate("members", "username email avatar")
                 .populate({
                     path: "columns",
                     populate: {
                         path: "tasks",
                         model: "tasks",
+                        populate: {
+                            path: "members",
+                            model: "users",
+                            select: "username avatar"
+                        }
                     },
                 });
-            // --------------------
             
             if (!project) return res.status(404).json({ err: "Không tìm thấy project" });
             res.json({ project });
@@ -194,6 +197,88 @@ const projectCtrl = {
         } catch (err) {
             return res.status(500).json({ err: err.message });
         }
+    },
+
+    /// ------------------ Quản lý thành viên dự án ------------------ ///
+
+    // --- 1. Thăng chức thành Manager ---
+    promoteToManager: async (req, res) => {
+        try {
+            const { projectId, memberId } = req.body;
+            const userId = req.user.id; // ID người đang gọi API (Chủ dự án)
+
+            const project = await Projects.findById(projectId);
+            if (project.userOwner.toString() !== userId) {
+                return res.status(403).json({ err: "Chỉ chủ dự án mới được cấp quyền quản lý." });
+            }
+
+            await Projects.findByIdAndUpdate(projectId, {
+                $addToSet: { admins: memberId } // Thêm vào danh sách quản lý
+            });
+
+            res.json({ msg: "Đã cấp quyền quản lý!" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    // --- 2. Tước quyền Manager (Về thành viên thường) ---
+    demoteToMember: async (req, res) => {
+        try {
+            const { projectId, memberId } = req.body;
+            const userId = req.user.id;
+
+            const project = await Projects.findById(projectId);
+            if (project.userOwner.toString() !== userId) {
+                return res.status(403).json({ err: "Chỉ chủ dự án mới được thu hồi quyền." });
+            }
+
+            await Projects.findByIdAndUpdate(projectId, {
+                $pull: { admins: memberId } // Xóa khỏi danh sách quản lý
+            });
+
+            res.json({ msg: "Đã thu hồi quyền quản lý!" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    // --- 3. Kick thành viên khỏi dự án ---
+    removeMember: async (req, res) => {
+        try {
+            const { projectId, memberId } = req.body;
+            const userId = req.user.id; // Người thực hiện kick
+
+            const project = await Projects.findById(projectId);
+            
+            const isOwner = project.userOwner.toString() === userId;
+            const isManager = project.admins.includes(userId);
+            
+            // Kiểm tra vai trò của người BỊ kick
+            const targetIsOwner = project.userOwner.toString() === memberId;
+            const targetIsManager = project.admins.includes(memberId);
+
+            // Logic phân quyền kick
+            if (targetIsOwner) return res.status(403).json({ err: "Không thể kick chủ dự án." });
+            
+            // Nếu người kick là Manager -> Không được kick Owner hoặc Manager khác
+            if (isManager && targetIsManager) {
+                return res.status(403).json({ err: "Quản lý không thể kick quản lý khác." });
+            }
+
+            // Chỉ Owner hoặc Manager mới được kick
+            if (!isOwner && !isManager) {
+                return res.status(403).json({ err: "Bạn không có quyền kick thành viên." });
+            }
+
+            // Thực hiện xóa
+            await Projects.findByIdAndUpdate(projectId, {
+                $pull: { members: memberId, admins: memberId }
+            });
+            
+            await Users.findByIdAndUpdate(memberId, {
+                $pull: { projects: projectId }
+            });
+
+            res.json({ msg: "Đã mời thành viên ra khỏi dự án." });
+
+        } catch (err) { return res.status(500).json({ err: err.message }); }
     }
 };
 

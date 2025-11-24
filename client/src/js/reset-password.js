@@ -1,3 +1,5 @@
+import { toast } from './utils/toast.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const resetForm = document.getElementById('reset-form');
     const newPassInput = document.getElementById('new-password');
@@ -9,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = params.get('token');
 
     if (!token) {
-        alert("Link không hợp lệ hoặc bị thiếu Token.");
+        toast.error("Link không hợp lệ hoặc bị thiếu Token.");
         window.location.href = '/src/pages/signin.html';
     }
 
@@ -39,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (res.ok) {
-                alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+                toast.success("Đổi mật khẩu thành công! Đang chuyển hướng...");
                 window.location.href = '/src/pages/signin.html';
             } else {
                 errorMsg.textContent = data.err || "Lỗi đổi mật khẩu.";

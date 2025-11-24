@@ -2,30 +2,42 @@
 
 /* --- Lớp phủ nền đen --- */
 .modal-overlay {
-    display: none; /* Mặc định ẩn */
+    display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6); /* Tối hơn chút cho nổi bật modal */
     z-index: 2000;
     justify-content: center; 
     align-items: center;
     animation: fadeIn 0.2s ease-out;
+    backdrop-filter: blur(2px); /* Làm mờ nền phía sau */
 }
 
 /* --- Khung nội dung Modal --- */
 .modal-content {
     background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
+    padding: 24px; /* Padding chuẩn */
+    border-radius: 16px; /* Bo góc tròn hơn */
     width: 90%;
-    max-width: 500px; /* Mặc định */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    max-width: 450px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
     position: relative;
     display: flex;
     flex-direction: column;
     animation: slideUp 0.2s ease-out;
-    max-height: 90vh; /* Tránh modal quá dài */
+    max-height: 90vh;
+    
+    /* QUAN TRỌNG: Reset font cho toàn bộ nội dung trong modal */
+    font-family: 'Inter', sans-serif; 
+    color: #172b4d;
+}
+
+/* Đảm bảo form con chiếm hết chiều rộng */
+.modal-content form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* --- Header --- */
@@ -34,40 +46,64 @@
     justify-content: space-between; 
     align-items: center;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
 }
 .modal-header h2 { 
     margin: 0; 
-    font-size: 1.5rem; 
-    color: #172b4d; 
+    font-size: 1.25rem; 
+    font-weight: 700;
+    color: #172b4d;
 }
 
 .close-modal {
     background: none; border: none; 
-    font-size: 1.8rem; color: #6b778c;
+    font-size: 1.5rem; color: #5e6c84;
     cursor: pointer; transition: color 0.2s;
-    line-height: 1;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
 }
-.close-modal:hover { color: #ff7f32; }
+.close-modal:hover { 
+    color: #172b4d; 
+    background-color: #091e4214; 
+}
 
 /* --- Body --- */
 .modal-body {
     overflow-y: auto;
-    padding-right: 5px; /* Chừa chỗ cho scrollbar */
+    padding-right: 4px; 
 }
 
-/* --- Footer --- */
+/* --- Form Group --- */
+.form-group { margin-bottom: 20px; }
+.form-group label {
+    display: block; margin-bottom: 8px;
+    font-weight: 600; color: #44546f; font-size: 0.9rem;
+}
+.form-group input, .form-group textarea {
+    width: 100%; 
+    padding: 10px 12px;
+    border: 2px solid #dfe1e6; /* Border dày hơn chút */
+    border-radius: 6px;
+    font-size: 0.95rem; 
+    outline: none;
+    transition: all 0.2s;
+    color: #172b4d;
+    box-sizing: border-box; /* Fix lỗi tràn width */
+}
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #0c66e4; /* Màu xanh chuẩn mới */
+}
+
+/* --- Footer (Nút bấm) --- */
 .modal-footer {
     display: flex; 
-    justify-content: flex-end; 
+    justify-content: flex-end; /* Căn phải */
     gap: 12px; 
-    margin-top: 25px;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
+    margin-top: 10px;
+    padding-top: 0;
 }
 
-/* --- Các nút bấm trong Modal --- */
+/* --- Các nút bấm --- */
 .btn-modal {
     padding: 10px 20px; 
     border-radius: 6px; 
@@ -79,34 +115,25 @@
 }
 
 .btn-cancel {
-    background: #f4f5f7; 
-    color: #42526e;
+    background: transparent; 
+    color: #44546f;
 }
-.btn-cancel:hover { background: #ebecf0; }
+.btn-cancel:hover { 
+    background: #091e420f; 
+    color: #172b4d; 
+}
 
 .btn-submit {
-    background: #ff7f32; 
+    background: #0c66e4; 
     color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-.btn-submit:hover { background: #e26f28; }
-
-/* --- Form Group --- */
-.form-group { margin-bottom: 15px; }
-.form-group label {
-    display: block; margin-bottom: 6px;
-    font-weight: 600; color: #42526e; font-size: 0.9rem;
+.btn-submit:hover { 
+    background: #0055cc; 
 }
-.form-group input {
-    width: 100%; padding: 10px 12px;
-    border: 1px solid #dfe1e6; border-radius: 6px;
-    font-size: 1rem; outline: none;
-    transition: border-color 0.2s;
-}
-.form-group input:focus {
-    border-color: #ff7f32;
-    box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.1);
-}
+.btn-danger { background: #ca3521; color: white; }
+.btn-danger:hover { background: #ae2a19; }
 
 /* --- Animations --- */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

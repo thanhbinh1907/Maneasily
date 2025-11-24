@@ -1,71 +1,122 @@
-// File: Maneasily/server/src/controllers/columnCtrl.js
-
 import Columns from "../models/columnModel.js";
-import Projects from "../models/projectModel.js"; // <-- BẠN BỊ THIẾU DÒNG NÀY
+import Projects from "../models/projectModel.js";
+import Tasks from "../models/taskModel.js";
+
+// Hàm phụ check quyền (Copy logic giống bên taskCtrl)
+const checkProjectAdmin = async (projectId, userId) => {
+    const project = await Projects.findById(projectId);
+    if (!project) return false;
+    return (project.userOwner.toString() === userId) || (project.admins.includes(userId));
+};
 
 const columnCtrl = {
-    // --- BẠN BỊ THIẾU TOÀN BỘ HÀM NÀY ---
-    // (Tham khảo logic từ WQLCV)
+    // --- 1. TẠO CỘT ---
     createColumn: async (req, res) => {
         try {
             const { title, projectId } = req.body;
+            const userId = req.user.id;
 
-            // 1. Tạo Cột mới
-            const newColumn = new Columns({
-                title: title,
-                project: projectId,
-                tasks: [],
-                taskOrder: []
-            });
-            await newColumn.save(); // <-- Code của bạn chỉ chạy đến đây
-
-            // 2. Cập nhật Project (Board) cha (BƯỚC BỊ LỖI)
-            await Projects.findByIdAndUpdate(projectId, {
-                $push: {
-                    columns: newColumn._id, // Thêm ID cột mới vào mảng 'columns'
-                    columnOrder: newColumn._id // Thêm ID cột mới vào 'columnOrder'
-                }
-            });
-            
-            // 3. Trả cột mới về cho frontend
-            res.json({ column: newColumn });
-
-        } catch (err) {
-            return res.status(500).json({ err: err.message });
-        }
-    },
-    // ------------------------------------
-
-    updateColumn: async (req, res) => {
-        // ... (hàm updateColumn của bạn giữ nguyên)
-        try {
-            const {
-                idColumn, idColumnNew, idTask, taskOrder, taskOrderNew,
-            } = req.body;
-
-            if (idColumn === idColumnNew) {
-                await Columns.findByIdAndUpdate(idColumn, {
-                    taskOrder: taskOrderNew,
-                });
-                return res.json({ msg: "Đã cập nhật thứ tự task trong cột!" });
+            // Check quyền
+            if (!(await checkProjectAdmin(projectId, userId))) {
+                return res.status(403).json({ err: "Chỉ quản lý mới được thêm cột." });
             }
 
-            await Columns.findByIdAndUpdate(idColumn, {
-                $pull: { tasks: idTask },
-                taskOrder: taskOrder,
+            const newColumn = new Columns({
+                title, project: projectId, tasks: [], taskOrder: []
             });
+            await newColumn.save();
 
-            await Columns.findByIdAndUpdate(idColumnNew, {
-                $push: { tasks: idTask },
-                taskOrder: taskOrderNew,
+            await Projects.findByIdAndUpdate(projectId, {
+                $push: { columns: newColumn._id, columnOrder: newColumn._id }
             });
-
-            return res.json({ msg: "Đã di chuyển task sang cột mới!" });
-
-        } catch (err) {
-            return res.status(500).json({ err: err.message });
-        }
+            
+            res.json({ column: newColumn });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
+    // --- 2. CẬP NHẬT CỘT (Kéo thả Task) ---
+    // Hàm này dùng cho cả việc:
+    // - Kéo task từ cột A sang B
+    // - Sắp xếp lại thứ tự task trong cột
+    updateColumn: async (req, res) => {
+        try {
+            const { idColumn, idColumnNew, idTask, taskOrder, taskOrderNew } = req.body;
+            const userId = req.user.id;
+
+            // Lấy cột để tìm Project ID
+            const column = await Columns.findById(idColumn);
+            if (!column) return res.status(404).json({ err: "Cột không tồn tại" });
+
+            // Check quyền
+            if (!(await checkProjectAdmin(column.project, userId))) {
+                return res.status(403).json({ err: "Thành viên không được thay đổi trạng thái task." });
+            }
+
+            // Logic kéo thả (giữ nguyên)
+            if (idColumn === idColumnNew) {
+                await Columns.findByIdAndUpdate(idColumn, { taskOrder: taskOrderNew });
+                return res.json({ msg: "Đã cập nhật vị trí!" });
+            } else {
+                await Columns.findByIdAndUpdate(idColumn, {
+                    $pull: { tasks: idTask },
+                    taskOrder: taskOrder,
+                });
+                await Columns.findByIdAndUpdate(idColumnNew, {
+                    $push: { tasks: idTask },
+                    taskOrder: taskOrderNew,
+                });
+                
+                // Cập nhật lại parent column của Task
+                await Tasks.findByIdAndUpdate(idTask, { column: idColumnNew });
+
+                return res.json({ msg: "Đã di chuyển task!" });
+            }
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    // --- 3. SỬA TÊN CỘT ---
+    updateColumnTitle: async (req, res) => {
+        try {
+            const { title } = req.body;
+            const columnId = req.params.id;
+            const userId = req.user.id;
+
+            const column = await Columns.findById(columnId);
+            if (!(await checkProjectAdmin(column.project, userId))) {
+                return res.status(403).json({ err: "Bạn không có quyền sửa tên cột." });
+            }
+
+            await Columns.findByIdAndUpdate(columnId, { title });
+            res.json({ msg: "Cập nhật thành công!" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    // --- 4. XÓA CỘT ---
+    deleteColumn: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            const column = await Columns.findById(id);
+            if (!column) return res.status(404).json({err: "Cột không tồn tại"});
+
+            // Check quyền
+            if (!(await checkProjectAdmin(column.project, userId))) {
+                return res.status(403).json({ err: "Bạn không có quyền xóa cột." });
+            }
+
+            // Xóa sạch dữ liệu liên quan
+            await Tasks.deleteMany({ column: id }); // Xóa tasks con
+            
+            await Projects.findByIdAndUpdate(column.project, {
+                $pull: { columns: id, columnOrder: id } // Xóa ref từ Project
+            });
+
+            await Columns.findByIdAndDelete(id); // Xóa chính nó
+
+            res.json({ msg: "Đã xóa cột thành công!" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    }
 };
 
 export default columnCtrl;

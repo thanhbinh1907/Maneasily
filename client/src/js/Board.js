@@ -1,21 +1,22 @@
 import Sortable from 'sortablejs';
 import { initProfileModal } from './components/profile-modal.js';
 import { API_BASE_URL } from './config.js';
-import { initShareFeature, renderProjectMembers } from './components/share-modal.js'; // Import render members
+import { initShareFeature, renderProjectMembers } from './components/share-modal.js';
 import { toast } from './utils/toast.js';
 import { initTaskModal, openTaskModal } from './components/task-modal.js';
 import { initColumnModal, openColumnModal } from './components/column-modal.js';
-import { showConfirm } from './utils/confirm.js'; // Import Confirm Modal
+import { showConfirm } from './utils/confirm.js';
+// IMPORT MỚI
+import { initTaskDetailModal, openTaskDetail } from './components/task-detail.js';
 
 let currentProjectId = null;
 let boardContainer = null;
-let isUserAdminOrManager = false; // Biến kiểm tra quyền (True nếu là Owner hoặc Manager)
+let isUserAdminOrManager = false; 
 
 /* =========================================
    PHẦN 1: RENDER GIAO DIỆN
    ========================================= */
 
-// 1. Render Thẻ Task (Có nút Xóa nếu có quyền)
 function createTaskCardElement(task) {
   const card = document.createElement('div');
   card.className = 'task-card';
@@ -25,7 +26,6 @@ function createTaskCardElement(task) {
   const tagHTML = task.tag ? `<div class="task-tag" style="background-color: ${tagColor};">${task.tag}</div>` : '';
   const descHTML = task.dec ? `<div class="task-desc">${task.dec}</div>` : '';
 
-  // Render thành viên trong task
   let membersHTML = '';
   if (task.members && task.members.length > 0) {
       membersHTML = task.members.map(u => 
@@ -33,7 +33,6 @@ function createTaskCardElement(task) {
       ).join('');
   }
 
-  // Nút xóa Task (Chỉ hiện nếu có quyền)
   let deleteBtnHTML = '';
   if (isUserAdminOrManager) {
       deleteBtnHTML = `<i class="fa-regular fa-trash-can btn-delete-task" title="Xóa công việc" style="cursor: pointer; color: #d93025; font-size: 0.9rem; opacity: 0.6; transition: opacity 0.2s;"></i>`;
@@ -52,15 +51,14 @@ function createTaskCardElement(task) {
     </div>
   `;
 
-  // Gắn sự kiện xóa Task
+  // Xử lý xóa task
   if (isUserAdminOrManager) {
       const delBtn = card.querySelector('.btn-delete-task');
-      // Hiệu ứng hover cho nút xóa
       delBtn.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
       delBtn.addEventListener('mouseleave', () => delBtn.style.opacity = '0.6');
       
       delBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
+          e.stopPropagation(); // Quan trọng: chặn click lan ra card
           showConfirm("Bạn chắc chắn muốn xóa công việc này?", async () => {
               try {
                   const res = await fetch(`${API_BASE_URL}/task/${task._id}`, {
@@ -78,10 +76,17 @@ function createTaskCardElement(task) {
       });
   }
 
+  // --- SỰ KIỆN CLICK VÀO CARD ĐỂ MỞ CHI TIẾT ---
+  card.addEventListener('click', (e) => {
+      // Nếu click vào nút xóa thì không mở modal (đã chặn ở trên bằng stopPropagation, nhưng thêm check cho chắc)
+      if (e.target.classList.contains('btn-delete-task')) return;
+      
+      openTaskDetail(task._id, isUserAdminOrManager);
+  });
+
   return card;
 }
 
-// 2. Render Cột (Có nút Xóa Cột & Thêm Task nếu có quyền)
 function createColumnElement(column) {
   const columnEl = document.createElement('div');
   columnEl.className = 'board-column'; 
@@ -89,7 +94,6 @@ function createColumnElement(column) {
 
   const taskCount = column.tasks ? column.tasks.length : 0;
 
-  // Header Cột: Chỉ hiện nút "Thêm Task" (+) và "Xóa Cột" (x) nếu có quyền
   let actionButtons = '';
   if (isUserAdminOrManager) {
       actionButtons = `
@@ -111,9 +115,7 @@ function createColumnElement(column) {
     </div>
   `;
 
-  // --- LOGIC CÁC NÚT TRONG HEADER ---
   if (isUserAdminOrManager) {
-      // 1. Xóa Cột
       const delColBtn = header.querySelector('.btn-delete-column');
       delColBtn.addEventListener('click', () => {
           showConfirm(`Xóa cột "${column.title}" và toàn bộ công việc bên trong?`, async () => {
@@ -133,11 +135,9 @@ function createColumnElement(column) {
           });
       });
 
-      // 2. Thêm Task
       const btnAdd = header.querySelector('.btn-add-task-header');
       btnAdd.addEventListener('click', () => openTaskModal(column._id, currentProjectId));
 
-      // 3. Sửa tên cột
       const titleEl = header.querySelector('.column-title');
       const inputEl = header.querySelector('.column-title-input');
       titleEl.title = "Double click để sửa tên";
@@ -165,7 +165,6 @@ function createColumnElement(column) {
       inputEl.addEventListener('keypress', (e) => { if(e.key === 'Enter') saveTitle(); });
   }
 
-  // Render List Task
   const taskListEl = document.createElement('div');
   taskListEl.className = 'task-list';
   taskListEl.setAttribute('data-column-id', column._id);
@@ -183,27 +182,21 @@ function createColumnElement(column) {
   return columnEl;
 }
 
-// 3. Render Board Chính
 function renderBoard(boardData) {
   currentProjectId = boardData._id; 
   document.getElementById('board-title').textContent = boardData.title;
 
-  // --- KIỂM TRA QUYỀN HẠN ---
   const currentUser = JSON.parse(localStorage.getItem('maneasily_user'));
   const ownerId = boardData.userOwner._id || boardData.userOwner;
-  // Danh sách Admin (Manager) của dự án
   const adminIds = boardData.admins ? boardData.admins.map(a => a._id || a) : [];
 
-  // Là Admin/Manager nếu: Là chủ dự án HOẶC nằm trong danh sách admins
   isUserAdminOrManager = (currentUser._id === ownerId) || adminIds.includes(currentUser._id);
 
-  // Ẩn/Hiện nút "Thêm cột"
   const btnAddColumn = document.getElementById('btn-add-column-header');
   if (btnAddColumn) {
       btnAddColumn.style.display = isUserAdminOrManager ? 'flex' : 'none';
   }
 
-  // Render Avatar Header
   const headerMembers = document.getElementById('board-header-members');
   if (headerMembers && boardData.members) {
       headerMembers.innerHTML = boardData.members.map(m => 
@@ -211,7 +204,6 @@ function renderBoard(boardData) {
       ).join('');
   }
   
-  // Render Cột & Task
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
       const columnsMap = new Map(boardData.columns.map(c => [c._id, c]));
@@ -221,25 +213,19 @@ function renderBoard(boardData) {
       });
   }
 
-  // Truyền dữ liệu vào Share Modal để nó biết ai là Admin
   if (boardData.members) {
       renderProjectMembers(boardData.members, boardData);
   }
 }
 
-/* =========================================
-   PHẦN 2: KÉO THẢ (CHẶN NẾU KHÔNG CÓ QUYỀN)
-   ========================================= */
-
 function initColumnDragAndDrop() {
-  if (!boardContainer || !isUserAdminOrManager) return; // Chặn ngay nếu không phải admin
+  if (!boardContainer || !isUserAdminOrManager) return;
   new Sortable(boardContainer, {
     group: 'shared-columns',
     animation: 150,
     handle: '.column-header', 
     ghostClass: 'column-ghost',
     onEnd: function (evt) {
-        // ... (Logic gọi API update column order giữ nguyên) ...
         const columnOrder = Array.from(boardContainer.children).map(col => col.getAttribute('data-column-id'));
         fetch(`${API_BASE_URL}/project/${currentProjectId}/columnorder`, {
             method: 'PATCH',
@@ -259,10 +245,9 @@ function initTaskDragAndDrop() {
       group: 'shared-tasks', 
       animation: 150,
       ghostClass: 'task-ghost',
-      disabled: !isUserAdminOrManager, // QUAN TRỌNG: Nếu không phải admin -> Disable kéo thả
-      sort: isUserAdminOrManager,      // Không cho sắp xếp
+      disabled: !isUserAdminOrManager,
+      sort: isUserAdminOrManager,
       onEnd: function (evt) {
-        // ... (Logic gọi API update task order giữ nguyên - Copy từ code cũ của bạn) ...
         const itemEl = evt.item;
         const oldColumnList = evt.from;
         const newColumnList = evt.to;
@@ -282,7 +267,6 @@ function initTaskDragAndDrop() {
   });
 }
 
-// Logic nút Thêm Cột (Chỉ kích hoạt nếu là Admin)
 function initAddColumnButton() {
     const headerAddBtn = document.getElementById('btn-add-column-header');
     if (headerAddBtn && isUserAdminOrManager) {
@@ -293,14 +277,12 @@ function initAddColumnButton() {
             boardContainer.scrollTo({ left: boardContainer.scrollWidth, behavior: 'smooth' });
         });
         
-        // Reset event cũ
         const newBtn = headerAddBtn.cloneNode(true);
         headerAddBtn.parentNode.replaceChild(newBtn, headerAddBtn);
         newBtn.addEventListener('click', () => openColumnModal());
     }
 }
 
-// Callback khi thêm task xong
 function handleTaskAdded(newTask, columnId) {
     const columnEl = document.querySelector(`.board-column[data-column-id="${columnId}"]`);
     if (!columnEl) return;
@@ -310,9 +292,6 @@ function handleTaskAdded(newTask, columnId) {
     if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
 }
 
-/* =========================================
-   INIT
-   ========================================= */
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
@@ -325,6 +304,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initProfileModal();
+    initTaskModal(handleTaskAdded);
+    
+    // --- KHỞI TẠO TASK DETAIL MODAL ---
+    initTaskDetailModal(); 
     
     fetch(`${API_BASE_URL}/project/${projectId}`)
         .then(res => {
@@ -333,18 +316,15 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             if (data.project) {
-                renderBoard(data.project); // Hàm này sẽ set isUserAdminOrManager
+                renderBoard(data.project);
                 
-                // Init Task Modal
-                // Chỉ cho phép mở modal nếu có quyền (nhưng modal form đã có nút submit, 
-                // nếu ko có quyền thì ko thấy nút thêm task để mở modal, nên cứ init bình thường)
-                initTaskModal(handleTaskAdded);
-
-                initColumnDragAndDrop();
+                if(isUserAdminOrManager) initColumnDragAndDrop();
+                
                 initTaskDragAndDrop();
                 initAddColumnButton();
                 
-                initShareFeature(data.project._id); 
+                // Sửa lại thành boardData._id hoặc dùng data.project._id
+                initShareFeature(data.project._id, isUserAdminOrManager); 
             }
         })
         .catch(err => {

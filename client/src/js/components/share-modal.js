@@ -118,26 +118,67 @@ async function handleRoleAction(action, memberId, projectId) {
     });
 }
 
-export function initShareFeature(projectId) {
+export function initShareFeature(projectId, canEdit = false) {
     const shareBtn = document.getElementById('btn-manage-members');
     const modal = document.getElementById('share-modal');
     
     if (!shareBtn || !modal) return;
 
     const closeBtn = document.getElementById('close-share-modal');
+    const searchContainer = document.querySelector('.search-member-container'); // Ô tìm kiếm
+    const tabLinkBtn = document.querySelector('.tab-btn[data-tab="tab-link"]'); // Nút tab Link
     const searchInput = document.getElementById('user-search-input');
     const dropdown = document.getElementById('search-results-dropdown');
     const linkInput = document.getElementById('share-link-input'); 
     const btnCopyLink = document.getElementById('btn-copy-link');
     const tabBtns = document.querySelectorAll('.tab-btn');
 
+    // --- LOGIC ẨN/HIỆN THEO QUYỀN ---
+    if (!canEdit) {
+        // Nếu là Member thường:
+        // 1. Ẩn ô tìm kiếm (không cho thêm người)
+        if (searchContainer) searchContainer.style.display = 'none';
+        
+        // 2. Ẩn tab "Sao chép liên kết"
+        if (tabLinkBtn) tabLinkBtn.style.display = 'none';
+        
+        // 3. Đổi tên nút mở modal cho hợp lý hơn
+        // shareBtn.innerHTML = `<i class="fa-solid fa-users"></i> Thành viên`; 
+    } else {
+        // Nếu là Admin/Manager: Hiện lại đầy đủ (phòng trường hợp đổi user không reload)
+        if (searchContainer) searchContainer.style.display = 'block';
+        if (tabLinkBtn) tabLinkBtn.style.display = 'inline-block';
+    }
+
     // Mở Modal
-    shareBtn.addEventListener('click', () => {
+    shareBtn.replaceWith(shareBtn.cloneNode(true)); // Reset event cũ
+    const newShareBtn = document.getElementById('btn-manage-members');
+    
+    newShareBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
+        
+        // Reset về tab đầu tiên
+        tabBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => {
+            c.classList.remove('active'); c.style.display = 'none';
+        });
+        
+        // Mặc định active tab Invite
+        const firstTabBtn = document.querySelector('.tab-btn[data-tab="tab-invite"]');
+        const firstTabContent = document.getElementById('tab-invite');
+        if(firstTabBtn) firstTabBtn.classList.add('active');
+        if(firstTabContent) {
+            firstTabContent.classList.add('active');
+            firstTabContent.style.display = 'block';
+        }
+
         if(searchInput) { searchInput.value = ''; }
         if(dropdown) dropdown.style.display = 'none';
     });
 
+    // ... (Phần logic Đóng Modal, Chuyển Tab, Copy Link, Tìm kiếm... GIỮ NGUYÊN NHƯ CŨ)
+    // Lưu ý: Chỉ cần copy đoạn logic sự kiện bên dưới vào đây là được
+    
     // Đóng Modal
     const closeModal = () => modal.style.display = 'none';
     closeBtn?.addEventListener('click', closeModal);
@@ -159,9 +200,8 @@ export function initShareFeature(projectId) {
                 targetContent.style.display = 'block';
             }
 
-            // Nếu click tab Link -> Gọi API lấy link
             if (targetId === 'tab-link') {
-                if(linkInput && linkInput.value.includes('...')) { // Chỉ gọi nếu chưa có link
+                if(linkInput && linkInput.value.includes('...')) {
                     linkInput.value = "Đang tạo link...";
                     try {
                         const res = await fetch(`${API_BASE_URL}/project/${projectId}/invite`, {
@@ -170,11 +210,10 @@ export function initShareFeature(projectId) {
                         const data = await res.json();
                         if (res.ok) linkInput.value = data.inviteUrl;
                         else {
-                            linkInput.value = "Lỗi lấy link";
+                            linkInput.value = "Bạn không có quyền lấy link";
                             toast.error(data.err);
                         }
                     } catch (err) {
-                        console.error(err);
                         linkInput.value = "Lỗi kết nối";
                     }
                 }
@@ -190,9 +229,9 @@ export function initShareFeature(projectId) {
         }
     });
 
-    // Tìm kiếm User (Debounce)
+    // Tìm kiếm User (Chỉ chạy nếu có input - tức là admin)
     let debounceTimer;
-    if (searchInput) {
+    if (searchInput && canEdit) {
         searchInput.addEventListener('input', (e) => {
             const keyword = e.target.value.trim();
             clearTimeout(debounceTimer);
@@ -205,7 +244,6 @@ export function initShareFeature(projectId) {
                     });
                     const data = await res.json();
                     
-                    // Render kết quả tìm kiếm
                     dropdown.innerHTML = '';
                     dropdown.style.display = 'block';
                     
@@ -215,15 +253,10 @@ export function initShareFeature(projectId) {
                         data.users.forEach(user => {
                             const item = document.createElement('div');
                             item.className = 'user-result-item';
-                            // Khi click vào kết quả tìm kiếm -> Thêm user
                             item.addEventListener('click', () => addUser(user, projectId));
-                            
                             item.innerHTML = `
                                 <img src="${user.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="result-avatar">
-                                <div class="result-info">
-                                    <div>${user.username}</div>
-                                    <div style="font-size:0.8rem">${user.email}</div>
-                                </div>
+                                <div class="result-info"><div>${user.username}</div><div style="font-size:0.8rem">${user.email}</div></div>
                             `;
                             dropdown.appendChild(item);
                         });
@@ -235,24 +268,22 @@ export function initShareFeature(projectId) {
 
     async function addUser(userToAdd, projectId) {
         showConfirm(`Thêm ${userToAdd.username} vào dự án này?`, async () => {
-        try {
-             const res = await fetch(`${API_BASE_URL}/users/add-member`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
-                body: JSON.stringify({ projectId, userId: userToAdd._id })
-            });
-            if(res.ok) {
-                toast.success(`Đã thêm ${userToAdd.username}!`);
-                dropdown.style.display = 'none';
-                searchInput.value = '';
-                // Reload lại trang để cập nhật danh sách
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                const d = await res.json();
-                toast.error(d.err || "Lỗi thêm thành viên");
-            }
-        } catch(e) { toast.error("Lỗi server"); }
-     
-    });
+            try {
+                 const res = await fetch(`${API_BASE_URL}/users/add-member`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
+                    body: JSON.stringify({ projectId, userId: userToAdd._id })
+                });
+                if(res.ok) {
+                    toast.success(`Đã thêm ${userToAdd.username}!`);
+                    dropdown.style.display = 'none';
+                    searchInput.value = '';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    const d = await res.json();
+                    toast.error(d.err || "Lỗi thêm thành viên");
+                }
+            } catch(e) { toast.error("Lỗi server"); }
+        });
     }
 }

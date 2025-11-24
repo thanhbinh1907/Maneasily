@@ -35,4 +35,15 @@ router.put('/project/promote', auth, projectCtrl.promoteToManager);
 router.put('/project/demote', auth, projectCtrl.demoteToMember);
 router.put('/project/remove-member', auth, projectCtrl.removeMember);
 
+// TASK DETAIL & UPDATE
+router.get('/task/:id', auth, taskCtrl.getTaskDetail);
+router.put('/task/:id', auth, taskCtrl.updateTask);
+
+// SUBTASKS (WORKS)
+router.post('/task/work', auth, taskCtrl.addWork);
+router.put('/task/work/:workId', auth, taskCtrl.toggleWork);
+
+// COMMENTS
+router.post('/task/comment', auth, taskCtrl.addComment);
+
 export default router;

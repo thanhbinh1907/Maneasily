@@ -148,19 +148,26 @@ const projectCtrl = {
     getInviteLink: async (req, res) => {
         try {
             const { id } = req.params;
-            let project = await Projects.findById(id);
+            const userId = req.user.id;
+
+            const project = await Projects.findById(id);
             if (!project) return res.status(404).json({ err: "Dự án không tồn tại" });
 
-            // Nếu chưa có inviteId thì tạo mới
+            // --- BƯỚC BẢO VỆ MỚI ---
+            const isOwner = project.userOwner.toString() === userId;
+            const isManager = project.admins.includes(userId);
+            
+            if (!isOwner && !isManager) {
+                return res.status(403).json({ err: "Bạn không có quyền lấy link mời." });
+            }
+            // -----------------------
+
             if (!project.inviteId) {
                 project.inviteId = uuidv4();
                 await project.save();
             }
 
-            // Trả về đường dẫn đầy đủ (Frontend URL)
-            // Ví dụ: http://localhost:5173/src/pages/invite.html?code=abcxyz
             const inviteUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/src/pages/invite.html?code=${project.inviteId}`;
-            
             res.json({ inviteUrl });
         } catch (err) {
             return res.status(500).json({ err: err.message });

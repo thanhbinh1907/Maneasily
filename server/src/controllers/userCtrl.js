@@ -1,4 +1,3 @@
-// File: Maneasily/server/src/controllers/userCtrl.js
 import Users from "../models/userModel.js";
 import Projects from "../models/projectModel.js";
 
@@ -31,15 +30,28 @@ const userCtrl = {
     // API Thêm thành viên (Giữ nguyên logic cũ)
     addMemberToProject: async (req, res) => {
         try {
-            const { projectId, userId } = req.body;
+            const { projectId, userId: memberIdToAdd } = req.body; // userId là người được thêm
+            const requesterId = req.user.id; // Người đang thực hiện hành động
+
+            const project = await Projects.findById(projectId);
+            if (!project) return res.status(404).json({ err: "Dự án không tồn tại" });
+
+            // --- CHECK QUYỀN ---
+            const isOwner = project.userOwner.toString() === requesterId;
+            const isManager = project.admins.includes(requesterId);
+
+            if (!isOwner && !isManager) {
+                return res.status(403).json({ err: "Bạn không có quyền thêm thành viên." });
+            }
+            // -------------------
 
             // 1. Cập nhật Project
-            const project = await Projects.findByIdAndUpdate(projectId, {
-                $addToSet: { members: userId } 
-            }, { new: true });
+            await Projects.findByIdAndUpdate(projectId, {
+                $addToSet: { members: memberIdToAdd } 
+            });
 
             // 2. Cập nhật User
-            await Users.findByIdAndUpdate(userId, {
+            await Users.findByIdAndUpdate(memberIdToAdd, {
                 $addToSet: { projects: projectId }
             });
 

@@ -38,10 +38,14 @@ router.put('/project/remove-member', auth, projectCtrl.removeMember);
 // TASK DETAIL & UPDATE
 router.get('/task/:id', auth, taskCtrl.getTaskDetail);
 router.put('/task/:id', auth, taskCtrl.updateTask);
+router.put('/task/:id/remove-member', auth, taskCtrl.removeMember);
 
 // SUBTASKS (WORKS)
 router.post('/task/work', auth, taskCtrl.addWork);
 router.put('/task/work/:workId', auth, taskCtrl.toggleWork);
+router.get('/tasks/overdue', auth, taskCtrl.getOverdueTasks);
+router.delete('/task/work/:workId', auth, taskCtrl.deleteWork);
+router.put('/task/work/:workId/toggle-member', auth, taskCtrl.toggleWorkMember);
 
 // COMMENTS
 router.post('/task/comment', auth, taskCtrl.addComment);

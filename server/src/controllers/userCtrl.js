@@ -1,5 +1,6 @@
 import Users from "../models/userModel.js";
 import Projects from "../models/projectModel.js";
+import Notifications from "../models/notificationModel.js";
 
 const userCtrl = {
     // API Tìm kiếm người dùng (Tối ưu: Index + Prefix Regex + Lean + Projection)
@@ -55,6 +56,14 @@ const userCtrl = {
                 $addToSet: { projects: projectId }
             });
 
+            // 3. Thông báo cho User
+            await Notifications.create({
+                recipient: memberIdToAdd,
+                sender: requesterId,
+                content: `Bạn đã được thêm vào dự án "${project.title}"`,
+                type: 'project',
+                link: `/src/pages/Board.html?id=${projectId}`
+            });
             res.json({ msg: "Đã thêm thành viên thành công!" });
         } catch (err) {
             return res.status(500).json({ err: err.message });

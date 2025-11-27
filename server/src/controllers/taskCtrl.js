@@ -3,7 +3,9 @@ import Columns from "../models/columnModel.js";
 import Projects from "../models/projectModel.js"; 
 import Works from "../models/workModel.js";
 import Comments from "../models/commentModel.js";
-// Hàm phụ để kiểm tra quyền (tránh viết lặp lại)
+import Notifications from "../models/notificationModel.js";
+import { sendNotification } from "../utils/socketUtils.js";
+
 const checkPermission = async (projectId, userId) => {
     const project = await Projects.findById(projectId);
     if (!project) return false;
@@ -84,32 +86,80 @@ const taskCtrl = {
     getTaskDetail: async (req, res) => {
         try {
             const task = await Tasks.findById(req.params.id)
-                .populate("works") // Lấy danh sách công việc con
+                .populate({
+                    path: "works",
+                    populate: { 
+                        path: "members", 
+                        select: "username avatar" 
+                    }
+                })
                 .populate({
                     path: "comments",
-                    populate: { path: "user", select: "username avatar" } // Lấy người comment
+                    populate: { path: "user", select: "username avatar" } 
                 })
-                .populate("members", "username avatar email");
+                .populate("members", "username avatar email")
+                .populate("column", "title");
 
             if (!task) return res.status(404).json({ err: "Không tìm thấy task" });
             res.json({ task });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
 
-    // --- 2. CẬP NHẬT TASK (Title, Desc, Deadline, Tag, Color...) ---
+    // --- 2. CẬP NHẬT TASK (SỬA ĐỔI) ---
     updateTask: async (req, res) => {
         try {
             const { id } = req.params;
             const userId = req.user.id;
-            const updateData = req.body; // { title, dec, tag, deadline, color... }
+            const updateData = req.body; 
 
-            const task = await Tasks.findById(id);
+            // Lấy task CŨ trước khi update để so sánh thành viên
+            const oldTask = await Tasks.findById(id);
+            if (!oldTask) return res.status(404).json({ err: "Task không tồn tại" });
             
-            // Check quyền: Chỉ Admin/Manager mới được sửa
-            const canEdit = await checkPermission(task.project, userId);
+            const canEdit = await checkPermission(oldTask.project, userId);
             if (!canEdit) return res.status(403).json({ err: "Bạn chỉ có quyền xem." });
 
-            const updatedTask = await Tasks.findByIdAndUpdate(id, updateData, { new: true });
+            if (updateData.members && oldTask.deadline && new Date(oldTask.deadline) < new Date()) {
+                return res.status(400).json({ err: "Task đã quá hạn! Không thể thay đổi thành viên." });
+            }
+
+            // [LOGIC MỚI] Tạo thông báo nếu có thay đổi thành viên
+            if (updateData.members) {
+                // Convert ID sang string để so sánh
+                const oldMembers = oldTask.members.map(m => m.toString());
+                const newMembers = updateData.members.map(m => m.toString());
+
+                // Tìm người vừa được thêm vào
+                const addedMembers = newMembers.filter(m => !oldMembers.includes(m));
+
+                for (const memberId of addedMembers) {
+                    if (memberId !== userId) { // Không tự thông báo cho chính mình
+                        await Notifications.create({
+                            recipient: memberId,
+                            sender: userId,
+                            content: `Bạn được giao việc: "${oldTask.title}"`,
+                            type: 'task',
+                            link: `/src/pages/Board.html?id=${oldTask.project}`
+                        });
+                    }
+                }
+            }
+            // Gửi Real-time
+            await notif.populate("sender", "username avatar");
+            sendNotification(req, memberId, notif);
+
+            const updatedTask = await Tasks.findByIdAndUpdate(id, updateData, { new: true })
+                .populate({
+                    path: "works",
+                    populate: { path: "members", select: "username avatar" }
+                })
+                .populate({
+                    path: "comments",
+                    populate: { path: "user", select: "username avatar" }
+                })
+                .populate("members", "username avatar email")
+                .populate("column", "title");
+
             res.json({ msg: "Cập nhật thành công", task: updatedTask });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -145,23 +195,152 @@ const taskCtrl = {
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
 
-    // --- 5. BÌNH LUẬN (Ai cũng được comment) ---
+    // --- BÌNH LUẬN (CẬP NHẬT) ---
     addComment: async (req, res) => {
         try {
             const { content, taskId } = req.body;
             const userId = req.user.id;
+
+            // Lấy task để kiểm tra thành viên
+            const task = await Tasks.findById(taskId);
+            if (!task) return res.status(404).json({ err: "Task không tồn tại" });
+
+            // [MỚI] Kiểm tra: User có trong danh sách members của task không?
+            // Lưu ý: Tùy logic, bạn có thể cho phép Admin dự án (checkPermission) comment dù không trong task.
+            // Ở đây tôi làm đúng yêu cầu: "người không phải trong task thì không comment".
+            // Tuy nhiên, để tránh Admin bị khóa, tôi cho phép nếu là Member HOẶC là Admin dự án.
+            
+            const isMember = task.members.includes(userId);
+            const isAdmin = await checkPermission(task.project, userId);
+
+            if (!isMember && !isAdmin) {
+                return res.status(403).json({ err: "Bạn phải tham gia task này mới được bình luận." });
+            }
 
             const newComment = new Comments({ content, user: userId, task: taskId });
             await newComment.save();
 
             await Tasks.findByIdAndUpdate(taskId, { $push: { comments: newComment._id } });
             
-            // Populate để trả về frontend hiển thị ngay
             await newComment.populate("user", "username avatar");
             
             res.json({ comment: newComment });
         } catch (err) { return res.status(500).json({ err: err.message }); }
-    }
+    },
+    // --- Lấy danh sách task quá hạn của User ---
+    getOverdueTasks: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const now = new Date();
+
+            const tasks = await Tasks.find({
+                members: userId, // Task có mình tham gia
+                deadline: { $lt: now }, // Deadline nhỏ hơn hiện tại (quá khứ)
+                // Giả sử: Task nằm ở cột cuối cùng là "Xong", ta cần loại trừ (logic này cần ID cột Done, tạm thời lấy hết)
+            }).select('title deadline project');
+
+            res.json({ tasks });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
+    // --- HÀM MỚI: Xóa Subtask ---
+    deleteWork: async (req, res) => {
+        try {
+            const { workId } = req.params;
+            const userId = req.user.id;
+
+            const work = await Works.findById(workId);
+            if (!work) return res.status(404).json({ err: "Công việc không tồn tại" });
+
+            // Tìm task cha để check quyền
+            const task = await Tasks.findById(work.task);
+            
+            const canEdit = await checkPermission(task.project, userId);
+            if (!canEdit) return res.status(403).json({ err: "Bạn không có quyền xóa." });
+
+            // 1. Xóa Work
+            await Works.findByIdAndDelete(workId);
+
+            // 2. Xóa ID work khỏi Task
+            await Tasks.findByIdAndUpdate(work.task, { 
+                $pull: { works: workId } 
+            });
+
+            res.json({ msg: "Đã xóa công việc con!" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+    // --- Gán/Bỏ người vào Subtask ---
+    toggleWorkMember: async (req, res) => {
+        try {
+            const { workId } = req.params;
+            const { memberId } = req.body;
+            const userId = req.user.id;
+
+            const work = await Works.findById(workId);
+            if (!work) return res.status(404).json({ err: "Công việc con không tồn tại" });
+
+            const task = await Tasks.findById(work.task);
+            
+            // 1. Check quyền quản lý (Admin/Owner)
+            const canEdit = await checkPermission(task.project, userId);
+            if (!canEdit) return res.status(403).json({ err: "Bạn không có quyền phân công." });
+
+            // 2. [MỚI] Check hết hạn: Nếu quá hạn thì không cho sửa người làm
+            if (task.deadline && new Date(task.deadline) < new Date()) {
+                return res.status(400).json({ err: "Task đã quá hạn, không thể thay đổi thành viên." });
+            }
+
+            // Logic Toggle cũ giữ nguyên
+            let action = "added";
+            if (work.members.includes(memberId)) {
+                await Works.findByIdAndUpdate(workId, { $pull: { members: memberId } });
+                action = "removed";
+            } else {
+                await Works.findByIdAndUpdate(workId, { $addToSet: { members: memberId } });
+            }
+            
+            res.json({ msg: "Cập nhật thành công", action });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+    // --- 6. XÓA THÀNH VIÊN KHỎI TASK (Chỉ Admin/Manager) ---
+    removeMember: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { memberId } = req.body; 
+            const userId = req.user.id;
+
+            const task = await Tasks.findById(id);
+            if (!task) return res.status(404).json({ err: "Task không tồn tại" });
+
+            const canEdit = await checkPermission(task.project, userId);
+            if (!canEdit) {
+                return res.status(403).json({ err: "Bạn không có quyền xóa thành viên." });
+            }
+
+            // [LOGIC MỚI] Tạo thông báo bị kick
+            if (memberId !== userId) {
+                await Notifications.create({
+                    recipient: memberId,
+                    sender: userId,
+                    content: `Bạn đã bị gỡ khỏi công việc: "${task.title}"`,
+                    type: 'task',
+                    link: `/src/pages/Board.html?id=${task.project}`
+                });
+            }
+
+            // Gửi Real-time
+            await notif.populate("sender", "username avatar");
+            sendNotification(req, memberId, notif);
+
+            await Tasks.findByIdAndUpdate(id, { $pull: { members: memberId } });
+            await Works.updateMany({ task: id }, { $pull: { members: memberId } });
+
+            res.json({ msg: "Đã xóa thành viên khỏi công việc!" });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
 };
 
 export default taskCtrl;

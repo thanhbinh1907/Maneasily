@@ -322,7 +322,10 @@
     gap: 12px;
     margin-top: 5px;
 }
-.color-selector input { display: none; }
+/* Chỉ ẩn input radio, KHÔNG ẩn input color */
+.color-selector input[type="radio"] { 
+    display: none; 
+}
 .color-selector label {
     width: 32px;
     height: 32px;
@@ -356,4 +359,33 @@
 .member-avatar-small:hover {
     transform: translateY(-3px);
     z-index: 2;
+}
+
+/* --- FIX LỖI Ô CHỌN MÀU (COLOR PICKER) --- */
+
+/* 1. Reset style mặc định của trình duyệt */
+.color-selector input[type="color"] {
+    -webkit-appearance: none; /* Quan trọng: Bỏ giao diện mặc định */
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%; /* Bo tròn khung ngoài */
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Đổ bóng nhẹ cho giống các nút khác */
+}
+
+/* 2. Xóa khoảng trắng (padding) bên trong */
+.color-selector input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0; 
+}
+
+/* 3. Bo tròn phần lõi màu thực tế */
+.color-selector input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+    border: 2px solid #ffffff; /* Thêm viền trắng mỏng bên trong cho đẹp */
 }

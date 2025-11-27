@@ -6,15 +6,23 @@ import { toast } from './utils/toast.js';
 import { initTaskModal, openTaskModal } from './components/task-modal.js';
 import { initColumnModal, openColumnModal } from './components/column-modal.js';
 import { showConfirm } from './utils/confirm.js';
-// IMPORT MỚI
-import { initTaskDetailModal, openTaskDetail } from './components/task-detail.js';
+import { initTaskDetailModal, openTaskDetail } from './components/task-detail/index.js';
 
 let currentProjectId = null;
 let boardContainer = null;
-let isUserAdminOrManager = false; 
+let isUserAdminOrManager = false;
+let projectMembers = [];
+
+/* =========================================s
+   HELPER FUNCTIONS
+   ========================================= */
+function isTaskOverdue(deadline) {
+    if (!deadline) return false;
+    return new Date(deadline) < new Date();
+}
 
 /* =========================================
-   PHẦN 1: RENDER GIAO DIỆN
+   PHẦN 1: RENDER GIAO DIỆN (VIEW)
    ========================================= */
 
 function createTaskCardElement(task) {
@@ -22,10 +30,16 @@ function createTaskCardElement(task) {
   card.className = 'task-card';
   card.setAttribute('data-task-id', task._id);
   
+  // Logic Viền Đỏ (Quá hạn)
+  if (isTaskOverdue(task.deadline)) {
+      card.style.borderLeft = "4px solid #d93025"; 
+  }
+
   const tagColor = task.color || '#00c2e0';
   const tagHTML = task.tag ? `<div class="task-tag" style="background-color: ${tagColor};">${task.tag}</div>` : '';
   const descHTML = task.dec ? `<div class="task-desc">${task.dec}</div>` : '';
 
+  // Render thành viên
   let membersHTML = '';
   if (task.members && task.members.length > 0) {
       membersHTML = task.members.map(u => 
@@ -33,6 +47,7 @@ function createTaskCardElement(task) {
       ).join('');
   }
 
+  // Nút xóa Task
   let deleteBtnHTML = '';
   if (isUserAdminOrManager) {
       deleteBtnHTML = `<i class="fa-regular fa-trash-can btn-delete-task" title="Xóa công việc" style="cursor: pointer; color: #d93025; font-size: 0.9rem; opacity: 0.6; transition: opacity 0.2s;"></i>`;
@@ -47,18 +62,20 @@ function createTaskCardElement(task) {
     ${descHTML}
     <div class="task-footer">
         <div class="task-members" style="display: flex; padding-left: 8px;">${membersHTML}</div>
-        <div class="task-stats"><i class="fa-regular fa-clock"></i></div>
+        <div class="task-stats">
+            ${task.deadline ? `<i class="fa-regular fa-clock" style="${isTaskOverdue(task.deadline) ? 'color:#d93025' : ''}"></i>` : ''}
+        </div>
     </div>
   `;
 
-  // Xử lý xóa task
+  // Logic Xóa Task
   if (isUserAdminOrManager) {
       const delBtn = card.querySelector('.btn-delete-task');
       delBtn.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
       delBtn.addEventListener('mouseleave', () => delBtn.style.opacity = '0.6');
       
       delBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); // Quan trọng: chặn click lan ra card
+          e.stopPropagation(); 
           showConfirm("Bạn chắc chắn muốn xóa công việc này?", async () => {
               try {
                   const res = await fetch(`${API_BASE_URL}/task/${task._id}`, {
@@ -74,14 +91,20 @@ function createTaskCardElement(task) {
               } catch (err) { toast.error("Lỗi server"); }
           });
       });
+
+      // Logic Kéo thả thành viên
+      card.addEventListener('dragover', (e) => { e.preventDefault(); card.style.backgroundColor = "#ebecf0"; });
+      card.addEventListener('dragleave', () => { card.style.backgroundColor = "#fff"; });
+      card.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          card.style.backgroundColor = "#fff";
+          toast.info("Tính năng gán thành viên đang phát triển...");
+      });
   }
 
-  // --- SỰ KIỆN CLICK VÀO CARD ĐỂ MỞ CHI TIẾT ---
   card.addEventListener('click', (e) => {
-      // Nếu click vào nút xóa thì không mở modal (đã chặn ở trên bằng stopPropagation, nhưng thêm check cho chắc)
-      if (e.target.classList.contains('btn-delete-task')) return;
-      
-      openTaskDetail(task._id, isUserAdminOrManager);
+      if (e.target.closest('.btn-delete-task')) return;
+      openTaskDetail(task._id, isUserAdminOrManager, projectMembers);
   });
 
   return card;
@@ -196,13 +219,6 @@ function renderBoard(boardData) {
   if (btnAddColumn) {
       btnAddColumn.style.display = isUserAdminOrManager ? 'flex' : 'none';
   }
-
-  const headerMembers = document.getElementById('board-header-members');
-  if (headerMembers && boardData.members) {
-      headerMembers.innerHTML = boardData.members.map(m => 
-          `<img src="${m.avatar}" class="member-avatar-small" title="${m.username}">`
-      ).join('');
-  }
   
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
@@ -213,9 +229,46 @@ function renderBoard(boardData) {
       });
   }
 
-  if (boardData.members) {
-      renderProjectMembers(boardData.members, boardData);
+  // --- SỬA: RENDER HEADER MEMBERS (CHỈ CÒN ICON) ---
+  const headerMembers = document.getElementById('board-header-members');
+  if (headerMembers && boardData.members) {
+      headerMembers.innerHTML = boardData.members.map(m => {
+          return `
+            <div class="header-member-item" draggable="true" data-id="${m._id}" 
+                 style="cursor:grab; margin-right: -5px;" 
+                 title="${m.username}">
+                <img src="${m.avatar}" class="member-avatar-small" style="border: 2px solid #fff;">
+            </div>`;
+      }).join('');
+      
+      headerMembers.querySelectorAll('.header-member-item').forEach(item => {
+          item.addEventListener('dragstart', (e) => {
+              e.dataTransfer.setData("memberId", item.dataset.id);
+          });
+      });
   }
+
+  if (boardData.members) {
+      projectMembers = boardData.members;
+      renderProjectMembers(boardData.members, boardData);
+      initShareFeature(boardData._id, isUserAdminOrManager); 
+  }
+  
+  checkOverdueNotification();
+}
+
+async function checkOverdueNotification() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/tasks/overdue`, { 
+            headers: { 'Authorization': localStorage.getItem('maneasily_token') }
+        });
+        if(res.ok) {
+            const data = await res.json();
+            if(data.tasks && data.tasks.length > 0) {
+                toast.error(`Bạn có ${data.tasks.length} công việc đã quá hạn!`);
+            }
+        }
+    } catch(e) { /* Ignore */ }
 }
 
 function initColumnDragAndDrop() {
@@ -305,8 +358,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initProfileModal();
     initTaskModal(handleTaskAdded);
-    
-    // --- KHỞI TẠO TASK DETAIL MODAL ---
     initTaskDetailModal(); 
     
     fetch(`${API_BASE_URL}/project/${projectId}`)
@@ -322,9 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 initTaskDragAndDrop();
                 initAddColumnButton();
-                
-                // Sửa lại thành boardData._id hoặc dùng data.project._id
-                initShareFeature(data.project._id, isUserAdminOrManager); 
             }
         })
         .catch(err => {

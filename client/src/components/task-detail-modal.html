@@ -61,17 +61,32 @@
                 <div class="sidebar-group">
                     <h4>Thành viên</h4>
                     <div id="detail-members-list" style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;"></div>
-                    <button class="sidebar-btn" id="btn-add-member-detail"><i class="fa-solid fa-user-plus"></i> Thêm thành viên</button>
+                    
+                    <button class="sidebar-btn" id="btn-add-member-detail" style="position: relative;">
+                        <i class="fa-solid fa-user-plus"></i> Thêm thành viên
+                    </button>
+                
+                    <div id="add-member-dropdown" style="display: none; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px; margin-top: 5px; max-height: 200px; overflow-y: auto;">
+                        <p style="font-size: 0.8rem; color: #666; margin: 0 0 5px 0;">Chọn người để thêm:</p>
+                        <div id="available-members-list" style="display: flex; flex-direction: column; gap: 5px;">
+                            </div>
+                    </div>
                 </div>
 
                 <div class="sidebar-group">
                     <h4>Nhãn (Tag)</h4>
                     <input type="text" id="detail-tag-input" placeholder="VD: Frontend" style="width: 100%; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 4px;" autocomplete="off">
                     <div class="color-selector" style="margin-bottom: 10px;">
-                        <input type="radio" name="detailColor" value="#eb5a46" id="d1" checked><label for="d1" style="background: #eb5a46;"></label>
+                        <input type="radio" name="detailColor" value="#eb5a46" id="d1"><label for="d1" style="background: #eb5a46;"></label>
                         <input type="radio" name="detailColor" value="#00c2e0" id="d2"><label for="d2" style="background: #00c2e0;"></label>
                         <input type="radio" name="detailColor" value="#0079bf" id="d3"><label for="d3" style="background: #0079bf;"></label>
                         <input type="radio" name="detailColor" value="#f2d600" id="d4"><label for="d4" style="background: #f2d600;"></label>
+                        
+                        <div style="position: relative; display: inline-block; vertical-align: bottom;">
+                            <input type="color" id="detail-custom-color" value="#ffffff" 
+                                   style="width: 32px; height: 32px; border: 1px solid #ddd; border-radius: 50%; cursor: pointer; padding: 0; overflow: hidden; background: none;" 
+                                   title="Chọn màu tùy chỉnh">
+                        </div>
                     </div>
                     <button class="sidebar-btn" id="btn-save-tag">Lưu Nhãn</button>
                 </div>

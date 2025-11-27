@@ -188,3 +188,114 @@ body {
     flex-grow: 1;
     overflow-y: auto;
 }
+
+/* 5.Notification Dropdown Custom Style */
+.noti-dropdown {
+    width: 320px;
+    right: -100px; /* Căn chỉnh vị trí */
+    max-height: 400px;
+    display: none; /* Mặc định ẩn */
+    flex-direction: column;
+}
+
+/* Khi có class show thì hiện */
+.noti-dropdown.show {
+    display: flex;
+}
+
+.noti-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.noti-list {
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+.noti-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f4f5f7;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.noti-item:hover { background-color: var(--hover-color); }
+.noti-item.unread { background-color: #e9f2ff; } /* Màu nền cho tin chưa đọc */
+
+.noti-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.noti-content { font-size: 0.85rem; color: #172b4d; flex-grow: 1; }
+.noti-time { font-size: 0.75rem; color: #6b778c; margin-top: 4px; display: block; }
+.noti-dot { width: 8px; height: 8px; background: #0c66e4; border-radius: 50%; margin-top: 6px; }
+
+/* --- Notification Item Styling Updated --- */
+.noti-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f4f5f7;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    position: relative; /* Để định vị menu con */
+    transition: background 0.1s;
+}
+
+.noti-item:hover { background-color: #fafbfc; }
+.noti-item.unread { background-color: #e9f2ff; }
+
+/* 3-Dots Button */
+.noti-options-btn {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #6b778c;
+    visibility: hidden; /* Ẩn mặc định */
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-left: auto; /* Đẩy sang phải cùng */
+    flex-shrink: 0;
+}
+
+.noti-item:hover .noti-options-btn { visibility: visible; } /* Hover vào item mới hiện nút */
+.noti-options-btn:hover { background-color: #ebecf0; color: #172b4d; }
+
+/* Popup Menu (Khi ấn 3 chấm) */
+.noti-item-menu {
+    position: absolute;
+    top: 30px; right: 10px;
+    background: white;
+    border: 1px solid #dfe1e6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px;
+    width: 160px;
+    z-index: 1000;
+    display: none; /* Mặc định ẩn */
+    flex-direction: column;
+    padding: 4px 0;
+}
+
+.noti-item-menu.show { display: flex; }
+
+.noti-menu-action {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: #172b4d;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+}
+.noti-menu-action:hover { background-color: #f4f5f7; }
+.noti-menu-action.delete { color: #d93025; }
+
+/* Loading Spinner nhỏ ở dưới */
+.noti-loading {
+    text-align: center; padding: 10px; color: #6b778c; font-size: 0.8rem;
+    display: none;
+}

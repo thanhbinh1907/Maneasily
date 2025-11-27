@@ -5,6 +5,7 @@ import Users from "../models/userModel.js";
 import Tasks from "../models/taskModel.js";
 import Columns from "../models/columnModel.js";
 import { v4 as uuidv4 } from 'uuid';
+import Notifications from "../models/notificationModel.js";
 
 const projectCtrl = {
     // --- 1. Lấy thông tin chi tiết 1 Project (Giữ nguyên hàm cũ của bạn) ---
@@ -242,6 +243,16 @@ const projectCtrl = {
                 $pull: { admins: memberId } // Xóa khỏi danh sách quản lý
             });
 
+            await Notifications.create({
+                recipient: memberId,
+                sender: userId,
+                content: `Bạn đã bị mời ra khỏi dự án "${project.title}"`,
+                type: 'project',
+                link: '#' // Kick rồi thì không còn link vào board nữa
+            });
+            await notif.populate("sender", "username avatar");
+            sendNotification(req, recipientId, notifObject);
+
             res.json({ msg: "Đã thu hồi quyền quản lý!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -250,31 +261,33 @@ const projectCtrl = {
     removeMember: async (req, res) => {
         try {
             const { projectId, memberId } = req.body;
-            const userId = req.user.id; // Người thực hiện kick
+            const userId = req.user.id; 
 
             const project = await Projects.findById(projectId);
             
+            // ... (Logic kiểm tra quyền cũ giữ nguyên) ...
             const isOwner = project.userOwner.toString() === userId;
             const isManager = project.admins.includes(userId);
-            
-            // Kiểm tra vai trò của người BỊ kick
             const targetIsOwner = project.userOwner.toString() === memberId;
             const targetIsManager = project.admins.includes(memberId);
 
-            // Logic phân quyền kick
             if (targetIsOwner) return res.status(403).json({ err: "Không thể kick chủ dự án." });
-            
-            // Nếu người kick là Manager -> Không được kick Owner hoặc Manager khác
-            if (isManager && targetIsManager) {
-                return res.status(403).json({ err: "Quản lý không thể kick quản lý khác." });
-            }
+            if (isManager && targetIsManager) return res.status(403).json({ err: "Quản lý không thể kick quản lý khác." });
+            if (!isOwner && !isManager) return res.status(403).json({ err: "Bạn không có quyền kick thành viên." });
 
-            // Chỉ Owner hoặc Manager mới được kick
-            if (!isOwner && !isManager) {
-                return res.status(403).json({ err: "Bạn không có quyền kick thành viên." });
+            // [LOGIC MỚI] Tạo thông báo bị kick khỏi dự án
+            if (memberId !== userId) {
+                await Notifications.create({
+                    recipient: memberId, // Người bị kick
+                    sender: userId,      // Người thực hiện
+                    content: `Bạn đã bị mời ra khỏi dự án "${project.title}"`,
+                    type: 'project',
+                    link: '#' // Không còn link vào dự án nữa
+                });
             }
+            await notif.populate("sender", "username avatar");
+            sendNotification(req, recipientId, notifObject);
 
-            // Thực hiện xóa
             await Projects.findByIdAndUpdate(projectId, {
                 $pull: { members: memberId, admins: memberId }
             });

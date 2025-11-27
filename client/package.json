@@ -12,6 +12,7 @@
         "vite-plugin-handlebars": "^2.0.0"
     },
     "dependencies": {
+        "socket.io-client": "^4.8.1",
         "sortablejs": "^1.15.6"
     }
 }

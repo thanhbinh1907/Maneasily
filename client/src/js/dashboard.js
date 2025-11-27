@@ -1,6 +1,7 @@
 import '../css/components/dashboard-layout.css'; 
 import { initProfileModal } from './components/profile-modal.js';
 import { showConfirm } from './utils/confirm.js';
+import { initNotifications } from './components/notification.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Kiểm tra đăng nhập
@@ -60,4 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. KÍCH HOẠT MODAL HỒ SƠ (TỰ ĐỘNG CHÈN HTML VÀO TRANG)
     initProfileModal();
+    // 5. KÍCH HOẠT THÔNG BÁO (MỚI)
+    initNotifications();
 });

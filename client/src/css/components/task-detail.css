@@ -98,3 +98,45 @@
 .time-remaining { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
 .time-ok { color: #2e8b57; }
 .time-late { color: #d93025; }
+
+/* --- Subtask Menu (3 chấm) --- */
+.subtask-menu-container {
+    position: relative;
+}
+.subtask-menu-btn {
+    color: #6b778c; cursor: pointer; padding: 5px; 
+    font-size: 1rem; transition: color 0.2s;
+}
+.subtask-menu-btn:hover { color: #172b4d; background: #ebecf0; border-radius: 4px; }
+
+.subtask-dropdown {
+    display: none;
+    position: absolute; right: 0; top: 100%;
+    background: white; border: 1px solid #dfe1e6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 6px; width: 180px; z-index: 10;
+    overflow: hidden;
+}
+.subtask-dropdown-item {
+    padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-size: 0.9rem; color: #172b4d;
+}
+.subtask-dropdown-item:hover { background-color: #f4f5f7; }
+.subtask-dropdown-item.delete { color: #d93025; border-top: 1px solid #eee; }
+
+/* --- Subtask Modal Tabs --- */
+.subtask-tab-btn {
+    flex: 1; border: none; background: none; padding: 12px;
+    font-weight: 600; color: #5e6c84; cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+.subtask-tab-btn:hover { background: #f9f9f9; color: #172b4d; }
+.subtask-tab-btn.active { color: #0079bf; border-bottom-color: #0079bf; }
+
+.subtask-tab-content { display: none; }
+.subtask-tab-content.active { display: block; animation: fadeIn 0.2s; }
+
+.sub-member-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px; border-bottom: 1px solid #f4f5f7;
+}

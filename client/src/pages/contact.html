@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/components/toast.css"> <link rel="stylesheet" href="/src/css/pages/contact.css">
+</head>
+<body>
+
+  {{> header }}
+
+  <section class="contact-hero">
+    <h1>Get in <span class="orange">Touch</span></h1>
+    <p>Have questions about Maneasily? We're here to help. Chat to our friendly team.</p>
+  </section>
+
+  <main class="contact-container">
+    <div class="contact-wrapper">
+      
+      <div class="contact-form-area">
+        <h2>Send us a message</h2>
+        <p>We'll get back to you within 24 hours.</p>
+        
+        <form id="contact-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="c-name">Name</label>
+              <input type="text" id="c-name" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label for="c-email">Email</label>
+              <input type="email" id="c-email" placeholder="you@gmail.com" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="c-subject">Subject</label>
+            <select id="c-subject">
+              <option value="support">Technical Support</option>
+              <option value="sales">Sales Inquiry</option>
+              <option value="feedback">Product Feedback</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="c-message">Message</label>
+            <textarea id="c-message" placeholder="How can we help?" rows="5" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-send">Send Message</button>
+        </form>
+      </div>
+
+      <div class="contact-info-area">
+        <h3>Contact Information</h3>
+        <p>Fill up the form and our team will get back to you within 24 hours.</p>
+        
+        <div class="info-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>0869 688 128</span>
+        </div>
+        <div class="info-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>support@maneasily.com</span>
+        </div>
+        <div class="info-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>106 Cau Giay, Hanoi, Vietnam</span>
+        </div>
+
+        <div class="social-follow">
+          <p>Follow us:</p>
+          <div class="social-icons">
+            <a href="https://www.facebook.com/profile.php?id=61584462657559&_rdc=1&_rdr#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="decorative-circle"></div>
+        <div class="decorative-circle small"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  {{> footer }}
+  
+  <script type="module" src="/src/js/common.js"></script>
+  <script type="module" src="/src/js/contact.js"></script>
+</body>
+</html>

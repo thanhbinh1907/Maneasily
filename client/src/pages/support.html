@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support Center - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/pages/support.css">
+</head>
+<body>
+
+  {{> header }}
+
+  <section class="support-hero">
+    <div class="hero-content">
+      <span class="pill-label">Support Center</span>
+      <h1>How can we help you today?</h1>
+      
+      <div class="search-box-container">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="support-search" placeholder="Search for articles, guides, or troubleshooting...">
+        <button class="btn-search">Search</button>
+      </div>
+      
+      <div class="popular-searches">
+        <span>Popular:</span>
+        <a href="#">Reset Password</a>
+        <a href="#">Billing</a>
+        <a href="#">API Keys</a>
+      </div>
+    </div>
+  </section>
+
+  <main class="support-container">
+    
+    <div class="support-nav-grid">
+      
+      <a href="/src/pages/help-center.html" class="nav-card">
+        <div class="icon-circle green"><i class="fa-solid fa-book-open"></i></div>
+        <h3>Documentation</h3>
+        <p>Browse detailed guides and articles in our Help Center.</p>
+        <span class="link-action">Visit Help Center &rarr;</span>
+      </a>
+
+      <a href="/src/pages/community.html" class="nav-card">
+        <div class="icon-circle blue"><i class="fa-solid fa-users"></i></div>
+        <h3>Community</h3>
+        <p>Ask questions and discuss with other Maneasily users.</p>
+        <span class="link-action">Join Discussion &rarr;</span>
+      </a>
+
+      <a href="/src/pages/contact.html" class="nav-card">
+        <div class="icon-circle orange"><i class="fa-solid fa-envelope"></i></div>
+        <h3>Contact Support</h3>
+        <p>Can't find what you need? Send a message to our team.</p>
+        <span class="link-action">Submit a Request &rarr;</span>
+      </a>
+
+    </div>
+
+    <section class="quick-faq-section">
+      <h2 class="section-title">Common Questions</h2>
+      <div class="accordion">
+        
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>I forgot my password, how do I reset it?</span>
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="accordion-content">
+            <p>You can reset your password by clicking "Forgot Password" on the Sign In page. We'll send you an email with instructions.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>How do I change my billing plan?</span>
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="accordion-content">
+            <p>Go to Settings > Billing in your dashboard. You can upgrade, downgrade, or cancel your plan at any time.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>Can I invite guests to my project?</span>
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <div class="accordion-content">
+            <p>Yes! On the Pro plan and above, you can invite unlimited guest users to view or comment on specific projects.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="status-banner">
+      <div class="status-indicator">
+        <span class="dot"></span>
+        <span class="text">All Systems Operational</span>
+      </div>
+      <a href="#" class="status-link">View Status Page</a>
+    </div>
+
+  </main>
+
+  {{> footer }}
+  
+  <script type="module" src="/src/js/common.js"></script>
+  <script type="module" src="/src/js/support.js"></script>
+</body>
+</html>

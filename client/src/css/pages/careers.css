@@ -1,0 +1,185 @@
+/* --- 1. Hero --- */
+.careers-hero {
+    text-align: center;
+    padding: 100px 20px 80px;
+    background-color: #fff;
+}
+
+.pill-label {
+    background-color: #e9f2ff; /* Màu xanh nhạt */
+    color: #0c66e4;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+.careers-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--color-text-dark);
+    line-height: 1.2;
+}
+
+.careers-hero p {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    max-width: 650px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+}
+
+.btn-hero {
+    display: inline-block;
+    background-color: var(--color-orange);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+.btn-hero:hover { background-color: var(--color-orange-hover); transform: translateY(-2px); }
+
+/* --- 2. Values Section --- */
+.careers-container {
+    max-width: 1100px;
+    margin: 0 auto 100px;
+    padding: 0 20px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+    color: var(--color-text-dark);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 100px;
+}
+
+.value-card {
+    text-align: center;
+    padding: 30px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+.value-card:hover { transform: translateY(-5px); }
+
+.icon-box {
+    width: 60px; height: 60px;
+    background-color: #fff7ef;
+    color: var(--color-orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.5rem;
+}
+
+.value-card h3 { font-size: 1.3rem; margin-bottom: 10px; color: var(--color-text-dark); }
+.value-card p { font-size: 1rem; color: var(--color-text-light); line-height: 1.6; }
+
+/* --- 3. Benefits Section (Nền tối hoặc màu khác) --- */
+.benefits-section { margin-bottom: 100px; }
+
+.benefits-bg {
+    background-color: #0d1b1e; /* Màu tối từ footer */
+    color: #fff;
+    border-radius: 24px;
+    padding: 60px;
+    display: flex;
+    gap: 60px;
+    align-items: center;
+}
+
+.benefits-text { flex: 1; }
+.benefits-text h2 { font-size: 2.5rem; margin-bottom: 20px; color: #fff; }
+.benefits-text p { font-size: 1.1rem; color: #ccc; line-height: 1.6; }
+
+.benefits-grid {
+    flex: 1.5;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.benefit-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 15px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.benefit-item:hover { background: rgba(255, 255, 255, 0.2); }
+.benefit-item i { color: var(--color-orange); font-size: 1.2rem; }
+
+/* --- 4. Job List --- */
+.jobs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.job-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 25px 30px;
+    text-decoration: none;
+    transition: all 0.2s;
+    opacity: 0;
+    transform: translateY(20px);
+}
+.job-card.visible { opacity: 1; transform: translateY(0); }
+
+.job-card:hover {
+    border-color: var(--color-orange);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    transform: translateX(5px);
+}
+
+.job-info h3 { font-size: 1.3rem; margin-bottom: 8px; color: var(--color-text-dark); }
+.job-meta { display: flex; gap: 20px; color: var(--color-text-light); font-size: 0.9rem; }
+.meta-item i { margin-right: 6px; color: #999; }
+
+.job-action { display: flex; align-items: center; gap: 20px; }
+.job-type {
+    background: #f4f5f7;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #44546f;
+}
+.job-card i.fa-arrow-right { color: var(--color-orange); transition: transform 0.2s; }
+.job-card:hover i.fa-arrow-right { transform: translateX(5px); }
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .careers-hero h1 { font-size: 2.5rem; }
+    .values-grid { grid-template-columns: 1fr; }
+    
+    .benefits-bg { flex-direction: column; padding: 40px 30px; }
+    .benefits-grid { width: 100%; }
+    
+    .job-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .job-action { width: 100%; justify-content: space-between; margin-top: 10px; }
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Careers - Join the Maneasily Team</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/pages/careers.css">
+</head>
+<body>
+
+  {{> header }}
+
+  <section class="careers-hero">
+    <div class="hero-content">
+      <span class="pill-label">We're Hiring!</span>
+      <h1>Build the future of <span class="orange">Productivity.</span></h1>
+      <p>Join a team of passionate creators, problem solvers, and dreamers. We're on a mission to help the world work smarter.</p>
+      <a href="#open-positions" class="btn-hero">View Open Roles</a>
+    </div>
+  </section>
+
+  <main class="careers-container">
+    
+    <section class="values-section">
+      <h2 class="section-title">Our Values</h2>
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="icon-box"><i class="fa-solid fa-heart"></i></div>
+          <h3>Put Users First</h3>
+          <p>We build tools that solve real problems for real people. Empathy is at the core of everything we do.</p>
+        </div>
+        <div class="value-card">
+          <div class="icon-box"><i class="fa-solid fa-bolt"></i></div>
+          <h3>Move Fast</h3>
+          <p>We believe in iteration and shipping quickly. We learn by doing and aren't afraid to make mistakes.</p>
+        </div>
+        <div class="value-card">
+          <div class="icon-box"><i class="fa-solid fa-people-group"></i></div>
+          <h3>Work Together</h3>
+          <p>Collaboration is our superpower. We support each other and celebrate wins as a team.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="benefits-section">
+      <div class="benefits-bg">
+        <div class="benefits-text">
+          <h2>Perks & Benefits</h2>
+          <p>We take care of our team so they can take care of our users.</p>
+        </div>
+        <div class="benefits-grid">
+          <div class="benefit-item"><i class="fa-solid fa-laptop-house"></i> <span>Remote First</span></div>
+          <div class="benefit-item"><i class="fa-solid fa-user-doctor"></i> <span>Health Insurance</span></div>
+          <div class="benefit-item"><i class="fa-solid fa-plane-departure"></i> <span>Unlimited PTO</span></div>
+          <div class="benefit-item"><i class="fa-solid fa-laptop"></i> <span>New Tech Gear</span></div>
+          <div class="benefit-item"><i class="fa-solid fa-book-open"></i> <span>Learning Budget</span></div>
+          <div class="benefit-item"><i class="fa-solid fa-mug-hot"></i> <span>Team Retreats</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="open-positions" class="jobs-section">
+      <h2 class="section-title">Open Positions</h2>
+      <div class="jobs-list">
+        
+        <a href="#" class="job-card">
+          <div class="job-info">
+            <h3>Senior Frontend Engineer</h3>
+            <div class="job-meta">
+              <span class="meta-item"><i class="fa-solid fa-code"></i> Engineering</span>
+              <span class="meta-item"><i class="fa-solid fa-location-dot"></i> Remote</span>
+            </div>
+          </div>
+          <div class="job-action">
+            <span class="job-type">Full-time</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="#" class="job-card">
+          <div class="job-info">
+            <h3>Product Designer (UI/UX)</h3>
+            <div class="job-meta">
+              <span class="meta-item"><i class="fa-solid fa-pen-nib"></i> Design</span>
+              <span class="meta-item"><i class="fa-solid fa-location-dot"></i> Hanoi / Remote</span>
+            </div>
+          </div>
+          <div class="job-action">
+            <span class="job-type">Full-time</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <a href="#" class="job-card">
+          <div class="job-info">
+            <h3>Growth Marketing Manager</h3>
+            <div class="job-meta">
+              <span class="meta-item"><i class="fa-solid fa-chart-line"></i> Marketing</span>
+              <span class="meta-item"><i class="fa-solid fa-location-dot"></i> Remote</span>
+            </div>
+          </div>
+          <div class="job-action">
+            <span class="job-type">Contract</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+  </main>
+
+  {{> footer }}
+  
+  <script type="module" src="/src/js/common.js"></script>
+  <script type="module" src="/src/js/careers.js"></script>
+</body>
+</html>

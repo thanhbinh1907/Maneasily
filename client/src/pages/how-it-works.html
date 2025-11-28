@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/pages/how-it-works.css">
+</head>
+<body>
+
+  {{> header }}
+
+  <section class="hiw-hero">
+    <div class="hero-content">
+      <span class="step-badge">Workflow</span>
+      <h1>From Chaos to <span class="green">Clarity</span> in 4 Steps.</h1>
+      <p>Maneasily isn't just a tool; it's a new way of working. See how easy it is to get started.</p>
+    </div>
+  </section>
+
+  <main class="steps-container">
+    
+    <div class="step-row">
+      <div class="step-image">
+        <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800" alt="Workspace">
+        <div class="step-number">1</div>
+      </div>
+      <div class="step-text">
+        <h3>Create Your Workspace</h3>
+        <p>Start by creating a <strong>Project</strong>. Think of it as a home for all your tasks, documents, and team discussions related to a specific goal.</p>
+        <ul class="step-features">
+          <li><i class="fa-solid fa-check"></i> Customizable Templates</li>
+          <li><i class="fa-solid fa-check"></i> Private or Public Boards</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-row reverse">
+      <div class="step-image">
+        <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800" alt="Tasks">
+        <div class="step-number">2</div>
+      </div>
+      <div class="step-text">
+        <h3>Populate with Tasks</h3>
+        <p>Break down your big goals into manageable <strong>Tasks</strong>. Add deadlines, labels, and descriptions so nothing falls through the cracks.</p>
+        <ul class="step-features">
+          <li><i class="fa-solid fa-check"></i> Rich Text Descriptions</li>
+          <li><i class="fa-solid fa-check"></i> Subtasks & Checklists</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-image">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800" alt="Team">
+        <div class="step-number">3</div>
+      </div>
+      <div class="step-text">
+        <h3>Invite Your Team</h3>
+        <p>Work is better together. Share your project via a secure link or email invite. Assign tasks to specific members and watch productivity soar.</p>
+        <ul class="step-features">
+          <li><i class="fa-solid fa-check"></i> Real-time Comments</li>
+          <li><i class="fa-solid fa-check"></i> Instant Notifications</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step-row reverse">
+      <div class="step-image">
+        <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800" alt="Done">
+        <div class="step-number">4</div>
+      </div>
+      <div class="step-text">
+        <h3>Track & Celebrate</h3>
+        <p>Move tasks to "Done" and visualize your progress. Use our analytics dashboard to see how your team is performing over time.</p>
+        <ul class="step-features">
+          <li><i class="fa-solid fa-check"></i> Progress Charts</li>
+          <li><i class="fa-solid fa-check"></i> Weekly Reports</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+  <section class="cta-section">
+    <h2>Ready to get organized?</h2>
+    <p>Join thousands of teams managing their work with Maneasily.</p>
+    <a href="/src/pages/signup.html" class="btn-cta">Start for Free</a>
+  </section>
+
+  {{> footer }}
+  <script type="module" src="/src/js/common.js"></script>
+  <script type="module" src="/src/js/how-it-works.js"></script>
+</body>
+</html>

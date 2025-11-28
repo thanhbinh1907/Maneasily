@@ -126,33 +126,75 @@ export function initNotifications() {
 
     // --- Helper tạo HTML cho 1 item (Dùng chung cho Fetch và Socket) ---
     function createNotifItemHTML(n) {
-        // Xử lý thời gian hiển thị
         const timeDisplay = new Date(n.createdAt).toLocaleString();
+        
+        // 👇 LOGIC MỚI: Nút bấm cho lời mời
+        let actionButtons = '';
+        if (n.type === 'invite') {
+            // n.link chứa inviteId (do ta đã lưu ở backend)
+            actionButtons = `
+            <div class="invite-actions" style="margin-top: 8px; display: flex; gap: 8px;">
+                <button onclick="window.respondInvite(event, '${n.link}', 'accept', '${n._id}')" 
+                        style="padding: 4px 10px; background: #2e8b57; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                    Đồng ý
+                </button>
+                <button onclick="window.respondInvite(event, '${n.link}', 'decline', '${n._id}')" 
+                        style="padding: 4px 10px; background: #dfe1e6; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                    Từ chối
+                </button>
+            </div>`;
+        }
 
         return `
             <div class="noti-item ${n.isRead ? '' : 'unread'}" data-id="${n._id}">
                 <img src="${n.sender?.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="noti-avatar">
-                <div class="noti-content" onclick="window.handleNotiClick('${n._id}', '${n.link || ''}')">
-                    <div>${n.content}</div>
-                    <span class="noti-time">${timeDisplay}</span>
+                <div class="noti-content">
+                    <div>
+                        <span style="font-weight:600">${n.sender?.username}</span> ${n.content}
+                    </div>
+                    ${actionButtons} <span class="noti-time">${timeDisplay}</span>
                 </div>
                 ${!n.isRead ? '<div class="noti-dot"></div>' : ''}
-                
-                <div class="noti-options-btn" onclick="window.toggleNotiItemMenu(event, '${n._id}')">
-                    <i class="fa-solid fa-ellipsis"></i>
                 </div>
-
-                <div id="noti-menu-${n._id}" class="noti-item-menu">
-                    <div class="noti-menu-action" onclick="window.markOneRead(event, '${n._id}')">
-                        <i class="fa-solid fa-check"></i> Đánh dấu đã đọc
-                    </div>
-                    <div class="noti-menu-action delete" onclick="window.deleteOneNoti(event, '${n._id}')">
-                        <i class="fa-regular fa-trash-can"></i> Xóa thông báo này
-                    </div>
-                </div>
-            </div>
         `;
     }
+
+    // 👇 HÀM XỬ LÝ SỰ KIỆN CLICK NÚT
+    window.respondInvite = async (e, inviteId, action, notifId) => {
+        e.stopPropagation(); // Chặn sự kiện click vào item cha
+        try {
+            const res = await fetch(`${API_BASE_URL}/users/invitation/response`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('maneasily_token') 
+                },
+                body: JSON.stringify({ inviteId, action })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(data.msg);
+                // Đánh dấu thông báo đã đọc/xử lý
+                await fetch(`${API_BASE_URL}/notification/${notifId}/read`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': localStorage.getItem('maneasily_token') }
+                });
+                
+                // Reload lại list thông báo hoặc xóa nút
+                const item = document.querySelector(`.noti-item[data-id="${notifId}"]`);
+                if(item) {
+                    item.querySelector('.invite-actions').innerHTML = `<span style="font-size:0.8rem; color:#2e8b57; font-style:italic;">Đã phản hồi (${action})</span>`;
+                    item.classList.remove('unread');
+                }
+                
+                // Nếu chấp nhận thì reload trang để thấy dự án mới
+                if (action === 'accept') setTimeout(() => location.reload(), 1000);
+            } else {
+                toast.error(data.err);
+            }
+        } catch(err) { toast.error("Lỗi kết nối"); }
+    };
 
     // --- 5. Infinite Scroll Logic ---
     listContainer.addEventListener('scroll', () => {

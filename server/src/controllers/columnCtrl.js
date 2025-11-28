@@ -10,13 +10,12 @@ const checkProjectAdmin = async (projectId, userId) => {
 };
 
 const columnCtrl = {
-    // --- 1. TẠO CỘT ---
+    // --- 1. TẠO CỘT (CẬP NHẬT SOCKET) ---
     createColumn: async (req, res) => {
         try {
             const { title, projectId } = req.body;
             const userId = req.user.id;
 
-            // Check quyền
             if (!(await checkProjectAdmin(projectId, userId))) {
                 return res.status(403).json({ err: "Chỉ quản lý mới được thêm cột." });
             }
@@ -28,6 +27,12 @@ const columnCtrl = {
 
             await Projects.findByIdAndUpdate(projectId, {
                 $push: { columns: newColumn._id, columnOrder: newColumn._id }
+            });
+            
+            // [MỚI] Gửi Socket báo cho mọi người biết có cột mới
+            req.io.to(projectId).emit('boardUpdated', {
+                msg: 'Column created',
+                updaterId: userId
             });
             
             res.json({ column: newColumn });
@@ -43,20 +48,20 @@ const columnCtrl = {
             const { idColumn, idColumnNew, idTask, taskOrder, taskOrderNew } = req.body;
             const userId = req.user.id;
 
-            // Lấy cột để tìm Project ID
             const column = await Columns.findById(idColumn);
             if (!column) return res.status(404).json({ err: "Cột không tồn tại" });
 
-            // Check quyền
             if (!(await checkProjectAdmin(column.project, userId))) {
                 return res.status(403).json({ err: "Thành viên không được thay đổi trạng thái task." });
             }
 
-            // Logic kéo thả (giữ nguyên)
+            // [SỬA ĐOẠN NÀY]
             if (idColumn === idColumnNew) {
+                // Kéo thả trong cùng 1 cột
                 await Columns.findByIdAndUpdate(idColumn, { taskOrder: taskOrderNew });
-                return res.json({ msg: "Đã cập nhật vị trí!" });
+                // ❌ XÓA DÒNG return res.json(...) Ở ĐÂY ĐI
             } else {
+                // Kéo sang cột khác
                 await Columns.findByIdAndUpdate(idColumn, {
                     $pull: { tasks: idTask },
                     taskOrder: taskOrder,
@@ -65,12 +70,17 @@ const columnCtrl = {
                     $push: { tasks: idTask },
                     taskOrder: taskOrderNew,
                 });
-                
-                // Cập nhật lại parent column của Task
                 await Tasks.findByIdAndUpdate(idTask, { column: idColumnNew });
-
-                return res.json({ msg: "Đã di chuyển task!" });
             }
+
+            // ✅ CODE CHẠY XUỐNG ĐÂY ĐỂ GỬI SOCKET
+            req.io.to(column.project.toString()).emit('boardUpdated', {
+                msg: 'Board has changed',
+                updaterId: userId 
+            });
+
+            return res.json({ msg: "Đã cập nhật vị trí!" }); // ✅ TRẢ VỀ KẾT QUẢ Ở CUỐI CÙNG
+
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
 
@@ -87,6 +97,10 @@ const columnCtrl = {
             }
 
             await Columns.findByIdAndUpdate(columnId, { title });
+
+            req.io.to(column.project.toString()).emit('boardUpdated', {
+                msg: 'Column title updated', updaterId: req.user.id
+            });
             res.json({ msg: "Cập nhật thành công!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -113,6 +127,10 @@ const columnCtrl = {
             });
 
             await Columns.findByIdAndDelete(id); // Xóa chính nó
+
+            req.io.to(column.project.toString()).emit('boardUpdated', {
+                msg: 'Column deleted', updaterId: req.user.id
+            });
 
             res.json({ msg: "Đã xóa cột thành công!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }

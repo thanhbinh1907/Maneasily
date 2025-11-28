@@ -10,7 +10,7 @@ const router = express.Router();
 
 // --- Routes cho PROJECT ---
 router.get('/project/:id', projectCtrl.getProject); // Lấy 1 project
-router.patch('/project/:id/columnorder', projectCtrl.updateColumnOrder); // Update cột
+router.patch('/project/:id/columnorder', auth, projectCtrl.updateColumnOrder);
 router.post('/project', projectCtrl.createProject); // Tạo project
 router.get('/projects', projectCtrl.getUserProjects); // Lấy danh sách project của user
 router.patch('/projects/order', projectCtrl.updateProjectOrder); //update project 

@@ -1,11 +1,10 @@
-// File: Maneasily/server/src/controllers/projectCtrl.js
-
 import Projects from "../models/projectModel.js";
 import Users from "../models/userModel.js"; 
 import Tasks from "../models/taskModel.js";
 import Columns from "../models/columnModel.js";
 import { v4 as uuidv4 } from 'uuid';
 import Notifications from "../models/notificationModel.js";
+import { sendNotification } from "../utils/socketUtils.js";
 
 const projectCtrl = {
     // --- 1. Lấy thông tin chi tiết 1 Project (Giữ nguyên hàm cũ của bạn) ---
@@ -34,12 +33,21 @@ const projectCtrl = {
         }
     },
 
-    // --- 2. Cập nhật thứ tự cột (Giữ nguyên hàm cũ) ---
+    // --- 2. Cập nhật thứ tự cột (CẬP NHẬT SOCKET) ---
     updateColumnOrder: async (req, res) => {
         try {
-            const { id } = req.params;
+            const { id } = req.params; // id ở đây là Project ID
             const { columnOrder } = req.body;
+            const userId = req.user.id; // Lấy được nhờ bước 1 đã thêm auth
+
             await Projects.findByIdAndUpdate(id, { columnOrder: columnOrder });
+            
+            // [MỚI] Gửi Socket báo cập nhật vị trí cột
+            req.io.to(id).emit('boardUpdated', {
+                msg: 'Column order updated',
+                updaterId: userId
+            });
+
             res.json({ msg: "Đã cập nhật thứ tự cột!" });
         } catch (err) {
             return res.status(500).json({ err: err.message });
@@ -228,7 +236,7 @@ const projectCtrl = {
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
 
-    // --- 2. Tước quyền Manager (Về thành viên thường) ---
+// --- 2. Tước quyền Manager (Về thành viên thường) ---
     demoteToMember: async (req, res) => {
         try {
             const { projectId, memberId } = req.body;
@@ -243,15 +251,17 @@ const projectCtrl = {
                 $pull: { admins: memberId } // Xóa khỏi danh sách quản lý
             });
 
-            await Notifications.create({
+            // 👇 [SỬA LẠI ĐOẠN NÀY] Thêm "const notif =" vào trước
+            const notif = await Notifications.create({
                 recipient: memberId,
                 sender: userId,
-                content: `Bạn đã bị mời ra khỏi dự án "${project.title}"`,
+                content: `Bạn đã bị thu hồi quyền quản lý dự án "${project.title}"`, // Sửa lại nội dung cho đúng ngữ cảnh
                 type: 'project',
-                link: '#' // Kick rồi thì không còn link vào board nữa
+                link: `/src/pages/Board.html?id=${projectId}`
             });
+            
             await notif.populate("sender", "username avatar");
-            sendNotification(req, recipientId, notifObject);
+            sendNotification(req, memberId, notif);
 
             res.json({ msg: "Đã thu hồi quyền quản lý!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
@@ -277,16 +287,18 @@ const projectCtrl = {
 
             // [LOGIC MỚI] Tạo thông báo bị kick khỏi dự án
             if (memberId !== userId) {
-                await Notifications.create({
-                    recipient: memberId, // Người bị kick
-                    sender: userId,      // Người thực hiện
+                // 👇 [SỬA LẠI ĐOẠN NÀY] Thêm "const notif ="
+                const notif = await Notifications.create({
+                    recipient: memberId, 
+                    sender: userId,      
                     content: `Bạn đã bị mời ra khỏi dự án "${project.title}"`,
                     type: 'project',
-                    link: '#' // Không còn link vào dự án nữa
+                    link: '#' 
                 });
+                
+                await notif.populate("sender", "username avatar");
+                sendNotification(req, memberId, notif);
             }
-            await notif.populate("sender", "username avatar");
-            sendNotification(req, recipientId, notifObject);
 
             await Projects.findByIdAndUpdate(projectId, {
                 $pull: { members: memberId, admins: memberId }

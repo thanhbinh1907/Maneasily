@@ -274,16 +274,33 @@ export function initShareFeature(projectId, canEdit = false) {
                     headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
                     body: JSON.stringify({ projectId, userId: userToAdd._id })
                 });
+
+                const data = await res.json(); // 👇 Đọc dữ liệu JSON trước để lấy thông báo
+
                 if(res.ok) {
-                    toast.success(`Đã thêm ${userToAdd.username}!`);
+                    // --- TRƯỜNG HỢP THÀNH CÔNG (200) ---
+                    // Server sẽ trả về msg: "Đã thêm thành công" HOẶC "Đã gửi lời mời..."
+                    toast.success(data.msg); 
+                    
                     dropdown.style.display = 'none';
                     searchInput.value = '';
-                    setTimeout(() => location.reload(), 1000);
+
+                    // 👇 Logic thông minh: 
+                    // Nếu là "gửi lời mời" (Private mode) -> KHÔNG reload trang (vì user chưa vào dự án ngay)
+                    // Nếu là "thêm trực tiếp" -> Reload để hiện avatar
+                    if (!data.msg.includes("lời mời")) {
+                        setTimeout(() => location.reload(), 1000);
+                    }
                 } else {
-                    const d = await res.json();
-                    toast.error(d.err || "Lỗi thêm thành viên");
+                    // --- TRƯỜNG HỢP LỖI (400, 403...) ---
+                    // Server trả về err: "Thành viên đã tồn tại" hoặc "Đang chờ xác nhận"
+                    // Hiển thị đúng lỗi server trả về để bạn biết nguyên nhân
+                    toast.error(data.err || "Lỗi thêm thành viên");
                 }
-            } catch(e) { toast.error("Lỗi server"); }
+            } catch(e) { 
+                console.error(e);
+                toast.error("Lỗi kết nối server"); 
+            }
         });
     }
 }

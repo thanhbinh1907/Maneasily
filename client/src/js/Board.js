@@ -7,11 +7,14 @@ import { initTaskModal, openTaskModal } from './components/task-modal.js';
 import { initColumnModal, openColumnModal } from './components/column-modal.js';
 import { showConfirm } from './utils/confirm.js';
 import { initTaskDetailModal, openTaskDetail } from './components/task-detail/index.js';
+import { io } from "socket.io-client";
 
 let currentProjectId = null;
 let boardContainer = null;
 let isUserAdminOrManager = false;
 let projectMembers = [];
+let socket = null;
+let socketDebounceTimer = null;
 
 /* =========================================s
    HELPER FUNCTIONS
@@ -215,11 +218,18 @@ function renderBoard(boardData) {
 
   isUserAdminOrManager = (currentUser._id === ownerId) || adminIds.includes(currentUser._id);
 
+  // [SỬA ĐỔI] Xử lý nút Thêm Cột ngay tại đây
   const btnAddColumn = document.getElementById('btn-add-column-header');
   if (btnAddColumn) {
-      btnAddColumn.style.display = isUserAdminOrManager ? 'flex' : 'none';
+      if (isUserAdminOrManager) {
+          btnAddColumn.style.display = 'flex';
+          // Gán sự kiện click trực tiếp (dùng onclick để tránh bị gán chồng nhiều lần)
+          btnAddColumn.onclick = () => openColumnModal();
+      } else {
+          btnAddColumn.style.display = 'none';
+      }
   }
-  
+
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
       const columnsMap = new Map(boardData.columns.map(c => [c._id, c]));
@@ -253,8 +263,6 @@ function renderBoard(boardData) {
       renderProjectMembers(boardData.members, boardData);
       initShareFeature(boardData._id, isUserAdminOrManager); 
   }
-  
-  checkOverdueNotification();
 }
 
 async function checkOverdueNotification() {
@@ -290,35 +298,55 @@ function initColumnDragAndDrop() {
 }
 
 function initTaskDragAndDrop() {
-  const taskLists = document.querySelectorAll('.task-list');
-  taskLists.forEach(taskListEl => {
-    if (taskListEl.sortableInstance) taskListEl.sortableInstance.destroy();
-
-    taskListEl.sortableInstance = new Sortable(taskListEl, {
-      group: 'shared-tasks', 
-      animation: 150,
-      ghostClass: 'task-ghost',
-      disabled: !isUserAdminOrManager,
-      sort: isUserAdminOrManager,
-      onEnd: function (evt) {
-        const itemEl = evt.item;
-        const oldColumnList = evt.from;
-        const newColumnList = evt.to;
-        const taskId = itemEl.getAttribute('data-task-id');
-        const oldColumnId = oldColumnList.getAttribute('data-column-id');
-        const newColumnId = newColumnList.getAttribute('data-column-id');
-        const taskOrderNew = Array.from(newColumnList.children).map(c => c.getAttribute('data-task-id'));
-        const taskOrder = (oldColumnId === newColumnId) ? taskOrderNew : Array.from(oldColumnList.children).map(c => c.getAttribute('data-task-id'));
-        
-        fetch(`${API_BASE_URL}/column`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
-            body: JSON.stringify({ idTask: taskId, idColumn: oldColumnId, idColumnNew: newColumnId, taskOrder, taskOrderNew })
-        }).catch(err => toast.error("Lỗi cập nhật vị trí"));
-      }
+    const taskLists = document.querySelectorAll('.task-list');
+    taskLists.forEach(taskListEl => {
+      if (taskListEl.sortableInstance) taskListEl.sortableInstance.destroy();
+  
+      taskListEl.sortableInstance = new Sortable(taskListEl, {
+        group: 'shared-tasks', 
+        animation: 150,
+        ghostClass: 'task-ghost',
+        disabled: !isUserAdminOrManager,
+        sort: isUserAdminOrManager,
+        onEnd: function (evt) {
+          const itemEl = evt.item;
+          const oldColumnList = evt.from;
+          const newColumnList = evt.to;
+          
+          // --- [MỚI] CẬP NHẬT SỐ LƯỢNG TASK TRÊN UI NGAY LẬP TỨC ---
+          const oldColEl = oldColumnList.closest('.board-column');
+          const newColEl = newColumnList.closest('.board-column');
+          
+          if (oldColEl) {
+              // Đếm số con trực tiếp trong list để cập nhật số
+              const countEl = oldColEl.querySelector('.task-count');
+              if (countEl) countEl.textContent = oldColumnList.children.length;
+          }
+          if (newColEl) {
+              const countEl = newColEl.querySelector('.task-count');
+              if (countEl) countEl.textContent = newColumnList.children.length;
+          }
+          // ----------------------------------------------------------
+  
+          const taskId = itemEl.getAttribute('data-task-id');
+          const oldColumnId = oldColumnList.getAttribute('data-column-id');
+          const newColumnId = newColumnList.getAttribute('data-column-id');
+          const taskOrderNew = Array.from(newColumnList.children).map(c => c.getAttribute('data-task-id'));
+          const taskOrder = (oldColumnId === newColumnId) ? taskOrderNew : Array.from(oldColumnList.children).map(c => c.getAttribute('data-task-id'));
+          
+          fetch(`${API_BASE_URL}/column`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
+              body: JSON.stringify({ idTask: taskId, idColumn: oldColumnId, idColumnNew: newColumnId, taskOrder, taskOrderNew })
+          }).catch(err => {
+              // Nếu lỗi mạng thì reload lại để hoàn tác
+              toast.error("Lỗi cập nhật vị trí");
+              fetchAndRenderBoard(currentProjectId);
+          });
+        }
+      });
     });
-  });
-}
+  }
 
 function initAddColumnButton() {
     const headerAddBtn = document.getElementById('btn-add-column-header');
@@ -345,6 +373,35 @@ function handleTaskAdded(newTask, columnId) {
     if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
 }
 
+// --- HÀM TẢI DỮ LIỆU (Tách ra để dùng lại) ---
+async function fetchAndRenderBoard(projectId) {
+    try {
+        const res = await fetch(`${API_BASE_URL}/project/${projectId}`);
+        if(!res.ok) throw new Error("Không thể tải dự án");
+        
+        const data = await res.json();
+        if (data.project) {
+            renderBoard(data.project);
+            
+            // Re-init Drag & Drop sau khi render lại
+            if(isUserAdminOrManager) {
+                initColumnDragAndDrop();
+                initTaskDragAndDrop(); // Hàm này cần gọi lại để gán Sortable cho DOM mới
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function handleColumnAdded(newColumn) {
+    const newColumnEl = createColumnElement(newColumn);
+    boardContainer.appendChild(newColumnEl);
+    initTaskDragAndDrop(); // Kích hoạt kéo thả cho cột mới
+    // Cuộn màn hình sang phải để thấy cột mới
+    boardContainer.scrollTo({ left: boardContainer.scrollWidth, behavior: 'smooth' });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
@@ -356,27 +413,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    currentProjectId = projectId; 
+
+    // --- 1. KẾT NỐI SOCKET (SỬA ĐỔI ĐỂ TỰ RE-JOIN) ---
+    socket = io("http://localhost:5000");
+        
+    // [MỚI] Lắng nghe sự kiện 'connect'. 
+    // Mỗi khi kết nối (lần đầu hoặc sau khi rớt mạng/reset server), nó sẽ tự chạy lại lệnh join.
+    socket.on('connect', () => {
+        console.log("⚡ Đã kết nối Socket, đang vào phòng:", projectId);
+        socket.emit('joinBoard', projectId);
+    });
+
+    // Logic nhận thông báo (giữ nguyên)
+    socket.on('boardUpdated', (data) => {
+        const currentUser = JSON.parse(localStorage.getItem('maneasily_user'));
+        
+        // 1. Nếu là chính mình -> Bỏ qua
+        if (currentUser && data.updaterId === currentUser._id) {
+            return;
+        }
+
+        console.log("⚡ Nhận tín hiệu update:", data); // Log để kiểm tra
+
+        // 2. Debounce reload
+        if (socketDebounceTimer) clearTimeout(socketDebounceTimer);
+        socketDebounceTimer = setTimeout(() => {
+            fetchAndRenderBoard(projectId);
+        }, 200); 
+    });
+
+    // --- 2. KHỞI TẠO CÁC MODAL ---
     initProfileModal();
-    initTaskModal(handleTaskAdded);
+    initTaskModal(handleTaskAdded); 
     initTaskDetailModal(); 
     
-    fetch(`${API_BASE_URL}/project/${projectId}`)
-        .then(res => {
-            if(!res.ok) throw new Error("Dự án không tồn tại hoặc bạn không có quyền truy cập");
-            return res.json();
-        })
-        .then(data => {
-            if (data.project) {
-                renderBoard(data.project);
-                
-                if(isUserAdminOrManager) initColumnDragAndDrop();
-                
-                initTaskDragAndDrop();
-                initAddColumnButton();
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            toast.error(err.message);
-        });
+    // [QUAN TRỌNG] Thêm dòng này để Modal cột nhận được Project ID
+    initColumnModal(projectId, handleColumnAdded); 
+    
+    // --- 3. TẢI DỮ LIỆU LẦN ĐẦU ---
+    fetchAndRenderBoard(projectId);
+    checkOverdueNotification();
 });

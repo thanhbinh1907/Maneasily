@@ -44,6 +44,15 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         onlineUsers = onlineUsers.filter(u => u.socketId !== socket.id);
     });
+
+    socket.on('joinBoard', (projectId) => {
+        socket.join(projectId);
+        console.log(`Socket ${socket.id} joined board: ${projectId}`);
+    });
+
+    socket.on('leaveBoard', (projectId) => {
+        socket.leave(projectId);
+    });
 });
 
 app.use(cors({

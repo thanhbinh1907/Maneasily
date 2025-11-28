@@ -4,7 +4,7 @@ import '../../css/components/modal.css';
 import '../../css/components/profile-modal.css';
 
 export function initProfileModal() {
-    // 1. KIỂM TRA VÀ TỰ ĐỘNG CHÈN HTML NẾU CHƯA CÓ
+    // 1. KIỂM TRA VÀ TỰ ĐỘNG CHÈN HTML (Cập nhật HTML mới)
     if (!document.getElementById('profile-modal')) {
         const modalHTML = `
         <div id="profile-modal" class="modal-overlay">
@@ -27,7 +27,21 @@ export function initProfileModal() {
                         <input type="text" id="edit-avatar" placeholder="https://example.com/avatar.jpg">
                         <small>Mẹo: Dán link ảnh từ Google, Facebook hoặc Gravatar.</small>
                     </div>
-                </div>
+
+                    <div class="private-mode-container">
+                        <div class="private-label-group">
+                            <span style="font-weight: 600; color: #44546f;">Chế độ Private</span>
+                            <div class="tooltip-wrapper">
+                                <i class="fa-regular fa-circle-question help-icon"></i>
+                                <span class="tooltip-text">Khi bật chế độ này, bạn sẽ không còn tự động nhận lời mời vào công việc, sẽ có thông báo hoặc email gửi đến khi có lời mời.</span>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="private-mode-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    </div>
                 <div class="modal-footer">
                     <button class="btn-modal btn-cancel" id="btn-cancel-profile">Hủy</button>
                     <button class="btn-modal btn-submit" id="btn-save-profile">Lưu thay đổi</button>
@@ -36,7 +50,6 @@ export function initProfileModal() {
         </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
-
     // 2. LOGIC XỬ LÝ (Như cũ nhưng tối ưu hơn)
     const profileLink = document.querySelector('a[href="/src/pages/profile.html"]'); // Nút kích hoạt trên Header
     const profileModal = document.getElementById('profile-modal');
@@ -51,6 +64,7 @@ export function initProfileModal() {
     const avatarInput = document.getElementById('edit-avatar');
     const emailDisplay = document.getElementById('profile-email-display');
     const previewImg = document.getElementById('profile-preview-img');
+    const privateToggle = document.getElementById('private-mode-toggle');
 
     const closeModal = () => profileModal.style.display = 'none';
 
@@ -62,14 +76,17 @@ export function initProfileModal() {
 
         usernameInput.value = currentUser.username;
         avatarInput.value = currentUser.avatar;
-        emailDisplay.textContent = currentUser.email;
-        previewImg.src = currentUser.avatar || "https://www.gravatar.com/avatar/default?d=mp";
+        document.getElementById('profile-email-display').textContent = currentUser.email;
+        document.getElementById('profile-preview-img').src = currentUser.avatar || "https://www.gravatar.com/avatar/default?d=mp";
         
-        // Đóng dropdown menu nếu đang mở
+        // 👇 [THÊM] Set trạng thái toggle từ dữ liệu user
+        if (privateToggle) {
+            privateToggle.checked = currentUser.isPrivate || false;
+        }
+
         document.getElementById('user-dropdown-menu')?.classList.remove('show');
         profileModal.style.display = 'flex';
     });
-
     // Các nút đóng
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
@@ -86,12 +103,15 @@ export function initProfileModal() {
     });
 
     // Lưu thay đổi
-    saveBtn.addEventListener('click', async () => {
+    document.getElementById('btn-save-profile').addEventListener('click', async () => {
         const newUsername = usernameInput.value.trim();
         const newAvatar = avatarInput.value.trim();
+        // 👇 [THÊM] Lấy giá trị toggle
+        const newIsPrivate = privateToggle.checked; 
 
         if (!newUsername) return toast.error("Tên người dùng không được để trống");
 
+        const saveBtn = document.getElementById('btn-save-profile');
         saveBtn.innerText = "Đang lưu...";
         saveBtn.disabled = true;
 
@@ -102,23 +122,26 @@ export function initProfileModal() {
                     'Content-Type': 'application/json',
                     'Authorization': localStorage.getItem('maneasily_token')
                 },
-                body: JSON.stringify({ username: newUsername, avatar: newAvatar })
+                body: JSON.stringify({ 
+                    username: newUsername, 
+                    avatar: newAvatar,
+                    isPrivate: newIsPrivate // ✅ Gửi lên server
+                })
             });
 
             const data = await res.json();
 
             if (res.ok) {
                 toast.success("Cập nhật hồ sơ thành công!");
-                
                 localStorage.setItem('maneasily_user', JSON.stringify(data.user));
                 
-                // Cập nhật Header ngay lập tức
+                // Cập nhật Header
                 const navAvatar = document.getElementById('nav-user-avatar');
                 const navName = document.getElementById('nav-user-name');
                 if (navAvatar) navAvatar.src = data.user.avatar;
                 if (navName) navName.textContent = data.user.username;
 
-                closeModal();
+                profileModal.style.display = 'none';
             } else {
                 toast.error(data.err || "Cập nhật thất bại");
             }

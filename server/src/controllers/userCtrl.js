@@ -94,7 +94,7 @@ const userCtrl = {
             // === LOGIC CŨ: THÊM TRỰC TIẾP (Nếu không bật Private) ===
             await Projects.findByIdAndUpdate(projectId, { $addToSet: { members: memberIdToAdd } });
             await Users.findByIdAndUpdate(memberIdToAdd, { $addToSet: { projects: projectId } });
-
+            
             // Thông báo như cũ
             const notif = await Notifications.create({
                 recipient: memberIdToAdd, sender: requesterId,
@@ -103,7 +103,8 @@ const userCtrl = {
             });
             await notif.populate("sender", "username avatar");
             sendNotification(req, memberIdToAdd, notif);
-
+            
+            await logActivity(req, projectId, "joined project", userToAdd.username, "đã tham gia dự án", "member");
             res.json({ msg: "Đã thêm thành viên thành công!" });
 
         } catch (err) { return res.status(500).json({ err: err.message }); }
@@ -168,7 +169,7 @@ const userCtrl = {
                     type: 'system'
                 });
                 sendNotification(req, invite.sender, notif);
-
+                await logActivity(req, invite.project, "joined project", "Thành viên mới", "đã chấp nhận lời mời tham gia", "member");
                 return res.json({ msg: "Đã tham gia dự án!", projectId: invite.project });
             } 
             

@@ -1,11 +1,18 @@
 import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema({
-    recipient: { type: mongoose.Types.ObjectId, ref: "users", required: true }, // Người nhận thông báo
-    sender: { type: mongoose.Types.ObjectId, ref: "users" }, // Người tạo ra hành động (Admin/Manager)
-    content: { type: String, required: true }, // Nội dung: "Bạn đã bị xóa khỏi dự án A"
-    type: { type: String, enum: ['project', 'task', 'system'], default: 'system' },
-    link: { type: String }, // Link để click vào (ví dụ link tới Board)
+    recipient: { type: mongoose.Types.ObjectId, ref: "users", required: true },
+    sender: { type: mongoose.Types.ObjectId, ref: "users" },
+    content: { type: String, required: true },
+    
+    // 👇👇👇 THÊM 'invite' VÀO MẢNG NÀY 👇👇👇
+    type: { 
+        type: String, 
+        enum: ['project', 'task', 'system', 'invite'], // <--- Thêm 'invite' ở đây
+        default: 'system' 
+    },
+    
+    link: { type: String },
     isRead: { type: Boolean, default: false }
 }, { timestamps: true });
 

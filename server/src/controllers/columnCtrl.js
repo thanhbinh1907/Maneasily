@@ -1,6 +1,7 @@
 import Columns from "../models/columnModel.js";
 import Projects from "../models/projectModel.js";
 import Tasks from "../models/taskModel.js";
+import { logActivity } from "../utils/activityUtils.js";
 
 // Hàm phụ check quyền (Copy logic giống bên taskCtrl)
 const checkProjectAdmin = async (projectId, userId) => {

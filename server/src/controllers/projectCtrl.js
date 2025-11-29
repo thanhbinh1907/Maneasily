@@ -5,6 +5,7 @@ import Columns from "../models/columnModel.js";
 import { v4 as uuidv4 } from 'uuid';
 import Notifications from "../models/notificationModel.js";
 import { sendNotification } from "../utils/socketUtils.js";
+import { logActivity } from "../utils/activityUtils.js";
 
 const projectCtrl = {
     // --- 1. Lấy thông tin chi tiết 1 Project (Giữ nguyên hàm cũ của bạn) ---
@@ -285,6 +286,9 @@ const projectCtrl = {
             if (isManager && targetIsManager) return res.status(403).json({ err: "Quản lý không thể kick quản lý khác." });
             if (!isOwner && !isManager) return res.status(403).json({ err: "Bạn không có quyền kick thành viên." });
 
+            const userToRemove = await Users.findById(memberId);
+            const memberName = userToRemove ? userToRemove.username : "Thành viên cũ";
+
             // [LOGIC MỚI] Tạo thông báo bị kick khỏi dự án
             if (memberId !== userId) {
                 // 👇 [SỬA LẠI ĐOẠN NÀY] Thêm "const notif ="
@@ -307,7 +311,7 @@ const projectCtrl = {
             await Users.findByIdAndUpdate(memberId, {
                 $pull: { projects: projectId }
             });
-            await logActivity(req, projectId, "removed member", "Thành viên", "đã mời thành viên ra khỏi dự án", "member");
+            await logActivity(req, projectId, "removed member", memberName, "đã mời thành viên ra khỏi dự án", "member");
             res.json({ msg: "Đã mời thành viên ra khỏi dự án." });
 
         } catch (err) { return res.status(500).json({ err: err.message }); }

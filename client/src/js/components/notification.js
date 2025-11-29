@@ -159,10 +159,21 @@ export function initNotifications() {
         `;
     }
 
-    // 👇 HÀM XỬ LÝ SỰ KIỆN CLICK NÚT
+    // 👇 HÀM XỬ LÝ: CHẤP NHẬN / TỪ CHỐI LỜI MỜI
     window.respondInvite = async (e, inviteId, action, notifId) => {
-        e.stopPropagation(); // Chặn sự kiện click vào item cha
+        e.stopPropagation(); // Ngăn việc click vào thông báo cha
+        
+        // 1. Tìm phần tử giao diện
+        const notifItem = document.querySelector(`.noti-item[data-id="${notifId}"]`);
+        const actionContainer = notifItem ? notifItem.querySelector('.invite-actions') : null;
+
+        // Hiệu ứng "Đang xử lý..." để user không bấm nhiều lần
+        if (actionContainer) {
+            actionContainer.innerHTML = '<span style="font-size:0.8rem; color:#666;">Đang xử lý...</span>';
+        }
+
         try {
+            // 2. Gọi API phản hồi
             const res = await fetch(`${API_BASE_URL}/users/invitation/response`, {
                 method: 'POST',
                 headers: { 
@@ -175,25 +186,47 @@ export function initNotifications() {
 
             if (res.ok) {
                 toast.success(data.msg);
-                // Đánh dấu thông báo đã đọc/xử lý
+
+                // 3. Đánh dấu thông báo là đã đọc (trong database)
                 await fetch(`${API_BASE_URL}/notification/${notifId}/read`, {
                     method: 'PATCH',
                     headers: { 'Authorization': localStorage.getItem('maneasily_token') }
                 });
                 
-                // Reload lại list thông báo hoặc xóa nút
-                const item = document.querySelector(`.noti-item[data-id="${notifId}"]`);
-                if(item) {
-                    item.querySelector('.invite-actions').innerHTML = `<span style="font-size:0.8rem; color:#2e8b57; font-style:italic;">Đã phản hồi (${action})</span>`;
-                    item.classList.remove('unread');
+                // 4. CẬP NHẬT GIAO DIỆN NGAY LẬP TỨC
+                if(notifItem) {
+                    // Xóa trạng thái chưa đọc (chấm đỏ, nền xanh)
+                    notifItem.classList.remove('unread');
+                    const dot = notifItem.querySelector('.noti-dot');
+                    if(dot) dot.remove();
+
+                    // Thay thế 2 nút bấm bằng dòng chữ kết quả
+                    if (actionContainer) {
+                        const statusText = action === 'accept' ? 'Bạn đã chấp nhận' : 'Bạn đã từ chối';
+                        const statusColor = action === 'accept' ? '#2e8b57' : '#d93025'; // Xanh lá hoặc Đỏ
+                        
+                        actionContainer.innerHTML = `
+                            <span style="font-size: 0.85rem; color: ${statusColor}; font-weight: 600; font-style: italic;">
+                                <i class="fa-solid ${action === 'accept' ? 'fa-check' : 'fa-xmark'}"></i> ${statusText}
+                            </span>
+                        `;
+                    }
                 }
                 
-                // Nếu chấp nhận thì reload trang để thấy dự án mới
-                if (action === 'accept') setTimeout(() => location.reload(), 1000);
+                // 5. Nếu chấp nhận -> Reload trang sau 1 giây để hiển thị Dự án mới
+                if (action === 'accept') {
+                    setTimeout(() => location.reload(), 1000);
+                }
             } else {
-                toast.error(data.err);
+                // Nếu lỗi -> Hiện lại nút (để user thử lại) hoặc báo lỗi
+                toast.error(data.err || "Có lỗi xảy ra");
+                if (actionContainer) actionContainer.innerHTML = '<span style="color:red; font-size:0.8rem;">Lỗi. Vui lòng tải lại trang.</span>';
             }
-        } catch(err) { toast.error("Lỗi kết nối"); }
+        } catch(err) { 
+            console.error(err);
+            toast.error("Lỗi kết nối");
+            if (actionContainer) actionContainer.innerHTML = '...'; // Reset tạm
+        }
     };
 
     // --- 5. Infinite Scroll Logic ---

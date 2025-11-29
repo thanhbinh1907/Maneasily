@@ -4,6 +4,7 @@ import Notifications from "../models/notificationModel.js";
 import Invitations from "../models/invitationModel.js"; 
 import { sendNotification } from "../utils/socketUtils.js";
 import { sendEmail } from "../utils/emailUtils.js";
+import { logActivity } from "../utils/activityUtils.js";
 
 const userCtrl = {
     // API Tìm kiếm người dùng (Tối ưu: Index + Prefix Regex + Lean + Projection)
@@ -146,36 +147,67 @@ const userCtrl = {
     // --- HÀM MỚI: XỬ LÝ CHẤP NHẬN / TỪ CHỐI ---
     respondInvitation: async (req, res) => {
         try {
-            const { inviteId, action } = req.body; // action: 'accept' | 'decline'
+            const { inviteId, action } = req.body; 
             const userId = req.user.id;
 
             const invite = await Invitations.findById(inviteId);
             if (!invite) return res.status(404).json({ err: "Lời mời không tồn tại." });
             if (invite.recipient.toString() !== userId) return res.status(403).json({ err: "Không có quyền." });
 
+            // Hàm phụ: Cập nhật thông báo cũ để mất nút bấm
+            const updateOriginalNotification = async (statusText) => {
+                await Notifications.findOneAndUpdate(
+                    { 
+                        recipient: userId, 
+                        type: 'invite', 
+                        link: inviteId 
+                    },
+                    {
+                        type: 'system', // Đổi về system
+                        content: `đã mời bạn tham gia dự án (Bạn đã ${statusText})`,
+                        isRead: true
+                    }
+                );
+            };
+
             if (action === 'accept') {
-                // Thêm vào dự án
+                // 1. Thêm vào dự án
                 await Projects.findByIdAndUpdate(invite.project, { $addToSet: { members: userId } });
                 await Users.findByIdAndUpdate(userId, { $addToSet: { projects: invite.project } });
                 
-                // Cập nhật trạng thái lời mời
+                // 2. Cập nhật trạng thái lời mời
                 invite.status = 'accepted';
                 await invite.save();
 
-                // Thông báo lại cho người mời
+                // 3. Cập nhật thông báo cũ (ẩn nút)
+                await updateOriginalNotification("chấp nhận");
+
+                // 4. Tạo thông báo mới cho người mời (SỬA LẠI ĐOẠN NÀY ĐẦY ĐỦ)
                 const notif = await Notifications.create({
-                    recipient: invite.sender, sender: userId,
+                    recipient: invite.sender, 
+                    sender: userId,
                     content: `đã chấp nhận lời mời vào dự án.`,
-                    type: 'system'
+                    type: 'system',
+                    link: `/src/pages/Board.html?id=${invite.project}` // Link đến dự án
                 });
+                
+                // Gửi Socket cho người mời
+                await notif.populate("sender", "username avatar");
                 sendNotification(req, invite.sender, notif);
+                
+                // 5. Ghi Log hoạt động
                 await logActivity(req, invite.project, "joined project", "Thành viên mới", "đã chấp nhận lời mời tham gia", "member");
+
                 return res.json({ msg: "Đã tham gia dự án!", projectId: invite.project });
             } 
             
             if (action === 'decline') {
                 invite.status = 'declined';
                 await invite.save();
+
+                // Cập nhật thông báo cũ (ẩn nút)
+                await updateOriginalNotification("từ chối");
+
                 return res.json({ msg: "Đã từ chối lời mời." });
             }
 

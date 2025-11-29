@@ -11,7 +11,7 @@ import projectRouter from './routers/projectRouter.js';
 import authRouter from './routers/authRouter.js';
 import userRouter from './routers/userRouter.js';
 import notificationRouter from './routers/notificationRouter.js';
-import './routers/activityRouter.js';
+import activityRouter from './routers/activityRouter.js';
 
 import session from 'express-session';
 import passport from 'passport';
@@ -92,6 +92,7 @@ app.use('/api', projectRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api', notificationRouter);
+app.use('/api', activityRouter);
 
 // 6. Khởi động Server bằng 'server.listen' (Không dùng app.listen)
 server.listen(PORT, () => {

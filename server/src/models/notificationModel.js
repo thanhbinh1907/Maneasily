@@ -5,10 +5,9 @@ const notificationSchema = new mongoose.Schema({
     sender: { type: mongoose.Types.ObjectId, ref: "users" },
     content: { type: String, required: true },
     
-    // 👇👇👇 THÊM 'invite' VÀO MẢNG NÀY 👇👇👇
     type: { 
         type: String, 
-        enum: ['project', 'task', 'system', 'invite'], // <--- Thêm 'invite' ở đây
+        enum: ['project', 'task', 'system', 'invite'], 
         default: 'system' 
     },
     

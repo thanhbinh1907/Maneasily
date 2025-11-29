@@ -13,14 +13,31 @@
     {{> sidebar active_activity=true }}
     <div class="app-main">
         {{> nav-top }}
-        <div class="page-content activity-page">
+        <div class="page-content activity-page">            
             <div class="activity-header">
-                <h2>Hoạt động dự án</h2>
-                <p>Theo dõi mọi cập nhật từ các dự án bạn tham gia.</p>
-            </div>
-            
-            <div class="activity-board-container" id="activity-board-list">
-                </div>
+              <h2>Hoạt động dự án</h2>
+              <p>Theo dõi mọi cập nhật từ các dự án bạn tham gia.</p>
+          </div>
+          
+          <div class="activity-scroll-wrapper">
+              
+              <div id="pinned-section" style="display: none; margin-bottom: 30px;">
+                  <h3 class="section-title" style="color: #ffab00; margin-bottom: 10px; font-size: 1.1rem;">
+                      <i class="fa-solid fa-thumbtack"></i> Đã ghim
+                  </h3>
+                  <div class="activity-board-container" id="pinned-list">
+                      </div>
+              </div>
+          
+              <div id="other-section">
+                  <h3 class="section-title" style="color: #44546f; margin-bottom: 10px; font-size: 1.1rem;">
+                      <i class="fa-solid fa-layer-group"></i> Tất cả dự án
+                  </h3>
+                  <div class="activity-board-container" id="other-list">
+                      </div>
+              </div>
+          
+          </div>
         </div>
     </div>
   </div>

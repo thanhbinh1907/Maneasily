@@ -5,6 +5,7 @@ import Works from "../models/workModel.js";
 import Comments from "../models/commentModel.js";
 import Notifications from "../models/notificationModel.js";
 import { sendNotification } from "../utils/socketUtils.js";
+import { logActivity } from "../utils/activityUtils.js";
 
 // Hàm phụ check quyền
 const checkPermission = async (projectId, userId) => {
@@ -96,7 +97,12 @@ const taskCtrl = {
                 msg: 'Task updated',
                 updaterId: req.user.id
             });        
-
+            if (updateData.isDone !== undefined) {
+                const action = updateData.isDone ? "completed task" : "uncompleted task";
+                await logActivity(req, oldTask.project, action, oldTask.title);
+            } else {
+                await logActivity(req, oldTask.project, "updated task", oldTask.title, "đã cập nhật thông tin");
+            }
             res.json({ msg: "Cập nhật thành công", task: updatedTask });
         } catch (err) { 
             console.error(err);
@@ -165,6 +171,7 @@ const taskCtrl = {
                 updaterId: userId
             });
 
+            await logActivity(req, projectId, "created task", title, "đã tạo công việc mới");
             res.json({ task: newTask });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -183,7 +190,7 @@ const taskCtrl = {
                 msg: 'Task deleted',
                 updaterId: req.user.id
             });
-
+            await logActivity(req, task.project, "deleted task", task.title, "đã xóa công việc");
             res.json({ msg: "Đã xóa nhiệm vụ thành công!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -200,6 +207,7 @@ const taskCtrl = {
             req.io.to(task.project.toString()).emit('boardUpdated', {
                 msg: 'Subtask added', updaterId: req.user.id
             });
+            await logActivity(req, task.project, "added subtask", title, `đã thêm việc con vào "${task.title}"`);
             res.json({ work: newWork });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -215,6 +223,8 @@ const taskCtrl = {
                     msg: 'Subtask toggled', updaterId: req.user.id
                 });
             }
+            const action = work.isDone ? "completed subtask" : "uncompleted subtask";
+            await logActivity(req, task.project, action, work.title, `trong công việc "${task.title}"`);
             res.json({ msg: "Đã cập nhật trạng thái", work });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -231,6 +241,8 @@ const taskCtrl = {
             await newComment.save();
             await Tasks.findByIdAndUpdate(taskId, { $push: { comments: newComment._id } });
             await newComment.populate("user", "username avatar");
+
+            await logActivity(req, task.project, "commented", task.title, content, "comment");
             res.json({ comment: newComment });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoạt động dự án - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/components/dashboard-layout.css">
+  <link rel="stylesheet" href="/src/css/pages/activity.css"> </head>
+<body>
+  <div class="app-container">
+    {{> sidebar active_activity=true }}
+    <div class="app-main">
+        {{> nav-top }}
+        <div class="page-content activity-page">
+            <div class="activity-header">
+                <h2>Hoạt động dự án</h2>
+                <p>Theo dõi mọi cập nhật từ các dự án bạn tham gia.</p>
+            </div>
+            
+            <div class="activity-board-container" id="activity-board-list">
+                </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="activity-zoom-modal" class="modal-overlay">
+      <div class="modal-content zoom-content">
+          <div class="modal-header">
+              <h2 id="zoom-project-title">Tên dự án</h2>
+              <button class="close-modal" id="close-zoom-modal">&times;</button>
+          </div>
+          <div class="modal-body zoom-body" id="zoom-logs-list">
+              </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script type="module" src="/src/js/dashboard.js"></script>
+  <script type="module" src="/src/js/activity.js"></script>
+</body>
+</html>

@@ -24,6 +24,7 @@ const columnCtrl = {
                 title, project: projectId, tasks: [], taskOrder: []
             });
             await newColumn.save();
+            await logActivity(req, projectId, "created column", title, "đã thêm danh sách mới", "column");
 
             await Projects.findByIdAndUpdate(projectId, {
                 $push: { columns: newColumn._id, columnOrder: newColumn._id }
@@ -97,6 +98,7 @@ const columnCtrl = {
             }
 
             await Columns.findByIdAndUpdate(columnId, { title });
+            await logActivity(req, column.project, "renamed column", title, `đã đổi tên danh sách thành "${title}"`, "column");
 
             req.io.to(column.project.toString()).emit('boardUpdated', {
                 msg: 'Column title updated', updaterId: req.user.id
@@ -131,7 +133,7 @@ const columnCtrl = {
             req.io.to(column.project.toString()).emit('boardUpdated', {
                 msg: 'Column deleted', updaterId: req.user.id
             });
-
+            await logActivity(req, column.project, "deleted column", column.title, "đã xóa danh sách", "column");
             res.json({ msg: "Đã xóa cột thành công!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     }

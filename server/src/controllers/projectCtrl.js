@@ -73,7 +73,7 @@ const projectCtrl = {
             });
 
             await newProject.save();
-
+            await logActivity(req, newProject._id, "created project", newProject.title, "đã tạo dự án", "project");
             await Users.findByIdAndUpdate(userId, {
                 $push: { projects: newProject._id }
             });
@@ -231,7 +231,7 @@ const projectCtrl = {
             await Projects.findByIdAndUpdate(projectId, {
                 $addToSet: { admins: memberId } // Thêm vào danh sách quản lý
             });
-
+            await logActivity(req, projectId, "promoted member", "Thành viên", "đã cấp quyền quản lý", "member");
             res.json({ msg: "Đã cấp quyền quản lý!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
@@ -307,7 +307,7 @@ const projectCtrl = {
             await Users.findByIdAndUpdate(memberId, {
                 $pull: { projects: projectId }
             });
-
+            await logActivity(req, projectId, "removed member", "Thành viên", "đã mời thành viên ra khỏi dự án", "member");
             res.json({ msg: "Đã mời thành viên ra khỏi dự án." });
 
         } catch (err) { return res.status(500).json({ err: err.message }); }

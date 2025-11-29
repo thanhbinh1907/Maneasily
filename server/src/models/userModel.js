@@ -51,7 +51,12 @@ const userSchema = new mongoose.Schema(
         isPrivate: {
             type: Boolean,
             default: false
-        } 
+        },
+        
+        activitySettings: {
+            pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }], // Danh sách ID dự án đã ghim
+            projectOrder: [{ type: mongoose.Types.ObjectId, ref: "projects" }]    // Thứ tự sắp xếp
+        }
     },
     {
         timestamps: true,

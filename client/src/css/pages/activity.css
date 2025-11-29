@@ -1,0 +1,118 @@
+/* File: Maneasily/client/src/css/pages/activity.css */
+
+.activity-page {
+    height: 100%;
+    overflow: hidden; /* Ẩn thanh cuộn của body */
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-header { margin-bottom: 20px; flex-shrink: 0; }
+
+/* Container ngang */
+.activity-board-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto; /* Cuộn ngang */
+    padding-bottom: 20px;
+    height: 100%;
+    align-items: flex-start;
+}
+
+/* Card Dự án */
+.activity-project-card {
+    background: #fff;
+    min-width: 320px;
+    width: 320px;
+    border-radius: 12px;
+    border: 1px solid #dfe1e6;
+    display: flex;
+    flex-direction: column;
+    max-height: 90%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: #f9fafc;
+}
+
+.activity-project-card.pinned {
+    border: 2px solid #ffab00;
+    background-color: #fffbf0;
+}
+
+.card-header {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    cursor: grab; /* Để kéo thả */
+}
+
+.card-header h3 { font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+.project-icon { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; }
+
+.card-actions { display: flex; gap: 8px; }
+.btn-action { background: none; border: none; cursor: pointer; color: #6b778c; transition: color 0.2s; }
+.btn-action:hover { color: #172b4d; }
+.btn-pin.active { color: #ffab00; }
+
+/* Log List (Trong Card nhỏ) */
+.logs-preview {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.log-item {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    padding: 8px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+.log-avatar { width: 30px; height: 30px; border-radius: 50%; }
+.log-content { flex-grow: 1; word-break: break-word; }
+.log-time { display: block; font-size: 0.75rem; color: #888; margin-top: 4px; }
+.highlight { font-weight: 600; color: #172b4d; }
+
+/* Nút Zoom */
+.card-footer {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+}
+.btn-zoom {
+    width: 100%;
+    padding: 8px;
+    background: #ebecf0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #44546f;
+}
+.btn-zoom:hover { background: #dfe1e6; }
+
+/* Zoom Modal Styles */
+.zoom-content {
+    width: 600px;
+    max-width: 90%;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.zoom-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f9fafc;
+}

@@ -11,6 +11,7 @@ import projectRouter from './routers/projectRouter.js';
 import authRouter from './routers/authRouter.js';
 import userRouter from './routers/userRouter.js';
 import notificationRouter from './routers/notificationRouter.js';
+import './routers/activityRouter.js';
 
 import session from 'express-session';
 import passport from 'passport';

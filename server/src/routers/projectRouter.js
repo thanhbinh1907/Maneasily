@@ -50,4 +50,7 @@ router.put('/task/work/:workId/toggle-member', auth, taskCtrl.toggleWorkMember);
 // COMMENTS
 router.post('/task/comment', auth, taskCtrl.addComment);
 
+// Schedule data
+router.get('/schedule/tasks', auth, taskCtrl.getScheduleData);
+
 export default router;

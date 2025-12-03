@@ -17,6 +17,9 @@ const taskSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        startTime: { 
+            type: Date, 
+        },
         deadline: {
             type: Date,
         },

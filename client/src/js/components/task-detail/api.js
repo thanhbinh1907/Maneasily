@@ -66,5 +66,43 @@ export const TaskAPI = {
             method: 'PUT', headers: getHeaders(), body: JSON.stringify({ memberId })
         });
         return res.ok;
+    },
+    // --- FILE MANAGER API ---
+    getFiles: async (taskId, folderId) => {
+        let url = `${API_BASE_URL}/task/${taskId}/files`;
+        if (folderId) url += `?folderId=${folderId}`;
+        const res = await fetch(url, { headers: getHeaders() });
+        return res.json();
+    },
+
+    createFolder: async (name, taskId, parentId) => {
+        const res = await fetch(`${API_BASE_URL}/folder`, {
+            method: 'POST', headers: getHeaders(),
+            body: JSON.stringify({ name, taskId, parentId })
+        });
+        return res.json();
+    },
+
+    uploadFile: async (file, taskId, folderId) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('taskId', taskId);
+        if (folderId) formData.append('folderId', folderId);
+
+        // Lưu ý: Khi dùng FormData, KHÔNG set Content-Type header thủ công (để trình duyệt tự set boundary)
+        const token = localStorage.getItem('maneasily_token');
+        const res = await fetch(`${API_BASE_URL}/file`, {
+            method: 'POST',
+            headers: { 'Authorization': token }, 
+            body: formData
+        });
+        return res.json();
+    },
+
+    deleteItem: async (type, id) => {
+        const res = await fetch(`${API_BASE_URL}/item/${type}/${id}`, {
+            method: 'DELETE', headers: getHeaders()
+        });
+        return res.ok;
     }
 };

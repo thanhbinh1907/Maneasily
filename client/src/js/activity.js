@@ -197,13 +197,13 @@ let currentZoomSkip = 0;
 function openZoomModal(item) {
     document.getElementById('zoom-project-title').textContent = item.project.title;
     const list = document.getElementById('zoom-logs-list');
-    list.innerHTML = renderLogs(item.activities); // Render 20 cái đầu
+    list.innerHTML = renderLogs(item.activities); 
     
     currentZoomProjectId = item.project._id;
-    currentZoomSkip = 20;
+    currentZoomSkip = 5;
     
     // Thêm nút "Tải thêm" nếu cần
-    if(item.activities.length >= 20) {
+    if(item.activities.length >= 5) {
         const btnMore = document.createElement('button');
         btnMore.className = 'btn-zoom'; 
         btnMore.textContent = 'Tải thêm hoạt động cũ hơn...';

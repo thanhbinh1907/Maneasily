@@ -12,6 +12,7 @@ import authRouter from './routers/authRouter.js';
 import userRouter from './routers/userRouter.js';
 import notificationRouter from './routers/notificationRouter.js';
 import activityRouter from './routers/activityRouter.js';
+import fileRouter from './routers/fileRouter.js';
 
 import session from 'express-session';
 import passport from 'passport';
@@ -93,6 +94,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api', notificationRouter);
 app.use('/api', activityRouter);
+app.use('/api', fileRouter);
 
 // 6. Khởi động Server bằng 'server.listen' (Không dùng app.listen)
 server.listen(PORT, () => {

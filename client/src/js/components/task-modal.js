@@ -19,6 +19,9 @@ export function initTaskModal(onSuccess) {
     const colorPicker = document.getElementById('custom-color-picker');
     const radios = document.querySelectorAll('input[name="taskColor"]');
 
+    const startTime = document.getElementById('task-start-time').value;
+    const deadline = document.getElementById('task-deadline-create').value;
+
     // Nếu người dùng chọn màu từ Picker -> Bỏ chọn các ô tròn có sẵn
     colorPicker?.addEventListener('input', () => {
         radios.forEach(r => r.checked = false);
@@ -51,7 +54,12 @@ export function initTaskModal(onSuccess) {
             const res = await fetch(`${API_BASE_URL}/task`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': token },
-                body: JSON.stringify({ title, dec, tag, color, columnId: activeColumnId, projectId: activeProjectId })
+                body: JSON.stringify({ 
+                    title, dec, tag, color, 
+                    startTime, deadline,
+                    columnId: activeColumnId, 
+                    projectId: activeProjectId 
+                })
             });
 
             const data = await res.json();

@@ -17,7 +17,7 @@ const activityCtrl = {
             const boardData = await Promise.all(projects.map(async (p) => {
                 const logs = await Activities.find({ project: p._id })
                     .sort({ createdAt: -1 })
-                    .limit(20)
+                    .limit(5)
                     .populate("user", "username avatar");
                 
                 return {

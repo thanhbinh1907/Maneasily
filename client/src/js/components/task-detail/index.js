@@ -9,7 +9,9 @@ let currentTask = null;
 let canEditTask = false;
 let isOverdue = false;
 let allProjectMembers = [];
-let currentSubtaskWork = null; // Lưu subtask đang được thao tác trong modal con
+let currentSubtaskWork = null; 
+let currentFolderId = null; // null = Gốc
+let currentFolderPath = [{ id: null, name: 'Gốc' }];
 
 // --- 1. KHỞI TẠO SỰ KIỆN (INIT) ---
 export function initTaskDetailModal() {
@@ -54,6 +56,9 @@ export function initTaskDetailModal() {
         if(canEditTask) document.getElementById('btn-save-desc').style.display = 'inline-block'; 
     });
 
+    // --- [MỚI] Sự kiện cho Start Time ---
+    document.getElementById('detail-start-time')?.addEventListener('change', () => handleUpdate('startTime'));
+
     document.getElementById('detail-deadline')?.addEventListener('change', () => handleUpdate('deadline'));
     document.getElementById('btn-save-tag')?.addEventListener('click', () => handleUpdate('tag'));
     
@@ -86,6 +91,11 @@ export function initTaskDetailModal() {
         dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
         if(dd.style.display === 'block') TaskView.renderAvailableMembers(currentTask.members, allProjectMembers);
     });
+
+    // 1.7. File Manager Events
+    document.getElementById('btn-create-folder')?.addEventListener('click', handleCreateFolder);
+    document.getElementById('file-upload-input')?.addEventListener('change', handleUploadFile);
+    document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, 'Gốc')); // Click về gốc
     
     // Đóng các menu khi click ra ngoài
     window.addEventListener('click', () => { 
@@ -93,6 +103,7 @@ export function initTaskDetailModal() {
         if(dd) dd.style.display = 'none'; 
         document.querySelectorAll('.subtask-dropdown').forEach(el => el.style.display = 'none');
     });
+    
 }
 
 // --- 2. OPEN MODAL (Entry Point) ---
@@ -160,6 +171,7 @@ function refreshUI() {
             }
         }
     }
+    loadFileManager();
 }
 // --- 4. XỬ LÝ CẬP NHẬT TASK CHÍNH ---
 async function handleUpdate(field) {
@@ -167,6 +179,7 @@ async function handleUpdate(field) {
     let body = {};
     if (field === 'title') body.title = document.getElementById('detail-title').value;
     else if (field === 'dec') body.dec = document.getElementById('detail-desc').value;
+    else if (field === 'startTime') body.startTime = document.getElementById('detail-start-time').value; // <--- Cập nhật startTime
     else if (field === 'deadline') body.deadline = document.getElementById('detail-deadline').value;
     else if (field === 'tag') body.tag = document.getElementById('detail-tag-input').value;
     else if (field === 'color') {
@@ -210,36 +223,6 @@ async function handlePostComment() {
 // ============================================================
 // --- 5. GLOBAL EXPORTS (CÁC HÀM GỌI TỪ HTML ONCLICK) ---
 // ============================================================
-
-// API Toggle Member Subtask (SỬA ĐỔI)
-window.toggleSubtaskMember = async (workId, memberId) => {
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
-    
-    // [MỚI] Chặn ngay tại client nếu đã quá hạn
-    if (isOverdue) {
-        return toast.error("Task đã quá hạn! Không thể thay đổi thành viên subtask.");
-    }
-
-    if (await TaskAPI.toggleMemberSubtask(workId, memberId)) {
-        // Reload data
-        const data = await TaskAPI.getDetail(currentTask._id);
-        currentTask = data.task;
-        refreshUI();
-        
-        // Re-render modal con nếu đang mở
-        currentSubtaskWork = currentTask.works.find(w => w._id === workId);
-        if (document.getElementById('subtask-member-modal').style.display === 'flex') {
-            // Cần import lại renderSubtaskManagerUI hoặc move nó ra scope ngoài nếu chưa truy cập được
-            // Ở file gốc hàm này nằm trong scope module, nên gọi trực tiếp được:
-            // Lưu ý: Hàm renderSubtaskManagerUI phải được định nghĩa trong file này (như file gốc bạn gửi)
-             // Gọi hàm render lại danh sách trong modal con (Copy từ file gốc của bạn)
-             renderSubtaskManagerUI(); 
-             toast.success("Cập nhật thành công");
-        }
-    } else {
-        toast.error("Lỗi cập nhật hoặc task đã quá hạn");
-    }
-};
 
 window.openSubtaskManager = (workId) => {
     document.querySelectorAll('.subtask-dropdown').forEach(el => el.style.display = 'none');
@@ -302,6 +285,12 @@ function renderSubtaskManagerUI() {
 // API Toggle Member Subtask
 window.toggleSubtaskMember = async (workId, memberId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
+    
+    // [MỚI] Chặn ngay tại client nếu đã quá hạn
+    if (isOverdue) {
+        return toast.error("Task đã quá hạn! Không thể thay đổi thành viên subtask.");
+    }
+
     if (await TaskAPI.toggleMemberSubtask(workId, memberId)) {
         // Reload data
         const data = await TaskAPI.getDetail(currentTask._id);
@@ -315,7 +304,7 @@ window.toggleSubtaskMember = async (workId, memberId) => {
             toast.success("Cập nhật thành công");
         }
     } else {
-        toast.error("Lỗi cập nhật");
+        toast.error("Lỗi cập nhật hoặc task đã quá hạn");
     }
 };
 
@@ -323,8 +312,6 @@ window.toggleSubtaskMember = async (workId, memberId) => {
 window.toggleSubtask = async (workId) => {
     // Member cũng được tick done nếu chưa quá hạn
     if (isOverdue) return toast.error("Đã quá hạn! Không thể thay đổi.");
-    
-    // Nếu muốn chặn member: if (!canEditTask) return toast.error(...);
     
     if (await TaskAPI.toggleSubtask(workId)) {
         const w = currentTask.works.find(x => x._id === workId);
@@ -404,3 +391,175 @@ window.handleSubtaskDrop = async (e, workId) => {
         toast.success("Đã cập nhật người làm");
     }
 };
+
+// Toggle menu 3 chấm (export ra global)
+window.toggleSubtaskMenu = (workId) => {
+    const menu = document.getElementById(`subtask-menu-${workId}`);
+    // Đóng các menu khác trước
+    document.querySelectorAll('.subtask-dropdown').forEach(el => {
+        if(el !== menu) el.style.display = 'none';
+    });
+    // Toggle menu hiện tại
+    if (menu) {
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+};
+
+// --- LOGIC FILE MANAGER ---
+
+async function loadFileManager() {
+    const container = document.getElementById('file-list-container');
+    container.innerHTML = '<div style="font-size:0.8rem; color:#666;">Đang tải...</div>';
+
+    const data = await TaskAPI.getFiles(currentTask._id, currentFolderId);
+    renderFileList(data.folders, data.files);
+    renderBreadcrumb();
+}
+
+function renderFileList(folders, files) {
+    const container = document.getElementById('file-list-container');
+    container.innerHTML = '';
+
+    if (folders.length === 0 && files.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999; font-size: 0.85rem; padding: 20px;">Thư mục trống</div>';
+        return;
+    }
+
+    // 1. Render Folders
+    folders.forEach(f => {
+        const el = document.createElement('div');
+        el.className = 'file-item';
+        el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
+        el.innerHTML = `
+            <i class="fa-solid fa-folder" style="font-size: 2rem; color: #ffab00; display: block; margin-bottom: 5px;"></i>
+            <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.name}</div>
+            <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
+        `;
+        
+        // Click để vào folder
+        el.addEventListener('click', (e) => {
+            if(e.target.classList.contains('btn-delete-file')) return;
+            navigateFolder(f._id, f.name);
+        });
+
+        // Hover để hiện nút xóa
+        el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
+        el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
+        
+        // Xóa folder
+        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('folder', f._id));
+
+        container.appendChild(el);
+    });
+
+    // 2. Render Files
+    files.forEach(f => {
+        const el = document.createElement('div');
+        el.className = 'file-item';
+        el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
+        
+        // Icon tùy theo loại file
+        let icon = 'fa-file';
+        let color = '#6b778c';
+        if (f.mimetype.includes('image')) { icon = 'fa-file-image'; color = '#a6c5f7'; }
+        else if (f.mimetype.includes('pdf')) { icon = 'fa-file-pdf'; color = '#d93025'; }
+        else if (f.mimetype.includes('word')) { icon = 'fa-file-word'; color = '#0079bf'; }
+
+        // URL file
+        const fileUrl = `http://localhost:5000/${f.path.replace(/\\/g, '/')}`;
+
+        el.innerHTML = `
+            <i class="fa-solid ${icon}" style="font-size: 2rem; color: ${color}; display: block; margin-bottom: 5px;"></i>
+            <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.originalName}">${f.originalName}</div>
+            <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
+        `;
+
+        // Click để mở file
+        el.addEventListener('click', (e) => {
+            if(e.target.classList.contains('btn-delete-file')) return;
+            window.open(fileUrl, '_blank');
+        });
+
+        el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
+        el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
+        
+        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('file', f._id));
+
+        container.appendChild(el);
+    });
+}
+
+function renderBreadcrumb() {
+    const bc = document.getElementById('file-breadcrumb');
+    bc.innerHTML = '';
+    
+    currentFolderPath.forEach((item, index) => {
+        const span = document.createElement('span');
+        span.innerHTML = (index === 0) ? `<i class="fa-solid fa-house"></i>` : item.name;
+        span.style.cursor = 'pointer';
+        span.style.padding = '0 4px';
+        
+        if (index === currentFolderPath.length - 1) {
+            span.style.fontWeight = 'bold';
+            span.style.color = '#000';
+        } else {
+            span.style.color = '#0079bf';
+            span.innerHTML += ' <span style="color:#666">/</span> ';
+        }
+
+        span.addEventListener('click', () => {
+            // Quay lại folder này: cắt mảng path từ đầu đến index hiện tại
+            currentFolderPath = currentFolderPath.slice(0, index + 1);
+            currentFolderId = item.id;
+            loadFileManager();
+        });
+
+        bc.appendChild(span);
+    });
+}
+
+function navigateFolder(folderId, folderName) {
+    currentFolderId = folderId;
+    // Nếu về gốc
+    if (folderId === null) {
+        currentFolderPath = [{ id: null, name: 'Gốc' }];
+    } else {
+        currentFolderPath.push({ id: folderId, name: folderName });
+    }
+    loadFileManager();
+}
+
+async function handleCreateFolder() {
+    if (!canEditTask) return toast.error("Bạn không có quyền.");
+    const name = prompt("Nhập tên thư mục mới:");
+    if (name) {
+        await TaskAPI.createFolder(name, currentTask._id, currentFolderId);
+        loadFileManager();
+        toast.success("Đã tạo thư mục");
+    }
+}
+
+async function handleUploadFile(e) {
+    if (!canEditTask) return toast.error("Bạn không có quyền.");
+    const file = e.target.files[0];
+    if (!file) return;
+
+    toast.info("Đang tải lên...");
+    try {
+        await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
+        loadFileManager();
+        toast.success("Tải lên thành công");
+    } catch (err) {
+        toast.error("Lỗi tải lên");
+    }
+    e.target.value = ''; // Reset input
+}
+
+async function deleteItem(type, id) {
+    if (!canEditTask) return toast.error("Bạn không có quyền.");
+    showConfirm(`Xóa ${type === 'file' ? 'tệp' : 'thư mục'} này?`, async () => {
+        await TaskAPI.deleteItem(type, id);
+        loadFileManager();
+        toast.success("Đã xóa");
+    });
+}

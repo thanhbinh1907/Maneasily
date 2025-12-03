@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch trình - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/src/css/components/dashboard-layout.css">
+  <link rel="stylesheet" href="/src/css/pages/schedule.css">
+</head>
+<body>
+
+  <div class="app-container">
+    {{> sidebar active_schedule=true }}
+
+    <div class="app-main">
+        {{> nav-top }}
+
+        <div class="page-content schedule-page">
+            <h2 class="page-title">Tổng quan Lịch trình</h2>
+
+            <div class="chart-container large-chart">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-timeline"></i> Tiến độ công việc (Timeline)</h3>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container half-chart">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Trạng thái công việc</h3>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container half-chart">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-chart-bar"></i> Số lượng việc theo Dự án</h3>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="projectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+  <script type="module" src="/src/js/dashboard.js"></script>
+  <script type="module" src="/src/js/schedule.js"></script>
+</body>
+</html>

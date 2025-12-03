@@ -29,7 +29,20 @@ export const TaskView = {
         });
         if (colorPicker) colorPicker.value = task.color;
 
-        // Deadline
+        // --- [MỚI] XỬ LÝ START TIME ---
+        const startInput = document.getElementById('detail-start-time');
+        if (startInput) {
+            if (task.startTime) {
+                const s = new Date(task.startTime);
+                // Chỉnh múi giờ local để hiển thị đúng trong input datetime-local
+                s.setMinutes(s.getMinutes() - s.getTimezoneOffset());
+                startInput.value = s.toISOString().slice(0, 16);
+            } else {
+                startInput.value = "";
+            }
+        }
+
+        // --- XỬ LÝ DEADLINE ---
         const deadlineInput = document.getElementById('detail-deadline');
         const timeDisplay = document.getElementById('time-remaining-display');
         if (deadlineInput && task.deadline) {
@@ -91,7 +104,6 @@ export const TaskView = {
                 ).join('');
             }
 
-            // --- THAY ĐỔI Ở ĐÂY: MENU 3 CHẤM ---
             const menuHTML = canEdit ? `
                 <div class="subtask-menu-container">
                     <i class="fa-solid fa-ellipsis subtask-menu-btn" onclick="event.stopPropagation(); window.toggleSubtaskMenu('${w._id}')"></i>
@@ -156,13 +168,13 @@ export const TaskView = {
     },
 
     toggleEditMode: (canEdit) => {
-        const ids = ['detail-title', 'detail-desc', 'btn-save-desc', 'new-subtask-input', 'btn-add-subtask', 'detail-tag-input', 'btn-save-tag', 'detail-deadline', 'btn-add-member-detail', 'btn-delete-task-detail'];
+        // Thêm detail-start-time vào danh sách cần toggle
+        const ids = ['detail-title', 'detail-desc', 'btn-save-desc', 'new-subtask-input', 'btn-add-subtask', 'detail-tag-input', 'btn-save-tag', 'detail-start-time', 'detail-deadline', 'btn-add-member-detail', 'btn-delete-task-detail'];
         ids.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.disabled = !canEdit;
                 if(el.tagName === 'BUTTON') {
-                    // Hiển thị lại nút nếu có quyền (trừ nút lưu desc)
                     if(canEdit) {
                         if(id !== 'btn-save-desc') el.style.display = ''; 
                     } else {

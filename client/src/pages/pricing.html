@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing - Maneasily</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/pages/pricing.css">
+</head>
+<body>
+
+  {{> header }}
+
+  <section class="pricing-hero">
+    <div class="hero-content">
+      <span class="pill-label">Plans & Pricing</span>
+      <h1>Simple pricing for <span class="orange">everyone.</span></h1>
+      <p>Whether you're a team of one or one hundred, we have a plan that fits your workflow.</p>
+      
+      <div class="pricing-toggle">
+        <span class="toggle-label active" id="label-monthly">Monthly</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-switch">
+          <span class="slider round"></span>
+        </label>
+        <span class="toggle-label" id="label-yearly">Yearly <span class="discount-badge">-20%</span></span>
+      </div>
+    </div>
+  </section>
+
+  <main class="pricing-container">
+    <div class="pricing-grid">
+      
+      <div class="pricing-card">
+        <div class="card-header">
+          <h3>Free</h3>
+          <p class="desc">For individuals getting started.</p>
+          <div class="price-box">
+            <span class="currency">$</span>
+            <span class="amount">0</span>
+            <span class="period">/mo</span>
+          </div>
+          <a href="/src/pages/signup.html" class="btn-plan btn-outline">Get Started</a>
+        </div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Unlimited Tasks</li>
+          <li><i class="fa-solid fa-check"></i> 2 Projects</li>
+          <li><i class="fa-solid fa-check"></i> 50MB Storage</li>
+          <li><i class="fa-solid fa-check"></i> Basic Integrations</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card popular">
+        <div class="popular-tag">Most Popular</div>
+        <div class="card-header">
+          <h3>Pro</h3>
+          <p class="desc">For power users and small teams.</p>
+          <div class="price-box">
+            <span class="currency">$</span>
+            <span class="amount" data-monthly="9" data-yearly="7">9</span>
+            <span class="period">/mo</span>
+          </div>
+          <a href="/src/pages/signup.html" class="btn-plan btn-solid">Try for Free</a>
+        </div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Everything in Free</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited Projects</li>
+          <li><i class="fa-solid fa-check"></i> 10GB Storage</li>
+          <li><i class="fa-solid fa-check"></i> Gantt Charts & Timeline</li>
+          <li><i class="fa-solid fa-check"></i> Priority Support</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <div class="card-header">
+          <h3>Business</h3>
+          <p class="desc">For growing organizations.</p>
+          <div class="price-box">
+            <span class="currency">$</span>
+            <span class="amount" data-monthly="19" data-yearly="15">19</span>
+            <span class="period">/mo</span>
+          </div>
+          <a href="#" class="btn-plan btn-outline">Contact Sales</a>
+        </div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+          <li><i class="fa-solid fa-check"></i> Admin & Security Features</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited Storage</li>
+          <li><i class="fa-solid fa-check"></i> Custom Onboarding</li>
+          <li><i class="fa-solid fa-check"></i> SSO Authentication</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <section class="faq-section">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>Can I change plans later?</h4>
+          <p>Yes, you can upgrade or downgrade at any time. Changes will be applied to your next billing cycle.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Is there a free trial?</h4>
+          <p>We offer a 14-day free trial for the Pro plan. No credit card required to start.</p>
+        </div>
+        <div class="faq-item">
+          <h4>What payment methods do you accept?</h4>
+          <p>We accept all major credit cards, PayPal, and bank transfers for annual Business plans.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can I cancel anytime?</h4>
+          <p>Absolutely. There are no long-term contracts or cancellation fees.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  {{> footer }}
+  <script type="module" src="/src/js/common.js"></script>
+  <script type="module" src="/src/js/pricing.js"></script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+/* --- 1. Hero --- */
+.community-hero {
+    text-align: center;
+    padding: 100px 20px 80px;
+    background-color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hiệu ứng nền nhẹ */
+.hero-bg-pattern {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(#e1e1e1 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity: 0.5;
+    z-index: 0;
+}
+
+.hero-content { position: relative; z-index: 1; }
+
+.pill-label {
+    background-color: #f0fdf4; /* Xanh lá nhạt */
+    color: var(--color-green);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+    display: inline-block;
+}
+
+.community-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--color-text-dark);
+}
+
+.community-hero p {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+}
+
+.hero-buttons {
+    display: flex; justify-content: center; gap: 15px;
+}
+
+.btn-discord {
+    background-color: #5865F2; /* Màu Discord */
+    color: white;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-discord:hover { background-color: #4752c4; transform: translateY(-2px); }
+
+.btn-secondary {
+    background-color: #fff;
+    color: var(--color-text-dark);
+    border: 1px solid #ddd;
+    padding: 14px 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.btn-secondary:hover { background-color: #f9f9f9; border-color: #bbb; }
+
+/* --- 2. Social Hub --- */
+.community-container {
+    max-width: 1100px;
+    margin: 0 auto 100px;
+    padding: 0 20px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+    color: var(--color-text-dark);
+}
+
+.hub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 100px;
+}
+
+.hub-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 30px;
+    text-decoration: none;
+    color: var(--color-text-dark);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.hub-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.card-icon { font-size: 2.5rem; margin-bottom: 20px; }
+.discord .card-icon { color: #5865F2; }
+.twitter .card-icon { color: #1DA1F2; }
+.github .card-icon { color: #333; }
+.reddit .card-icon { color: #FF4500; }
+
+.hub-card h3 { font-size: 1.4rem; margin-bottom: 10px; }
+.hub-card p { font-size: 1rem; color: var(--color-text-light); margin-bottom: 20px; line-height: 1.5; }
+.link-text { font-weight: 600; font-size: 0.95rem; margin-top: auto; }
+.discord .link-text { color: #5865F2; }
+.twitter .link-text { color: #1DA1F2; }
+.github .link-text { color: #333; }
+.reddit .link-text { color: #FF4500; }
+
+/* --- 3. Events Section --- */
+.events-section { margin-bottom: 100px; }
+.events-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.events-header h2 { font-size: 2rem; font-weight: 700; color: var(--color-text-dark); }
+.view-all { color: var(--color-orange); text-decoration: none; font-weight: 600; }
+
+.events-list { display: flex; flex-direction: column; gap: 20px; }
+
+.event-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+.event-card:hover { transform: translateX(5px); }
+
+.event-date {
+    background: #f4f5f7;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    min-width: 80px;
+}
+.event-date .day { display: block; font-size: 1.8rem; font-weight: 800; color: var(--color-text-dark); line-height: 1; }
+.event-date .month { display: block; font-size: 0.85rem; font-weight: 600; color: #6b778c; text-transform: uppercase; margin-top: 5px; }
+
+.event-details { flex: 1; }
+.event-tag { 
+    display: inline-block; font-size: 0.75rem; font-weight: 700; 
+    padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 8px; 
+}
+.webinar { background: #e9f2ff; color: #0c66e4; }
+.workshop { background: #fff7d6; color: #b38600; }
+
+.event-details h3 { font-size: 1.3rem; margin-bottom: 5px; color: var(--color-text-dark); }
+.event-details p { color: #666; font-size: 0.95rem; margin-bottom: 10px; }
+.event-meta { display: flex; gap: 20px; font-size: 0.9rem; color: #6b778c; }
+.event-meta i { margin-right: 5px; }
+
+.btn-register {
+    background: var(--color-text-dark);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-register:hover { background: #000; }
+
+/* --- 4. Spotlight Section --- */
+.spotlight-section {
+    text-align: center;
+    background: #fff7ef;
+    padding: 60px;
+    border-radius: 20px;
+}
+.spotlight-section h2 { font-size: 2rem; margin-bottom: 15px; color: var(--color-text-dark); }
+.spotlight-section p { font-size: 1.1rem; color: #666; margin-bottom: 30px; }
+
+.avatars-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.spotlight-avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.spotlight-avatar:hover { transform: scale(1.1); z-index: 2; }
+
+.join-avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px dashed #ccc;
+    display: flex; align-items: center; justify-content: center;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .hub-grid { grid-template-columns: 1fr; }
+    .event-card { flex-direction: column; text-align: center; }
+    .event-meta { justify-content: center; }
+}

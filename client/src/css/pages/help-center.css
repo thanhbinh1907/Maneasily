@@ -1,114 +1,201 @@
-/* --- 2. Help Hero Section --- */
+/* --- 1. Hero --- */
 .help-hero {
-  text-align: center;
-  padding: 80px 40px;
-  background-color: #fff;
-}
-.help-hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 30px; }
-.help-search { position: relative; max-width: 700px; margin: 0 auto; }
-.help-search i {
-  position: absolute;
-  top: 50%;
-  left: 20px;
-  transform: translateY(-50%);
-  color: #999;
-}
-.help-search input {
-  width: 100%;
-  padding: 18px 20px 18px 50px;
-  font-size: 1rem;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: #f9f9f9;
-  transition: all 0.2s ease;
-}
-.help-search input:focus {
-  outline: none;
-  border-color: var(--color-orange);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.2);
-}
-
-/* --- 3. Categories Section --- */
-.help-categories {
-  max-width: 1100px;
-  margin: 60px auto;
-  padding: 0 40px;
-}
-.section-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 40px;
-}
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-}
-.category-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
-  padding: 30px;
-  text-decoration: none;
-  color: var(--color-text-dark);
-  transition: all 0.3s ease;
-  border-bottom: 3px solid transparent;
-  opacity: 0;
-  transform: translateY(20px);
-}
-.category-card.visible { opacity: 1; transform: translateY(0); }
-.category-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  border-bottom-color: var(--color-green);
-}
-.category-card i { font-size: 2.5rem; color: var(--color-green); margin-bottom: 15px; }
-.category-card h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 10px; }
-.category-card p { font-size: 0.95rem; color: var(--color-text-light); line-height: 1.6; }
-
-/* --- Responsive --- */
-@media (max-width: 1000px) {
-  .sticky-header { padding: 15px 30px; } /* Thêm */
-  .category-grid { grid-template-columns: repeat(2, 1fr); }
-  .footer-container { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 600px) {
-  .help-hero h1 { font-size: 2.2rem; }
-  .help-hero { padding: 60px 20px; } /* Sửa */
-  .category-grid { grid-template-columns: 1fr; }
-  .help-categories { padding: 0 20px; } /* Sửa */
-  .footer { padding: 50px 8%; } /* Thêm */
-  .footer-container { grid-template-columns: 1fr; }
-
-  /* --- Hamburger Menu Styles --- */
-  .mobile-nav-toggle {
-    display: block; /* Hiển thị nút hamburger */
-  }
-  .sticky-header nav {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 80px; /* Chiều cao header */
-    left: 0;
-    width: 100%;
-    background-color: #fff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    padding: 20px;
-    z-index: 1050;
-  }
-  .sticky-header nav.nav-visible {
-    display: flex; /* Hiển thị nav khi được click */
-  }
-  .sticky-header nav a {
-    margin: 10px 0;
-    width: 100%;
-    padding: 10px;
-  }
-  .signup-btn {
-    width: 100%;
+    position: relative;
     text-align: center;
-    padding: 12px 20px !important;
-  }
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #091e42 0%, #172b4d 100%);
+    color: white;
+}
+
+.help-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.search-wrapper {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-icon {
+    position: absolute; top: 50%; left: 20px; transform: translateY(-50%);
+    color: #5e6c84;
+}
+
+#help-search-input {
+    width: 100%;
+    padding: 18px 50px 18px 50px;
+    border-radius: 50px;
+    border: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    outline: none;
+}
+
+/* --- 2. Main Layout --- */
+.help-container {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 50px;
+    align-items: flex-start;
+}
+
+/* --- Sidebar Navigation --- */
+.help-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 100px; /* Dính khi cuộn */
+}
+
+.sidebar-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #6b778c;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    background: transparent;
+    color: #42526e;
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+}
+
+.nav-item i { width: 25px; color: #6b778c; transition: color 0.2s; }
+
+.nav-item:hover { background-color: #f4f5f7; color: #172b4d; }
+.nav-item:hover i { color: #172b4d; }
+
+.nav-item.active {
+    background-color: #e9f2ff;
+    color: #0c66e4;
+    font-weight: 600;
+}
+.nav-item.active i { color: #0c66e4; }
+
+.sidebar-support {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f4f5f7;
+    border-radius: 12px;
+    text-align: center;
+}
+.sidebar-support p { font-size: 0.9rem; margin-bottom: 10px; color: #5e6c84; }
+.btn-sidebar-contact {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #fff;
+    border: 1px solid #dfe1e6;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #172b4d;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.btn-sidebar-contact:hover { background: #ebecf0; }
+
+/* --- Content Area --- */
+.help-content-area { flex-grow: 1; }
+
+.category-section {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+.category-section.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.cat-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ebecf0;
+}
+.cat-header h2 { font-size: 2rem; color: #172b4d; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.cat-header h2 i { color: #0c66e4; font-size: 1.8rem; }
+.cat-header p { color: #6b778c; font-size: 1.1rem; }
+
+/* Article List (Accordion) */
+.article-list { display: flex; flex-direction: column; gap: 15px; }
+
+.article-item {
+    border: 1px solid #dfe1e6;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.article-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+.article-header {
+    padding: 20px 25px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+.article-header h3 { font-size: 1.1rem; color: #172b4d; margin: 0; }
+.toggle-icon { color: #6b778c; transition: transform 0.3s; }
+
+/* Active State for Article */
+.article-item.open .toggle-icon { transform: rotate(180deg); }
+.article-item.open .article-header { border-bottom: 1px solid #f4f5f7; }
+
+.article-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+    padding: 0 25px;
+    color: #42526e;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+.article-item.open .article-body { 
+    max-height: 1000px; /* Đủ lớn để chứa nội dung */
+    padding: 20px 25px; 
+}
+
+/* Nội dung bài viết */
+.article-body p { margin-bottom: 15px; }
+.article-body ul, .article-body ol { margin-left: 20px; margin-bottom: 15px; }
+.article-body li { margin-bottom: 5px; }
+
+.tip-box {
+    background-color: #fff7d6; /* Màu vàng nhạt */
+    border-left: 4px solid #f2d600;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+/* Utilities */
+.hidden { display: none; }
+
+/* Responsive */
+@media (max-width: 800px) {
+    .help-container { flex-direction: column; }
+    .help-sidebar { width: 100%; position: static; margin-bottom: 40px; }
+    .category-nav { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; }
+    .nav-item { flex-shrink: 0; width: auto; border: 1px solid #dfe1e6; }
+    .nav-item.active { border-color: #0c66e4; }
+    .sidebar-support { display: none; }
 }

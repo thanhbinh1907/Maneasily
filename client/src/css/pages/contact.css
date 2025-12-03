@@ -1,0 +1,139 @@
+/* --- 1. Hero --- */
+.contact-hero {
+    text-align: center;
+    padding: 60px 20px 40px;
+    background-color: #fff;
+}
+.contact-hero h1 { font-size: 3rem; margin-bottom: 15px; color: var(--color-text-dark); }
+.contact-hero p { font-size: 1.1rem; color: var(--color-text-light); }
+
+/* --- 2. Main Layout --- */
+.contact-container {
+    max-width: 1100px;
+    margin: 0 auto 80px;
+    padding: 0 20px;
+}
+
+.contact-wrapper {
+    display: flex;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    min-height: 550px;
+}
+
+/* --- Cột Trái (Form) --- */
+.contact-form-area {
+    flex: 1.5;
+    padding: 50px;
+}
+
+.contact-form-area h2 { font-size: 2rem; color: var(--color-text-dark); margin-bottom: 10px; }
+.contact-form-area p { color: var(--color-text-light); margin-bottom: 30px; }
+
+.form-row { display: flex; gap: 20px; }
+.form-group { margin-bottom: 20px; width: 100%; }
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+    margin-bottom: 8px;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dfe1e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background-color: #f9f9f9;
+    font-family: inherit;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--color-orange);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.1);
+}
+
+.btn-send {
+    background-color: var(--color-orange);
+    color: white;
+    border: none;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 10px;
+}
+.btn-send:hover { background-color: var(--color-orange-hover); transform: translateY(-2px); }
+
+/* --- Cột Phải (Info) --- */
+.contact-info-area {
+    flex: 1;
+    background-color: #0d1b1e; /* Màu tối giống footer */
+    color: #fff;
+    padding: 50px;
+    position: relative;
+    overflow: hidden; /* Để cắt hình tròn trang trí */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.contact-info-area h3 { font-size: 1.8rem; margin-bottom: 15px; color: #fff; }
+.contact-info-area p { color: #ccc; margin-bottom: 40px; line-height: 1.6; }
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-size: 1.05rem;
+}
+.info-item i { color: var(--color-orange); font-size: 1.2rem; width: 24px; text-align: center; }
+
+.social-follow { margin-top: auto; }
+.social-follow p { margin-bottom: 15px; font-weight: 600; color: #fff; }
+.social-icons { display: flex; gap: 15px; }
+.social-icons a {
+    width: 40px; height: 40px;
+    background-color: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+.social-icons a:hover { background-color: var(--color-orange); transform: translateY(-3px); }
+
+/* Hình tròn trang trí */
+.decorative-circle {
+    position: absolute;
+    width: 200px; height: 200px;
+    background-color: rgba(255, 127, 50, 0.15);
+    border-radius: 50%;
+    bottom: -50px; right: -50px;
+    z-index: 0;
+}
+.decorative-circle.small {
+    width: 100px; height: 100px;
+    top: 40px; right: 40px;
+    background-color: rgba(46, 139, 87, 0.1); /* Xanh mờ */
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+    .contact-wrapper { flex-direction: column; }
+    .contact-form-area { padding: 30px; }
+    .contact-info-area { padding: 40px 30px; min-height: auto; }
+    .form-row { flex-direction: column; gap: 0; }
+}

@@ -1,0 +1,60 @@
+.schedule-page {
+    padding-bottom: 40px;
+}
+
+.page-title {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #172b4d;
+}
+
+/* Khung chứa biểu đồ */
+.chart-container {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #dfe1e6;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #44546f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.canvas-wrapper {
+    position: relative;
+    width: 100%;
+    flex-grow: 1;
+}
+
+/* Layout kích thước */
+.large-chart {
+    height: 400px; /* Chiều cao cố định cho Timeline */
+}
+
+.charts-row {
+    display: flex;
+    gap: 20px;
+}
+
+.half-chart {
+    flex: 1;
+    height: 350px;
+}
+
+@media (max-width: 768px) {
+    .charts-row {
+        flex-direction: column;
+    }
+    .large-chart, .half-chart {
+        height: 300px;
+    }
+}

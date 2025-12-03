@@ -8,6 +8,7 @@
 
         <div class="task-detail-body">
             <div class="detail-main">
+                
                 <div class="detail-section">
                     <input type="text" id="detail-title" value="Tên công việc" autocomplete="off">
                     <div style="margin-top: 5px; color: #666; font-size: 0.9rem;">
@@ -42,6 +43,28 @@
                             <button id="btn-add-subtask" class="btn-modal btn-submit" style="padding: 6px 12px;">Thêm</button>
                         </div>
                     </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-label"><i class="fa-regular fa-folder-open"></i> Tài liệu đính kèm</div>
+                    
+                    <div class="file-manager-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #fafbfc; padding: 8px; border-radius: 6px; border: 1px solid #dfe1e6;">
+                        <div id="file-breadcrumb" style="font-weight: 600; color: #172b4d; font-size: 0.9rem; cursor: pointer;">
+                            <i class="fa-solid fa-house"></i> Gốc
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button id="btn-create-folder" style="padding: 4px 8px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;" title="Tạo thư mục">
+                                <i class="fa-solid fa-folder-plus" style="color: #ffab00;"></i>
+                            </button>
+                            <label for="file-upload-input" style="padding: 4px 8px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; display: inline-block;" title="Tải tệp lên">
+                                <i class="fa-solid fa-cloud-arrow-up" style="color: #0079bf;"></i>
+                            </label>
+                            <input type="file" id="file-upload-input" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div id="file-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px;">
+                        </div>
                 </div>
 
                 <div class="detail-section">
@@ -92,8 +115,14 @@
                 </div>
 
                 <div class="sidebar-group">
-                    <h4>Thời gian hoàn thành</h4>
+                    <h4>Thời gian</h4>
+                    
+                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;">Bắt đầu:</label>
+                    <input type="datetime-local" id="detail-start-time" style="width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+
+                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;">Hạn chót:</label>
                     <input type="datetime-local" id="detail-deadline" style="width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    
                     <div id="time-remaining-display" class="time-remaining"></div>
                 </div>
 

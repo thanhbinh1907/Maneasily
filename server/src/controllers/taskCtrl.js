@@ -155,10 +155,16 @@ const taskCtrl = {
             
             const canEdit = await checkPermission(projectId, userId);
             if (!canEdit) return res.status(403).json({ err: "Thành viên chỉ có quyền xem." });
-
             const newTask = new Tasks({
-                title, dec: dec || "", color: color || "#00c2e0", tag: tag || "",
-                column: columnId, project: projectId, members: [],
+                title, 
+                dec: dec || "", 
+                color: color || "#00c2e0", 
+                tag: tag || "",
+                startTime, 
+                deadline,  
+                column: columnId, 
+                project: projectId, 
+                members: [],
             });
             await newTask.save();
             await Columns.findByIdAndUpdate(columnId, { $push: { tasks: newTask._id, taskOrder: newTask._id } });
@@ -294,6 +300,24 @@ const taskCtrl = {
             }
             res.json({ msg: "Cập nhật thành công", action });
         } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+    getScheduleData: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            
+            // Tìm tất cả task mà user là thành viên
+            const tasks = await Tasks.find({ members: userId })
+                .populate("project", "title") // Lấy tên dự án
+                .populate("column", "title")  // Lấy tên cột (trạng thái)
+                .select("title deadline startTime createdAt project column");
+
+            // Lọc bỏ các task rác (mất project hoặc column do đã bị xóa)
+            const validTasks = tasks.filter(t => t.project && t.column);
+
+            res.json({ tasks: validTasks });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     },
 };
 

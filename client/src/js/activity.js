@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadActivityBoard() {
-    const container = document.getElementById('activity-board-list');
+    const container = document.getElementById('other-list');
     container.innerHTML = '<p>Đang tải hoạt động...</p>';
 
     try {
@@ -31,51 +31,94 @@ async function loadActivityBoard() {
 }
 
 function renderBoard() {
-    const container = document.getElementById('activity-board-list');
-    container.innerHTML = '';
+    const pinnedContainer = document.getElementById('pinned-list');
+    const otherContainer = document.getElementById('other-list');
+    const pinnedSection = document.getElementById('pinned-section');
+
+    // Reset nội dung
+    pinnedContainer.innerHTML = '';
+    otherContainer.innerHTML = '';
+
+    // Phân loại dữ liệu
+    const pinnedItems = [];
+    const otherItems = [];
 
     allProjectsData.forEach(item => {
-        const isPinned = pinnedProjectIds.includes(item.project._id);
-        const card = document.createElement('div');
-        card.className = `activity-project-card ${isPinned ? 'pinned' : ''}`;
-        card.setAttribute('data-id', item.project._id);
-
-        card.innerHTML = `
-            <div class="card-header">
-                <h3>
-                    <img src="${item.project.img}" class="project-icon">
-                    ${item.project.title}
-                </h3>
-                <div class="card-actions">
-                    <button class="btn-action btn-pin ${isPinned ? 'active' : ''}" title="Ghim">
-                        <i class="fa-solid fa-thumbtack"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="logs-preview">
-                ${renderLogs(item.activities)}
-            </div>
-            <div class="card-footer">
-                <button class="btn-zoom"><i class="fa-solid fa-expand"></i> Xem chi tiết</button>
-            </div>
-        `;
-
-        // Event: Ghim
-        card.querySelector('.btn-pin').addEventListener('click', () => togglePin(item.project._id));
-        
-        // Event: Zoom
-        card.querySelector('.btn-zoom').addEventListener('click', () => openZoomModal(item));
-
-        container.appendChild(card);
+        if (pinnedProjectIds.includes(item.project._id)) {
+            pinnedItems.push(item);
+        } else {
+            otherItems.push(item);
+        }
     });
 
-    // Kích hoạt kéo thả
-    new Sortable(container, {
+    // 1. Render Pinned List
+    if (pinnedItems.length > 0) {
+        pinnedSection.style.display = 'block';
+        pinnedItems.forEach(item => {
+            pinnedContainer.appendChild(createCardElement(item, true));
+        });
+    } else {
+        pinnedSection.style.display = 'none';
+    }
+
+    // 2. Render Other List
+    if (otherItems.length > 0) {
+        otherItems.forEach(item => {
+            otherContainer.appendChild(createCardElement(item, false));
+        });
+    } else {
+        otherContainer.innerHTML = '<p style="color:#888; padding:10px;">Không có dự án nào.</p>';
+    }
+
+    // 3. Khởi tạo Sortable cho PINNED (Chỉ sắp xếp nội bộ)
+    new Sortable(pinnedContainer, {
+        group: 'pinned', // Nhóm riêng
         animation: 150,
-        handle: '.card-header', // Chỉ kéo được khi nắm vào header
+        handle: '.card-header',
         ghostClass: 'sortable-ghost',
-        onEnd: saveOrder // Lưu thứ tự sau khi thả
+        onEnd: saveOrder // Lưu lại thứ tự khi thả
     });
+
+    // 4. Khởi tạo Sortable cho OTHERS (Chỉ sắp xếp nội bộ)
+    new Sortable(otherContainer, {
+        group: 'others', // Nhóm riêng -> Không thể kéo sang nhóm pinned
+        animation: 150,
+        handle: '.card-header',
+        ghostClass: 'sortable-ghost',
+        onEnd: saveOrder
+    });
+}
+
+function createCardElement(item, isPinned) {
+    const card = document.createElement('div');
+    card.className = `activity-project-card ${isPinned ? 'pinned' : ''}`;
+    card.setAttribute('data-id', item.project._id);
+
+    card.innerHTML = `
+        <div class="card-header">
+            <h3>
+                <img src="${item.project.img}" class="project-icon">
+                ${item.project.title}
+            </h3>
+            <div class="card-actions">
+                <button class="btn-action btn-pin ${isPinned ? 'active' : ''}" title="${isPinned ? 'Bỏ ghim' : 'Ghim'}">
+                    <i class="fa-solid fa-thumbtack"></i>
+                </button>
+            </div>
+        </div>
+        <div class="logs-preview">
+            ${renderLogs(item.activities)}
+        </div>
+        <div class="card-footer">
+            <button class="btn-zoom"><i class="fa-solid fa-expand"></i> Xem chi tiết</button>
+        </div>
+    `;
+
+    // Event Listeners
+    card.querySelector('.btn-pin').addEventListener('click', () => togglePin(item.project._id));
+    card.querySelector('.btn-zoom').addEventListener('click', () => openZoomModal(item));
+
+    return card;
 }
 
 function renderLogs(logs) {
@@ -122,8 +165,16 @@ async function togglePin(projectId) {
 
 // --- LOGIC LƯU THỨ TỰ ---
 async function saveOrder() {
-    const container = document.getElementById('activity-board-list');
-    const projectOrder = Array.from(container.children).map(el => el.getAttribute('data-id'));
+    const pinnedContainer = document.getElementById('pinned-list');
+    const otherContainer = document.getElementById('other-list');
+
+    // Lấy ID từ cả 2 danh sách và nối lại
+    const pinnedOrder = Array.from(pinnedContainer.children).map(el => el.getAttribute('data-id'));
+    const otherOrder = Array.from(otherContainer.children).map(el => el.getAttribute('data-id'));
+    
+    // Backend sẽ ưu tiên Pinned trước, sau đó đến thứ tự trong mảng này
+    // Nên ta cứ gửi lên toàn bộ danh sách theo thứ tự mắt thấy
+    const fullProjectOrder = [...pinnedOrder, ...otherOrder];
 
     try {
         await fetch(`${API_BASE_URL}/activity/preferences`, {
@@ -132,7 +183,7 @@ async function saveOrder() {
                 'Content-Type': 'application/json',
                 'Authorization': localStorage.getItem('maneasily_token')
             },
-            body: JSON.stringify({ pinnedProjects: pinnedProjectIds, projectOrder })
+            body: JSON.stringify({ pinnedProjects: pinnedProjectIds, projectOrder: fullProjectOrder })
         });
     } catch (e) { console.error("Lỗi lưu sắp xếp", e); }
 }
@@ -146,13 +197,13 @@ let currentZoomSkip = 0;
 function openZoomModal(item) {
     document.getElementById('zoom-project-title').textContent = item.project.title;
     const list = document.getElementById('zoom-logs-list');
-    list.innerHTML = renderLogs(item.activities); // Render 20 cái đầu
+    list.innerHTML = renderLogs(item.activities); 
     
     currentZoomProjectId = item.project._id;
-    currentZoomSkip = 20;
+    currentZoomSkip = 5;
     
     // Thêm nút "Tải thêm" nếu cần
-    if(item.activities.length >= 20) {
+    if(item.activities.length >= 5) {
         const btnMore = document.createElement('button');
         btnMore.className = 'btn-zoom'; 
         btnMore.textContent = 'Tải thêm hoạt động cũ hơn...';

@@ -198,24 +198,37 @@
 
 /* --- Responsive --- */
 @media (max-width: 900px) {
-    .steps-container::before { display: none; } /* Ẩn đường kẻ */
+    .steps-container::before { display: none; } /* Ẩn đường kẻ dọc */
     
     .step-row, .step-row.reverse {
-        flex-direction: column;
+        flex-direction: column; /* Xếp chồng ảnh lên trên chữ */
         text-align: center;
         gap: 30px;
-        margin-bottom: 80px;
+        margin-bottom: 60px;
+        padding: 0;
     }
 
+    .step-image { width: 100%; max-width: 500px; margin: 0 auto; }
+
+    /* Đưa số thứ tự lên góc trên ảnh thay vì bên cạnh */
     .step-number {
-        position: static;
-        margin: -25px auto 20px; /* Đẩy lên trên đè vào ảnh một chút */
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto !important; /* Override style cũ */
+        margin: 0;
+    }
+    .step-row.reverse .step-number {
+        left: 50%;
+        transform: translateX(-50%);
     }
     
     .step-features {
         display: inline-block;
         text-align: left;
+        margin-top: 10px;
     }
     
     .hiw-hero h1 { font-size: 2.2rem; }
+    .hiw-hero { padding: 60px 20px; }
 }

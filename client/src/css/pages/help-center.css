@@ -191,11 +191,61 @@
 .hidden { display: none; }
 
 /* Responsive */
-@media (max-width: 800px) {
-    .help-container { flex-direction: column; }
-    .help-sidebar { width: 100%; position: static; margin-bottom: 40px; }
-    .category-nav { display: flex; overflow-x: auto; padding-bottom: 10px; gap: 10px; }
-    .nav-item { flex-shrink: 0; width: auto; border: 1px solid #dfe1e6; }
-    .nav-item.active { border-color: #0c66e4; }
+@media (max-width: 900px) {
+    /* Layout chuyển thành cột dọc */
+    .help-container {
+        flex-direction: column;
+        padding: 20px;
+        margin-top: -20px;
+    }
+
+    /* Sidebar biến thành Menu ngang */
+    .help-sidebar {
+        width: 100%;
+        position: static; /* Bỏ sticky */
+        margin-bottom: 30px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+    }
+
+    .category-nav {
+        display: flex;
+        overflow-x: auto; /* Cho phép cuộn ngang */
+        white-space: nowrap;
+        gap: 10px;
+        padding-bottom: 5px; /* Chừa chỗ cho scrollbar nếu có */
+        /* Ẩn scrollbar nhưng vẫn cuộn được */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    .category-nav::-webkit-scrollbar {
+        display: none; /* Chrome */
+    }
+
+    .nav-item {
+        flex-shrink: 0; /* Không bị co lại */
+        width: auto;
+        border: 1px solid #dfe1e6;
+        padding: 8px 16px;
+    }
+    
+    /* Ẩn nút contact support trong sidebar để tiết kiệm chỗ, có thể đưa xuống footer */
     .sidebar-support { display: none; }
+    
+    /* Hero */
+    .help-hero h1 { font-size: 2rem; }
+    
+    /* Search Input trên mobile */
+    #help-search-input {
+        padding: 15px 40px;
+        font-size: 0.95rem;
+    }
+    
+    /* Content */
+    .cat-header h2 { font-size: 1.5rem; }
+    .cat-header { flex-direction: column; align-items: flex-start; gap: 5px; }
+    
+    /* Article item */
+    .article-header { padding: 15px; }
+    .article-header h3 { font-size: 1rem; }
 }

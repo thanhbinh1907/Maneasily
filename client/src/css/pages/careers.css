@@ -173,13 +173,46 @@
 .job-card:hover i.fa-arrow-right { transform: translateX(5px); }
 
 /* --- Responsive --- */
-@media (max-width: 900px) {
-    .careers-hero h1 { font-size: 2.5rem; }
-    .values-grid { grid-template-columns: 1fr; }
+/* Tablet */
+@media (max-width: 1024px) {
+    .values-grid { grid-template-columns: 1fr; max-width: 500px; margin: 0 auto 60px; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .careers-hero h1 { font-size: 2.2rem; }
+    .careers-hero p { font-size: 1rem; }
     
-    .benefits-bg { flex-direction: column; padding: 40px 30px; }
-    .benefits-grid { width: 100%; }
+    .benefits-bg {
+        flex-direction: column;
+        padding: 40px 20px;
+        text-align: center;
+    }
     
-    .job-card { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .job-action { width: 100%; justify-content: space-between; margin-top: 10px; }
+    .benefits-grid {
+        grid-template-columns: 1fr; /* 1 cột lợi ích */
+        width: 100%;
+        gap: 10px;
+    }
+    
+    /* Job Card trên mobile */
+    .job-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .job-meta {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .job-action {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
 }

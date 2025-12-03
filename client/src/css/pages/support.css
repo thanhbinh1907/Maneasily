@@ -195,8 +195,36 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-    .support-nav-grid { grid-template-columns: 1fr; }
-    .search-box-container { flex-direction: column; }
-    #support-search { border-radius: 8px; border-right: 1px solid #dfe1e6; margin-bottom: 10px; }
-    .btn-search { border-radius: 8px; padding: 12px; width: 100%; }
+    .support-hero { padding: 60px 20px; }
+    .support-hero h1 { font-size: 2rem; }
+
+    .search-box-container {
+        flex-direction: column;
+    }
+    
+    /* Input bo tròn đều trên mobile */
+    #support-search {
+        border-radius: 8px;
+        border-right: 1px solid #dfe1e6;
+        margin-bottom: 10px;
+        padding-left: 45px;
+    }
+    
+    .btn-search {
+        width: 100%;
+        border-radius: 8px;
+        padding: 12px;
+    }
+    
+    .support-nav-grid {
+        grid-template-columns: 1fr; /* Stack dọc */
+        gap: 20px;
+    }
+    
+    .popular-searches {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 15px;
+    }
 }

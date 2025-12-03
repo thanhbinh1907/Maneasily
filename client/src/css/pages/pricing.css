@@ -220,15 +220,42 @@ input:checked + .slider:before { transform: translateX(24px); }
 .faq-item h4 { font-size: 1.1rem; margin-bottom: 10px; color: var(--color-text-dark); font-weight: 600;}
 .faq-item p { color: var(--color-text-light); line-height: 1.6; }
 
-/* Responsive */
-@media (max-width: 900px) {
-    .pricing-grid { 
-        grid-template-columns: 1fr; 
-        max-width: 400px; 
-        margin-left: auto; 
-        margin-right: auto; 
+
+/* Tablet (iPad Portrait & Landscape) */
+@media (max-width: 1024px) {
+    .pricing-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 cột trên Tablet */
+        gap: 20px;
     }
-    .pricing-card.popular { transform: scale(1); margin-top: 15px; margin-bottom: 15px;}
-    .pricing-card.popular:hover { transform: translateY(-10px); }
-    .faq-grid { grid-template-columns: 1fr; }
+    .pricing-card:last-child {
+        grid-column: span 2; /* Card cuối nằm giữa */
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .pricing-hero h1 { font-size: 2.2rem; }
+    
+    .pricing-grid {
+        grid-template-columns: 1fr; /* 1 cột trên Mobile */
+        max-width: 100%;
+    }
+    
+    .pricing-card:last-child { grid-column: auto; } /* Reset lại */
+    
+    .pricing-card { padding: 30px 20px; }
+    
+    .pricing-card.popular { 
+        transform: scale(1); 
+        margin: 20px 0;
+        z-index: 1;
+    }
+    .pricing-card.popular:hover { transform: none; } /* Tắt hiệu ứng hover trên mobile */
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
 }

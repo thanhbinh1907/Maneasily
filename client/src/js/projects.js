@@ -16,23 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let projectToDeleteId = null;
 
-    const user = JSON.parse(localStorage.getItem('maneasily_user'));
+    let user = JSON.parse(localStorage.getItem('maneasily_user'));
     if (!user) {
         window.location.href = '/src/pages/signin.html';
         return;
     }
 
-    // --- Helper Modal ---
     const toggleModal = (modal, show) => modal.style.display = show ? 'flex' : 'none';
 
-    // --- Event Listeners (Gom gọn) ---
-    // 1. Mở/Đóng Modal Tạo
     createBtnHeader?.addEventListener('click', () => toggleModal(createModal, true));
     ['btn-close-create', 'btn-cancel-create'].forEach(id => {
         document.getElementById(id)?.addEventListener('click', () => toggleModal(createModal, false));
     });
-
-    // 2. Đóng Modal Xóa
     ['btn-close-delete', 'btn-cancel-delete'].forEach(id => {
         document.getElementById(id)?.addEventListener('click', () => toggleModal(deleteModal, false));
     });
@@ -42,19 +37,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === deleteModal) toggleModal(deleteModal, false);
     });
 
-    // --- Functions ---
     async function loadProjects() {
         try {
-            const res = await fetch(`${API_BASE_URL}/projects?userId=${user._id}`); // Dùng biến config
+            user = JSON.parse(localStorage.getItem('maneasily_user'));
+            const res = await fetch(`${API_BASE_URL}/projects?userId=${user._id}`);
             const data = await res.json();
-            renderProjects(data.projects || []);
+            
+            let projects = data.projects || [];
+            
+            // [FIX] Lấy danh sách ghim từ projectSettings (thay vì activitySettings)
+            const pinnedIds = user.projectSettings?.pinnedProjects || [];
+
+            // Sắp xếp: Pinned lên đầu
+            projects.sort((a, b) => {
+                const isPinnedA = pinnedIds.includes(a._id);
+                const isPinnedB = pinnedIds.includes(b._id);
+                
+                if (isPinnedA && !isPinnedB) return -1;
+                if (!isPinnedA && isPinnedB) return 1;
+                return 0;
+            });
+
+            renderProjects(projects, pinnedIds);
         } catch (err) {
             console.error(err);
             toast.error("Không thể tải danh sách dự án");
         }
     }
 
-    function renderProjects(projects) {
+    function renderProjects(projects, pinnedIds) {
         projectGrid.innerHTML = `
             <div class="project-card create-card" id="card-create-trigger">
                 <i class="fa-solid fa-plus" style="font-size: 2rem; margin-bottom: 10px;"></i>
@@ -64,33 +75,76 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('card-create-trigger').addEventListener('click', () => toggleModal(createModal, true));
 
         projects.forEach(proj => {
+            const isPinned = pinnedIds.includes(proj._id);
+            const starClass = isPinned ? 'fa-solid' : 'fa-regular';
+            const starColor = isPinned ? 'color: #ffab00;' : '';
+
             const html = `
                 <div class="project-card-wrapper">
                     <a href="/src/pages/Board.html?id=${proj._id}" class="project-card" data-id="${proj._id}">
                         <div class="card-cover" style="background-image: url('${proj.img}');"></div>
                         <div class="card-body">
                             <h3>${proj.title}</h3>
-                            <p style="font-size:0.8rem; color:#999">Admin: ${proj.userOwner?.username || 'N/A'}</p>
+                            <p style="font-size:0.8rem; color: var(--text-sub)">Admin: ${proj.userOwner?.username || 'N/A'}</p>
                         </div>
                     </a>
-                    <button class="btn-delete-project" data-id="${proj._id}"><i class="fa-regular fa-trash-can"></i></button>
+                    
+                    <button class="btn-action-project btn-pin-project" data-id="${proj._id}" title="${isPinned ? 'Bỏ ghim' : 'Ghim dự án'}">
+                        <i class="${starClass} fa-star" style="${starColor}"></i>
+                    </button>
+
+                    <button class="btn-action-project btn-delete-project" data-id="${proj._id}" title="Xóa dự án">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
                 </div>`;
             projectGrid.insertAdjacentHTML('beforeend', html);
         });
 
-        // Gán sự kiện xóa
         document.querySelectorAll('.btn-delete-project').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 projectToDeleteId = btn.getAttribute('data-id');
                 toggleModal(deleteModal, true);
             });
         });
-        
-        // Init Sortable (Giữ logic cũ nhưng rút gọn)
-        // ... (Bạn có thể giữ lại code sortable cũ ở đây)
+
+        document.querySelectorAll('.btn-pin-project').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const projectId = btn.getAttribute('data-id');
+                await togglePinProject(projectId);
+            });
+        });
     }
 
-    // --- Submit Create ---
+    async function togglePinProject(projectId) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/users/pin`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('maneasily_token')
+                },
+                body: JSON.stringify({ projectId })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success(data.msg);
+                
+                // [FIX] Cập nhật projectSettings vào LocalStorage
+                // Giữ nguyên activitySettings cũ, chỉ update projectSettings
+                if (!user.projectSettings) user.projectSettings = {};
+                user.projectSettings.pinnedProjects = data.pinnedProjects;
+                
+                localStorage.setItem('maneasily_user', JSON.stringify(user));
+                loadProjects(); 
+            } else {
+                toast.error(data.err);
+            }
+        } catch (e) { console.error(e); toast.error("Lỗi kết nối"); }
+    }
+
     createForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = createForm.querySelector('.btn-submit');
@@ -127,10 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Confirm Delete ---
     confirmDeleteBtn.addEventListener('click', async () => {
         if(!projectToDeleteId) return;
-        
         try {
             const res = await fetch(`${API_BASE_URL}/project/${projectToDeleteId}`, {
                 method: 'DELETE',

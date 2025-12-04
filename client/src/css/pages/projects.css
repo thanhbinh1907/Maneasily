@@ -1,187 +1,167 @@
-/* --- File: Maneasily/client/src/css/pages/projects.css --- */
+/* File: client/src/css/pages/projects.css */
 
-/* --- Style cho Grid Dự Án --- */
-.project-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-    gap: 25px; 
-    padding-top: 20px;
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    padding-top: 10px;
 }
 
-/* MỚI: Style cho wrapper bao quanh card và nút xóa */
 .project-card-wrapper {
-    position: relative; /* Để nút xóa căn theo khung này */
-    display: block;
+    position: relative;
+    transition: transform 0.3s ease;
 }
 
-/* Khi hover vào WRAPPER thì hiện nút xóa */
-.project-card-wrapper:hover .btn-delete-project {
-    opacity: 1;
-    transform: scale(1);
+.project-card-wrapper:hover {
+    transform: translateY(-8px);
+    z-index: 10;
 }
 
+/* --- CARD DỰ ÁN --- */
 .project-card {
-    background: white; 
-    border: 1px solid #e0e0e0; 
-    border-radius: 12px; 
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
     overflow: hidden;
-    cursor: pointer; 
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-decoration: none; 
-    color: inherit; 
-    display: flex; 
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
     flex-direction: column;
-    height: 220px; 
+    height: 240px;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.3s ease;
+}
+
+.project-card:hover {
+    box-shadow: var(--shadow-drop);
+    border-color: var(--border-focus);
+}
+
+.card-cover {
+    height: 140px;
+    background-color: var(--bg-hover);
+    background-size: cover;
+    background-position: center;
     position: relative;
 }
 
-.project-card:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08); 
-}
-
-.card-cover { 
-    height: 140px; 
-    background-color: #eee; 
-    background-size: cover; 
-    background-position: center; 
-}
-
-.card-body { 
-    padding: 15px; 
-    flex-grow: 1; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center;
-}
-
-.card-body h3 { 
-    margin: 0 0 5px 0; 
-    font-size: 1.1rem; 
-    color: #172b4d; 
-}
-
-.card-body p { 
-    margin: 0; 
-    font-size: 0.9rem; 
-    color: #6b778c; 
-}
-
-/* --- Nút Tạo Mới --- */
-.create-card {
-    border: 2px dashed #dfe1e6; 
-    background: transparent; 
-    align-items: center; 
-    justify-content: center; 
-    color: #5e6c84;
-}
-
-.create-card:hover { 
-    border-color: #ff7f32; 
-    color: #ff7f32; 
-    background: #fffbf8; 
-}
-
-/* --- Style cho Nút Xóa (Đã sửa lại vị trí) --- */
-.btn-delete-project {
+.card-cover::after {
+    content: '';
     position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 10; 
-    
-    width: 32px;
-    height: 32px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.1), transparent);
+}
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--bg-surface);
+}
+
+.card-body h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-body p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-sub); /* Fix màu cho Dark Mode */
+    font-weight: 500;
+}
+
+/* --- CARD TẠO MỚI --- */
+.create-card {
+    border: 2px dashed var(--text-placeholder);
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    height: 240px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    box-shadow: none;
+}
+
+.create-card i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: var(--text-placeholder);
+    transition: color 0.3s;
+}
+
+.create-card span {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.create-card:hover {
+    border-color: var(--primary-color);
+    background-color: var(--bg-hover);
+    transform: translateY(-5px);
+}
+
+.create-card:hover i,
+.create-card:hover span {
+    color: var(--primary-color);
+}
+
+/* --- ACTION BUTTONS (Xóa & Ghim) --- */
+.btn-action-project {
+    position: absolute;
+    top: 12px;
+    z-index: 10;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid #dfe1e6;
-    color: #6b778c;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    
-    /* Mặc định ẩn */
-    opacity: 0; 
+    opacity: 0; /* Ẩn mặc định */
     transform: scale(0.8);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
+/* Vị trí nút Xóa (Phải) */
+.btn-delete-project {
+    right: 12px;
+    color: #e53e3e;
+}
 .btn-delete-project:hover {
-    background-color: #ffebe6; 
-    color: #d93025; 
-    border-color: #d93025;
+    background-color: #e53e3e;
+    color: #fff;
+    border-color: #e53e3e;
 }
 
-/* --- Style cho Modal --- */
-.modal-overlay {
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5); 
-    z-index: 2000;
-    justify-content: center; align-items: center;
-    animation: fadeIn 0.2s ease-out;
+/* Vị trí nút Ghim (Trái) */
+.btn-pin-project {
+    left: 12px;
+    color: var(--text-sub);
+}
+.btn-pin-project:hover {
+    background-color: #fff8e1; /* Vàng nhạt */
+    color: #ffab00;
+    border-color: #ffab00;
 }
 
-.modal-content {
-    background: white; 
-    padding: 30px 40px; 
-    border-radius: 12px;
-    width: 90%; max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    animation: slideUp 0.2s ease-out;
-    position: relative;
+/* Hiện nút khi Hover vào Card */
+.project-card-wrapper:hover .btn-action-project {
+    opacity: 1;
+    transform: scale(1);
 }
-
-.modal-header { 
-    display: flex; justify-content: center; align-items: center; 
-    margin-bottom: 25px; position: relative;
-}
-.modal-header h2 { margin: 0; font-size: 1.6rem; color: #172b4d; }
-
-.close-modal { 
-    position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; font-size: 1.8rem; 
-    cursor: pointer; color: #6b778c; 
-}
-.close-modal:hover { color: #ff7f32; }
-
-.form-group { margin-bottom: 20px; }
-.form-group label { 
-    display: block; margin-bottom: 8px; 
-    font-weight: 600; color: #42526e; font-size: 0.95rem;
-}
-.form-group input, .form-group textarea {
-    width: 100%; padding: 12px 15px; 
-    border: 1px solid #dfe1e6; border-radius: 8px;
-    font-size: 1rem; outline: none; box-sizing: border-box;
-    transition: border-color 0.2s;
-}
-.form-group textarea { resize: vertical; min-height: 100px; }
-.form-group input:focus, .form-group textarea:focus { 
-    border-color: #ff7f32; box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.1);
-}
-
-.modal-footer { 
-    display: flex; justify-content: center; gap: 15px; margin-top: 30px; 
-}
-.btn-modal { 
-    padding: 12px 24px; border-radius: 8px; border: none; 
-    font-weight: 600; cursor: pointer; font-size: 1rem; min-width: 120px; 
-}
-.btn-cancel { background: #f4f5f7; color: #42526e; }
-.btn-cancel:hover { background: #ebecf0; }
-.btn-submit { background: #ff7f32; color: white; }
-.btn-submit:hover { background: #e26f28; }
-
-/* Nút nguy hiểm (Xóa) */
-.btn-danger { background-color: #d93025; color: white; }
-.btn-danger:hover { background-color: #b02a1e; }
-
-.delete-warning-text { color: #5e6c84; font-size: 1rem; line-height: 1.5; margin-bottom: 20px; text-align: center; }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); } to { transform: translateY(0); } }

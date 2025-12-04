@@ -1,139 +1,212 @@
 /* File: client/src/css/components/modal.css */
 
-/* --- Lớp phủ nền đen --- */
+/* --- GIỮ NGUYÊN TOÀN BỘ CẤU TRÚC CŨ --- */
+
 .modal-overlay {
     display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Tối hơn chút cho nổi bật modal */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(9, 30, 66, 0.7);
+    backdrop-filter: blur(3px);
     z-index: 2000;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
     animation: fadeIn 0.2s ease-out;
-    backdrop-filter: blur(2px); /* Làm mờ nền phía sau */
 }
 
-/* --- Khung nội dung Modal --- */
 .modal-content {
-    background: #ffffff;
-    padding: 24px; /* Padding chuẩn */
-    border-radius: 16px; /* Bo góc tròn hơn */
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    padding: 24px;
+    border-radius: 12px;
     width: 90%;
-    max-width: 450px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
     position: relative;
     display: flex;
     flex-direction: column;
-    animation: slideUp 0.2s ease-out;
+    animation: slideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     max-height: 90vh;
-    
-    /* QUAN TRỌNG: Reset font cho toàn bộ nội dung trong modal */
-    font-family: 'Inter', sans-serif; 
-    color: #172b4d;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Đảm bảo form con chiếm hết chiều rộng */
-.modal-content form {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- Header --- */
+/* Header */
 .modal-header {
-    display: flex; 
-    justify-content: space-between; 
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
-.modal-header h2 { 
-    margin: 0; 
-    font-size: 1.25rem; 
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #172b4d;
+    color: var(--text-main);
 }
 
 .close-modal {
-    background: none; border: none; 
-    font-size: 1.5rem; color: #5e6c84;
-    cursor: pointer; transition: color 0.2s;
-    padding: 4px;
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
     border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-}
-.close-modal:hover { 
-    color: #172b4d; 
-    background-color: #091e4214; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-/* --- Body --- */
+.close-modal:hover {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
 .modal-body {
     overflow-y: auto;
-    padding-right: 4px; 
+    padding-right: 4px;
 }
 
-/* --- Form Group --- */
-.form-group { margin-bottom: 20px; }
+/* Form Inputs */
+.form-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .form-group label {
-    display: block; margin-bottom: 8px;
-    font-weight: 600; color: #44546f; font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    font-size: 0.9rem;
 }
-.form-group input, .form-group textarea {
-    width: 100%; 
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
     padding: 10px 12px;
-    border: 2px solid #dfe1e6; /* Border dày hơn chút */
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 0.95rem; 
-    outline: none;
-    transition: all 0.2s;
-    color: #172b4d;
-    box-sizing: border-box; /* Fix lỗi tràn width */
-}
-.form-group input:focus, .form-group textarea:focus {
-    border-color: #0c66e4; /* Màu xanh chuẩn mới */
-}
-
-/* --- Footer (Nút bấm) --- */
-.modal-footer {
-    display: flex; 
-    justify-content: flex-end; /* Căn phải */
-    gap: 12px; 
-    margin-top: 10px;
-    padding-top: 0;
-}
-
-/* --- Các nút bấm --- */
-.btn-modal {
-    padding: 10px 20px; 
-    border-radius: 6px; 
-    border: none; 
-    font-weight: 600; 
-    cursor: pointer; 
     font-size: 0.95rem;
+    color: var(--text-main);
+    background-color: var(--bg-input);
+    transition: all 0.2s;
+    outline: none;
+    /* Mặc định Light Mode: Icon lịch màu đen */
+    color-scheme: light; 
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(12, 102, 228, 0.15);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* Footer */
+.modal-footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Buttons */
+.btn-modal {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
-.btn-cancel {
-    background: transparent; 
-    color: #44546f;
-}
-.btn-cancel:hover { 
-    background: #091e420f; 
-    color: #172b4d; 
-}
-
 .btn-submit {
-    background: #0c66e4; 
+    background: #0079bf;
     color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-.btn-submit:hover { 
-    background: #0055cc; 
-}
-.btn-danger { background: #ca3521; color: white; }
-.btn-danger:hover { background: #ae2a19; }
 
-/* --- Animations --- */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.btn-submit:hover {
+    background: #026aa7;
+}
+
+.btn-cancel {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
+.btn-cancel:hover {
+    background: var(--border-color);
+}
+
+.btn-danger {
+    background: #d93025;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b02a1e;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* =========================================
+   FIX MÀU SẮC RIÊNG CHO MODAL THÊM TASK
+   (Chỉ can thiệp màu nền và icon, KHÔNG đổi bố cục)
+   ========================================= */
+
+/* 1. Đổi màu 2 ô input bị trắng (Mô tả & Tag) */
+#add-task-modal input[type="text"] {
+    background-color: var(--bg-input) !important; /* Đè màu #f4f5f7 cứng trong HTML */
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* 2. Đổi màu icon bên trong input (Building, Align-left, Tag) */
+#add-task-modal .form-group i {
+    color: var(--text-sub) !important; /* Chuyển icon màu xanh/xám cứng thành màu theme */
+    z-index: 2;
+}
+
+/* 3. Xử lý Lịch (Datepicker) */
+/* Khi ở chế độ Tối: Bắt buộc icon lịch chuyển sang màu trắng */
+[data-theme="dark"] .form-group input[type="datetime-local"],
+[data-theme="dark"] #add-task-modal input[type="datetime-local"] {
+    color-scheme: dark;
+}
+
+/* Khi ở chế độ Sáng (Mặc định): Icon lịch màu đen */
+/* Đã khai báo color-scheme: light ở class .form-group input phía trên */
+
+/* 4. Tinh chỉnh ô chọn màu (Color Selector) trên nền tối */
+#add-task-modal .color-selector label {
+    border: 2px solid var(--bg-surface); /* Viền trùng màu nền để tạo khoảng cách */
+    box-shadow: 0 0 0 1px var(--text-sub); /* Viền mỏng bên ngoài */
+}
+#add-task-modal .color-selector input:checked + label {
+    box-shadow: 0 0 0 2px var(--border-focus); /* Viền focus khi chọn */
+}

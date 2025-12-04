@@ -1,4 +1,4 @@
-/* --- File: client/src/css/components/share-modal.css --- */
+/* File: client/src/css/components/share-modal.css */
 
 .share-modal-size {
     max-width: 500px;
@@ -8,13 +8,16 @@
     flex-direction: column;
     max-height: 90vh;
     border-radius: 12px;
-    overflow: hidden; /* Bo góc cho đẹp */
+    overflow: hidden;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
 }
 
 .share-modal-size .modal-header {
     padding: 15px 25px;
-    border-bottom: 1px solid #ebecf0;
-    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,15 +27,15 @@
 .share-modal-size .modal-body {
     padding: 25px;
     overflow-y: auto;
-    overflow-x: hidden; /* QUAN TRỌNG: Chặn thanh cuộn ngang */
+    overflow-x: hidden;
 }
 
-/* Tabs Styling */
+/* Tabs */
 .tab-container {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
-    border-bottom: 1px solid #dfe1e6;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .tab-btn {
@@ -40,92 +43,145 @@
     border: none;
     padding: 10px 5px;
     font-size: 0.95rem;
-    color: #5e6c84;
+    color: var(--text-sub);
     font-weight: 600;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s;
 }
 
-.tab-btn:hover { color: #172b4d; }
+.tab-btn:hover {
+    color: var(--text-main);
+}
 
 .tab-btn.active {
     color: #0079bf !important;
     border-bottom-color: #0079bf !important;
 }
 
-.tab-content { display: none; animation: fadeIn 0.2s; }
-.tab-content.active { display: block; }
+.tab-content {
+    display: none;
+    animation: fadeIn 0.2s;
+}
 
-/* Input Search */
-.search-member-container { margin-bottom: 20px; position: relative; }
+.tab-content.active {
+    display: block;
+}
+
+/* Search Input */
 .search-member-container label {
-    font-weight: 600; color: #172b4d; 
-    margin-bottom: 8px; display: block; font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: block;
+    font-size: 0.9rem;
 }
 
-.input-wrapper { position: relative; width: 100%; }
-.search-icon {
-    position: absolute; top: 50%; left: 12px;
-    transform: translateY(-50%); color: #6b778c;
+.input-wrapper {
+    position: relative;
+    width: 100%;
 }
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: var(--text-sub);
+}
+
 .input-wrapper input {
     width: 100%;
     padding: 10px 10px 10px 36px;
-    border: 1px solid #dfe1e6;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.95rem;
     outline: none;
-    box-sizing: border-box; /* Fix lỗi tràn chiều ngang */
-    transition: border-color 0.2s;
-}
-.input-wrapper input:focus {
-    border-color: #0079bf;
-    box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.2);
+    background-color: var(--bg-input);
+    color: var(--text-main);
 }
 
-/* Danh sách thành viên */
+.input-wrapper input:focus {
+    border-color: #0079bf;
+}
+
+/* Members List */
 .current-members h4 {
-    font-size: 0.8rem; color: #5e6c84;
-    text-transform: uppercase; margin-bottom: 10px;
-    font-weight: 700; letter-spacing: 0.05em;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
 }
 
 .members-list {
-    border: 1px solid #dfe1e6;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     max-height: 200px;
     overflow-y: auto;
-    background-color: #fafbfc;
+    background-color: var(--bg-hover);
 }
 
-/* Item User (Dùng chung cho Search & List) */
+/* User Item */
 .user-result-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 15px; cursor: pointer;
-    border-bottom: 1px solid #ebecf0;
-    background: #fff;
-    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-main);
 }
-.user-result-item:last-child { border-bottom: none; }
-.user-result-item:hover { background-color: #f4f5f7; }
+
+.user-result-item:last-child {
+    border-bottom: none;
+}
+
+.user-result-item:hover {
+    background-color: var(--bg-active);
+}
 
 .result-avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%; object-fit: cover;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
 }
-.result-info { flex-grow: 1; }
-.result-info div:first-child { font-weight: 600; color: #172b4d; font-size: 0.9rem; }
-.result-info div:last-child { color: #5e6c84; font-size: 0.8rem; }
 
-/* Dropdown kết quả tìm kiếm */
+.result-info {
+    flex-grow: 1;
+}
+
+.result-info div:first-child {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.9rem;
+}
+
+.result-info div:last-child {
+    color: var(--text-sub);
+    font-size: 0.8rem;
+}
+
+/* Search Dropdown */
 .search-dropdown {
-    position: absolute; top: 100%; left: 0; width: 100%;
-    background: white; border: 1px solid #dfe1e6;
-    border-radius: 6px; margin-top: 4px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-    z-index: 100; max-height: 200px; overflow-y: auto;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-top: 4px;
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto;
     display: none;
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

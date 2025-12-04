@@ -15,10 +15,8 @@ const checkPermission = async (projectId, userId) => {
 };
 
 const taskCtrl = {
-    // --- 1. LẤY CHI TIẾT TASK (DEBUG LỖI 500) ---
     getTaskDetail: async (req, res) => {
         try {
-            // console.log("👉 Lấy task:", req.params.id); 
             const task = await Tasks.findById(req.params.id)
                 .populate({
                     path: "works",
@@ -34,12 +32,11 @@ const taskCtrl = {
             if (!task) return res.status(404).json({ err: "Không tìm thấy task" });
             res.json({ task });
         } catch (err) { 
-            console.error("❌ Lỗi getTaskDetail:", err); // In lỗi ra terminal để dễ sửa
+            console.error("❌ Lỗi getTaskDetail:", err); 
             return res.status(500).json({ err: err.message }); 
         }
     },
 
-    // --- 2. CẬP NHẬT TASK (ĐÃ SỬA LỖI CRASH) ---
     updateTask: async (req, res) => {
         try {
             const { id } = req.params;
@@ -56,7 +53,6 @@ const taskCtrl = {
                 return res.status(400).json({ err: "Task đã quá hạn! Không thể thay đổi thành viên." });
             }
 
-            // [LOGIC MỚI] Gửi thông báo
             if (updateData.members) {
                 const oldMembers = oldTask.members.map(m => m.toString());
                 const newMembers = updateData.members.map(m => m.toString());
@@ -64,7 +60,6 @@ const taskCtrl = {
 
                 for (const memberId of addedMembers) {
                     if (memberId !== userId) {
-                        // 1. Tạo thông báo
                         const notif = await Notifications.create({
                             recipient: memberId,
                             sender: userId,
@@ -72,8 +67,6 @@ const taskCtrl = {
                             type: 'task',
                             link: `/src/pages/Board.html?id=${oldTask.project}`
                         });
-                        
-                        // 2. Populate và gửi Socket NGAY TRONG VÒNG LẶP
                         await notif.populate("sender", "username avatar");
                         sendNotification(req, memberId, notif);
                     }
@@ -92,7 +85,6 @@ const taskCtrl = {
                 .populate("members", "username avatar email")
                 .populate("column", "title");
 
-            // 👇 [THÊM] Gửi Socket Realtime
             req.io.to(updatedTask.project.toString()).emit('boardUpdated', {
                 msg: 'Task updated',
                 updaterId: req.user.id
@@ -110,7 +102,6 @@ const taskCtrl = {
         }
     },
 
-    // --- 3. XÓA THÀNH VIÊN (ĐÃ SỬA LỖI CRASH) ---
     removeMember: async (req, res) => {
         try {
             const { id } = req.params;
@@ -124,7 +115,6 @@ const taskCtrl = {
             if (!canEdit) return res.status(403).json({ err: "Bạn không có quyền xóa thành viên." });
 
             if (memberId !== userId) {
-                // 1. Gán kết quả vào biến `notif`
                 const notif = await Notifications.create({
                     recipient: memberId,
                     sender: userId,
@@ -133,7 +123,6 @@ const taskCtrl = {
                     link: `/src/pages/Board.html?id=${task.project}`
                 });
 
-                // 2. Gửi Socket
                 await notif.populate("sender", "username avatar");
                 sendNotification(req, memberId, notif);
             }
@@ -147,10 +136,9 @@ const taskCtrl = {
         }
     },
 
-    // --- CÁC HÀM KHÁC GIỮ NGUYÊN (Copy lại để đủ file) ---
     createTask: async (req, res) => {
         try {
-            const { title, dec, tag, color, columnId, projectId } = req.body;
+            const { title, dec, tag, color, startTime, deadline, columnId, projectId } = req.body;
             const userId = req.user.id;
             
             const canEdit = await checkPermission(projectId, userId);
@@ -171,7 +159,6 @@ const taskCtrl = {
             
             await newTask.populate("members", "username avatar");
 
-            // [MỚI] Gửi Socket báo có Task mới
             req.io.to(projectId).emit('boardUpdated', {
                 msg: 'Task created',
                 updaterId: userId
@@ -181,6 +168,7 @@ const taskCtrl = {
             res.json({ task: newTask });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
     deleteTask: async (req, res) => {
         try {
             const { id } = req.params;
@@ -200,6 +188,7 @@ const taskCtrl = {
             res.json({ msg: "Đã xóa nhiệm vụ thành công!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
     addWork: async (req, res) => {
         try {
             const { title, taskId } = req.body;
@@ -217,49 +206,37 @@ const taskCtrl = {
             res.json({ work: newWork });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
+    // --- [FIX LỖI 500 TẠI ĐÂY] ---
     toggleWork: async (req, res) => {
         try {
             const { workId } = req.params;
             const work = await Works.findById(workId);
+            if (!work) return res.status(404).json({ err: "Không tìm thấy công việc con" });
+
             work.isDone = !work.isDone;
             await work.save();
 
+            // [FIX] Phải tìm task cha để lấy projectId gửi socket
+            const task = await Tasks.findById(work.task);
+            
             if (task) {
                 req.io.to(task.project.toString()).emit('boardUpdated', {
-                    msg: 'Subtask toggled', updaterId: req.user.id
+                    msg: 'Subtask toggled', 
+                    updaterId: req.user.id
                 });
+                
+                const action = work.isDone ? "completed subtask" : "uncompleted subtask";
+                await logActivity(req, task.project, action, work.title, `trong công việc "${task.title}"`);
             }
-            const action = work.isDone ? "completed subtask" : "uncompleted subtask";
-            await logActivity(req, task.project, action, work.title, `trong công việc "${task.title}"`);
-            res.json({ msg: "Đã cập nhật trạng thái", work });
-        } catch (err) { return res.status(500).json({ err: err.message }); }
-    },
-    addComment: async (req, res) => {
-        try {
-            const { content, taskId } = req.body;
-            const userId = req.user.id;
-            const task = await Tasks.findById(taskId);
-            if (!task) return res.status(404).json({ err: "Task không tồn tại" });
-            const isMember = task.members.includes(userId);
-            const isAdmin = await checkPermission(task.project, userId);
-            if (!isMember && !isAdmin) return res.status(403).json({ err: "Bạn phải tham gia task này mới được bình luận." });
-            const newComment = new Comments({ content, user: userId, task: taskId });
-            await newComment.save();
-            await Tasks.findByIdAndUpdate(taskId, { $push: { comments: newComment._id } });
-            await newComment.populate("user", "username avatar");
 
-            await logActivity(req, task.project, "commented", task.title, content, "comment");
-            res.json({ comment: newComment });
-        } catch (err) { return res.status(500).json({ err: err.message }); }
+            res.json({ msg: "Đã cập nhật trạng thái", work });
+        } catch (err) { 
+            console.error(err);
+            return res.status(500).json({ err: err.message }); 
+        }
     },
-    getOverdueTasks: async (req, res) => {
-        try {
-            const userId = req.user.id;
-            const now = new Date();
-            const tasks = await Tasks.find({ members: userId, deadline: { $lt: now } }).select('title deadline project');
-            res.json({ tasks });
-        } catch (err) { return res.status(500).json({ err: err.message }); }
-    },
+
     deleteWork: async (req, res) => {
         try {
             const { workId } = req.params;
@@ -278,6 +255,7 @@ const taskCtrl = {
             res.json({ msg: "Đã xóa công việc con!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
     toggleWorkMember: async (req, res) => {
         try {
             const { workId } = req.params;
@@ -301,17 +279,43 @@ const taskCtrl = {
             res.json({ msg: "Cập nhật thành công", action });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+
+    addComment: async (req, res) => {
+        try {
+            const { content, taskId } = req.body;
+            const userId = req.user.id;
+            const task = await Tasks.findById(taskId);
+            if (!task) return res.status(404).json({ err: "Task không tồn tại" });
+            const isMember = task.members.includes(userId);
+            const isAdmin = await checkPermission(task.project, userId);
+            if (!isMember && !isAdmin) return res.status(403).json({ err: "Bạn phải tham gia task này mới được bình luận." });
+            const newComment = new Comments({ content, user: userId, task: taskId });
+            await newComment.save();
+            await Tasks.findByIdAndUpdate(taskId, { $push: { comments: newComment._id } });
+            await newComment.populate("user", "username avatar");
+
+            await logActivity(req, task.project, "commented", task.title, content, "comment");
+            res.json({ comment: newComment });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    getOverdueTasks: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const now = new Date();
+            const tasks = await Tasks.find({ members: userId, deadline: { $lt: now } }).select('title deadline project');
+            res.json({ tasks });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
     getScheduleData: async (req, res) => {
         try {
             const userId = req.user.id;
-            
-            // Tìm tất cả task mà user là thành viên
             const tasks = await Tasks.find({ members: userId })
-                .populate("project", "title") // Lấy tên dự án
-                .populate("column", "title")  // Lấy tên cột (trạng thái)
+                .populate("project", "title") 
+                .populate("column", "title") 
                 .select("title deadline startTime createdAt project column");
 
-            // Lọc bỏ các task rác (mất project hoặc column do đã bị xóa)
             const validTasks = tasks.filter(t => t.project && t.column);
 
             res.json({ tasks: validTasks });
@@ -319,6 +323,58 @@ const taskCtrl = {
             return res.status(500).json({ err: err.message });
         }
     },
+    // --- [MỚI] SỬA BÌNH LUẬN ---
+    updateComment: async (req, res) => {
+        try {
+            const { commentId } = req.params;
+            const { content } = req.body;
+            const userId = req.user.id;
+
+            const comment = await Comments.findById(commentId);
+            if (!comment) return res.status(404).json({ err: "Bình luận không tồn tại." });
+
+            // Chỉ chủ sở hữu mới được sửa
+            if (comment.user.toString() !== userId) {
+                return res.status(403).json({ err: "Bạn không có quyền sửa bình luận này." });
+            }
+
+            comment.content = content;
+            await comment.save();
+            
+            // Populate lại user để trả về frontend cập nhật ngay
+            await comment.populate("user", "username avatar");
+
+            res.json({ msg: "Đã cập nhật bình luận", comment });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+
+    // --- [MỚI] XÓA BÌNH LUẬN ---
+    deleteComment: async (req, res) => {
+        try {
+            const { commentId } = req.params;
+            const userId = req.user.id;
+
+            const comment = await Comments.findById(commentId);
+            if (!comment) return res.status(404).json({ err: "Bình luận không tồn tại." });
+
+            // Check quyền: Chủ comment HOẶC Admin dự án (để admin xóa spam)
+            // Ở đây làm đơn giản: Chỉ chủ comment mới xóa được
+            if (comment.user.toString() !== userId) {
+                 // (Mở rộng: Bạn có thể check thêm quyền Admin dự án ở đây nếu muốn)
+                return res.status(403).json({ err: "Bạn không có quyền xóa bình luận này." });
+            }
+
+            // 1. Xóa khỏi collection Comments
+            await Comments.findByIdAndDelete(commentId);
+
+            // 2. Xóa reference trong Task
+            await Tasks.findByIdAndUpdate(comment.task, {
+                $pull: { comments: commentId }
+            });
+
+            res.json({ msg: "Đã xóa bình luận" });
+        } catch (err) { return res.status(500).json({ err: err.message }); }
+    }
 };
 
 export default taskCtrl;

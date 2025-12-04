@@ -104,5 +104,28 @@ export const TaskAPI = {
             method: 'DELETE', headers: getHeaders()
         });
         return res.ok;
-    }
+    },
+    
+    addComment: async (content, taskId) => {
+        const res = await fetch(`${API_BASE_URL}/task/comment`, {
+            method: 'POST', headers: getHeaders(), body: JSON.stringify({ content, taskId })
+        });
+        return res.json();
+    },
+
+    // [MỚI] Sửa bình luận
+    updateComment: async (commentId, content) => {
+        const res = await fetch(`${API_BASE_URL}/task/comment/${commentId}`, {
+            method: 'PUT', headers: getHeaders(), body: JSON.stringify({ content })
+        });
+        return res.json();
+    },
+
+    // [MỚI] Xóa bình luận
+    deleteComment: async (commentId) => {
+        const res = await fetch(`${API_BASE_URL}/task/comment/${commentId}`, {
+            method: 'DELETE', headers: getHeaders()
+        });
+        return res.ok;
+    },
 };

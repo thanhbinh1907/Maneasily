@@ -1,5 +1,5 @@
 import { toast } from '../../utils/toast.js';
-import { showConfirm } from '../../utils/confirm.js';
+import { showConfirm } from '../../utils/confirm.js'; 
 import '../../../css/components/task-detail.css'; 
 
 import { TaskAPI } from './api.js';
@@ -56,15 +56,27 @@ export function initTaskDetailModal() {
         if(canEditTask) document.getElementById('btn-save-desc').style.display = 'inline-block'; 
     });
 
-    // --- [MỚI] Sự kiện cho Start Time ---
     document.getElementById('detail-start-time')?.addEventListener('change', () => handleUpdate('startTime'));
-
     document.getElementById('detail-deadline')?.addEventListener('change', () => handleUpdate('deadline'));
+    
+    // [SỬA] Nút Lưu Nhãn sẽ gọi hàm update 'tag' (hàm này đã được sửa để lưu cả màu)
     document.getElementById('btn-save-tag')?.addEventListener('click', () => handleUpdate('tag'));
     
-    // Color Events
-    document.querySelectorAll('input[name="detailColor"]').forEach(r => r.addEventListener('change', () => handleUpdate('color')));
-    document.getElementById('detail-custom-color')?.addEventListener('change', () => handleUpdate('color'));
+    // --- COLOR LOGIC (ĐÃ SỬA) ---
+    const colorRadios = document.querySelectorAll('input[name="detailColor"]');
+    const colorPicker = document.getElementById('detail-custom-color');
+
+    // [FIX] Bỏ dòng này để không auto-save khi click radio
+    // colorRadios.forEach(r => r.addEventListener('change', () => handleUpdate('color')));
+
+    if (colorPicker) {
+        colorPicker.addEventListener('input', () => {
+            // Khi chỉnh màu ở picker thì bỏ chọn các radio (chỉ visual)
+            colorRadios.forEach(r => r.checked = false);
+        });
+        // [FIX] Bỏ dòng này để không auto-save khi đổi màu picker
+        // colorPicker.addEventListener('change', () => handleUpdate('color'));
+    }
 
     // 1.4. Hành động Thêm/Comment
     document.getElementById('btn-add-subtask')?.addEventListener('click', handleAddSubtask);
@@ -73,7 +85,8 @@ export function initTaskDetailModal() {
     // 1.5. Xóa Task Chính
     document.getElementById('btn-delete-task-detail')?.addEventListener('click', () => {
         if(!canEditTask) return toast.error("Bạn không có quyền xóa task này.");
-        showConfirm("Xóa vĩnh viễn công việc này?", async () => {
+        
+        showConfirm("Bạn có chắc chắn muốn xóa vĩnh viễn công việc này?", async () => {
             if (await TaskAPI.delete(currentTask._id)) {
                 const card = document.querySelector(`.task-card[data-task-id="${currentTask._id}"]`);
                 if(card) card.remove();
@@ -95,7 +108,7 @@ export function initTaskDetailModal() {
     // 1.7. File Manager Events
     document.getElementById('btn-create-folder')?.addEventListener('click', handleCreateFolder);
     document.getElementById('file-upload-input')?.addEventListener('change', handleUploadFile);
-    document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, 'Gốc')); // Click về gốc
+    document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, 'Gốc')); 
     
     // Đóng các menu khi click ra ngoài
     window.addEventListener('click', () => { 
@@ -103,10 +116,9 @@ export function initTaskDetailModal() {
         if(dd) dd.style.display = 'none'; 
         document.querySelectorAll('.subtask-dropdown').forEach(el => el.style.display = 'none');
     });
-    
 }
 
-// --- 2. OPEN MODAL (Entry Point) ---
+// --- 2. OPEN MODAL ---
 export async function openTaskDetail(taskId, isAdmin, members = []) {
     const modal = document.getElementById('task-detail-modal');
     if (modal) modal.style.display = 'flex';
@@ -117,7 +129,6 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
     document.getElementById('detail-title').value = "Đang tải...";
     document.getElementById('btn-save-desc').style.display = 'none';
     
-    // Ẩn nút xóa task nếu không phải Admin
     const btnDelete = document.getElementById('btn-delete-task-detail');
     if(btnDelete) btnDelete.style.display = canEditTask ? '' : 'none';
     
@@ -132,7 +143,7 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
     }
 }
 
-// --- 3. LOGIC CẬP NHẬT GIAO DIỆN  ---
+// --- 3. REFRESH UI ---
 function refreshUI() {
     TaskView.renderInfo(currentTask);
     TaskView.renderMembers(currentTask.members, canEditTask);
@@ -140,59 +151,55 @@ function refreshUI() {
     TaskView.renderComments(currentTask.comments);
     TaskView.toggleEditMode(canEditTask);
 
-    // --- [MỚI] Xử lý ẩn/hiện ô Comment ---
     const currentUser = JSON.parse(localStorage.getItem('maneasily_user'));
-    // Kiểm tra xem mình có phải thành viên của task này không
     const isMember = currentTask.members.some(m => m._id === currentUser._id);
     
-    // Lấy phần tử bao quanh ô input và nút comment (dựa vào HTML hiện tại)
     const commentInput = document.getElementById('comment-input');
     const commentBtn = document.getElementById('btn-post-comment');
     
     if (commentInput && commentBtn) {
-        const commentContainer = commentInput.parentElement; // Thẻ div bao quanh
-        
-        // Nếu là Admin hoặc là Member thì được comment, ngược lại thì ẩn
+        const commentContainer = commentInput.parentElement; 
         if (canEditTask || isMember) {
             commentContainer.style.display = 'block';
             document.getElementById('my-comment-avatar').style.display = 'block';
         } else {
-            // Ẩn input, nút và avatar của mình
             commentContainer.style.display = 'none';
             document.getElementById('my-comment-avatar').style.display = 'none';
-            
-            // (Tùy chọn) Hiển thị thông báo thay thế
-            if (!document.getElementById('comment-locked-msg')) {
-                const msg = document.createElement('div');
-                msg.id = 'comment-locked-msg';
-                msg.style.cssText = 'color: #666; font-style: italic; padding: 10px; background: #f4f5f7; border-radius: 4px; font-size: 0.9rem;';
-                msg.innerText = "Chỉ thành viên tham gia mới được bình luận.";
-                commentContainer.parentElement.appendChild(msg); // Thêm vào cha của container
-            }
         }
     }
     loadFileManager();
 }
-// --- 4. XỬ LÝ CẬP NHẬT TASK CHÍNH ---
+
+// --- 4. CÁC HÀM XỬ LÝ CẬP NHẬT ---
 async function handleUpdate(field) {
     if (!canEditTask) return;
     let body = {};
+    
     if (field === 'title') body.title = document.getElementById('detail-title').value;
     else if (field === 'dec') body.dec = document.getElementById('detail-desc').value;
-    else if (field === 'startTime') body.startTime = document.getElementById('detail-start-time').value; // <--- Cập nhật startTime
+    else if (field === 'startTime') body.startTime = document.getElementById('detail-start-time').value;
     else if (field === 'deadline') body.deadline = document.getElementById('detail-deadline').value;
-    else if (field === 'tag') body.tag = document.getElementById('detail-tag-input').value;
-    else if (field === 'color') {
+    
+    // [FIX QUAN TRỌNG] Khi bấm lưu tag, lấy luôn cả giá trị màu
+    else if (field === 'tag') {
+        body.tag = document.getElementById('detail-tag-input').value;
+        
+        // Lấy màu từ radio hoặc picker
         const radio = document.querySelector('input[name="detailColor"]:checked');
         const picker = document.getElementById('detail-custom-color');
-        body.color = radio ? radio.value : picker.value;
+        
+        // Ưu tiên radio, nếu không có radio nào được chọn thì lấy picker, mặc định fallback là xanh
+        body.color = radio ? radio.value : (picker ? picker.value : '#00c2e0');
     }
 
     const data = await TaskAPI.update(currentTask._id, body);
     if (data.task) {
         currentTask = data.task;
         isOverdue = formatTimeRemaining(currentTask.deadline).isOverdue;
-        toast.success("Đã lưu");
+        
+        if (field === 'tag') toast.success("Đã lưu Nhãn & Màu sắc");
+        else toast.success("Đã lưu");
+        
         TaskView.updateBoardCard(currentTask, isOverdue);
         refreshUI();
     }
@@ -220,10 +227,7 @@ async function handlePostComment() {
     }
 }
 
-// ============================================================
-// --- 5. GLOBAL EXPORTS (CÁC HÀM GỌI TỪ HTML ONCLICK) ---
-// ============================================================
-
+// ... (Phần 5: GLOBAL EXPORTS - Giữ nguyên không đổi) ...
 window.openSubtaskManager = (workId) => {
     document.querySelectorAll('.subtask-dropdown').forEach(el => el.style.display = 'none');
     currentSubtaskWork = currentTask.works.find(w => w._id === workId);
@@ -236,9 +240,7 @@ window.openSubtaskManager = (workId) => {
     }
 };
 
-// Render nội dung trong Modal Quản lý Subtask
 function renderSubtaskManagerUI() {
-    // Tab 1: Danh sách hiện tại (Có nút Kick cho Admin)
     const listMembers = document.getElementById('sub-members');
     if (!currentSubtaskWork.members || currentSubtaskWork.members.length === 0) {
         listMembers.innerHTML = '<div style="color:#999; font-style:italic; padding:10px;">Chưa có ai làm việc này.</div>';
@@ -258,7 +260,6 @@ function renderSubtaskManagerUI() {
         `).join('');
     }
 
-    // Tab 2: Thêm thành viên (Chỉ hiện nếu là Admin)
     const listAdd = document.getElementById('sub-add');
     if (!canEditTask) {
         listAdd.innerHTML = '<div style="color:#999; padding:10px;">Bạn không có quyền thêm thành viên.</div>';
@@ -282,47 +283,47 @@ function renderSubtaskManagerUI() {
     }
 }
 
-// API Toggle Member Subtask
 window.toggleSubtaskMember = async (workId, memberId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
-    
-    // [MỚI] Chặn ngay tại client nếu đã quá hạn
-    if (isOverdue) {
-        return toast.error("Task đã quá hạn! Không thể thay đổi thành viên subtask.");
-    }
+    if (isOverdue) return toast.error("Task đã quá hạn!");
 
     if (await TaskAPI.toggleMemberSubtask(workId, memberId)) {
-        // Reload data
         const data = await TaskAPI.getDetail(currentTask._id);
         currentTask = data.task;
         refreshUI();
-        
-        // Re-render modal con nếu đang mở
         currentSubtaskWork = currentTask.works.find(w => w._id === workId);
         if (document.getElementById('subtask-member-modal').style.display === 'flex') {
             renderSubtaskManagerUI();
             toast.success("Cập nhật thành công");
         }
     } else {
-        toast.error("Lỗi cập nhật hoặc task đã quá hạn");
+        toast.error("Lỗi cập nhật");
     }
 };
 
-// B. Các thao tác khác
 window.toggleSubtask = async (workId) => {
-    // Member cũng được tick done nếu chưa quá hạn
-    if (isOverdue) return toast.error("Đã quá hạn! Không thể thay đổi.");
-    
-    if (await TaskAPI.toggleSubtask(workId)) {
-        const w = currentTask.works.find(x => x._id === workId);
-        if (w) w.isDone = !w.isDone;
+    if (isOverdue) return toast.error("Đã quá hạn!");
+    const w = currentTask.works.find(x => x._id === workId);
+    if (!w) return;
+
+    const oldState = w.isDone;
+    w.isDone = !w.isDone;
+    refreshUI();
+
+    try {
+        const success = await TaskAPI.toggleSubtask(workId);
+        if (!success) throw new Error("Fail");
+    } catch (err) {
+        w.isDone = oldState;
         refreshUI();
+        toast.error("Lỗi kết nối!");
     }
 };
 
 window.deleteSubtask = async (workId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền xóa.");
-    showConfirm("Xóa công việc này?", async () => {
+    
+    showConfirm("Xóa công việc con này?", async () => {
         if (await TaskAPI.deleteSubtask(workId)) {
             currentTask.works = currentTask.works.filter(w => w._id !== workId);
             refreshUI();
@@ -333,14 +334,10 @@ window.deleteSubtask = async (workId) => {
 
 window.addMemberToTask = async (memberId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
-    
-    if (isOverdue) {
-        return toast.error("Task đã quá hạn! Không thể thêm thành viên.");
-    }
+    if (isOverdue) return toast.error("Task đã quá hạn!");
 
     const newIds = [...currentTask.members.map(m => m._id), memberId];
     const data = await TaskAPI.update(currentTask._id, { members: newIds });
-    
     if (data.task) {
         currentTask = data.task;
         toast.success("Đã thêm thành viên");
@@ -348,41 +345,29 @@ window.addMemberToTask = async (memberId) => {
         refreshUI();
         document.getElementById('add-member-dropdown').style.display = 'none';
     } else {
-        // Hiển thị lỗi từ server trả về (nếu lọt qua check ở client)
         toast.error(data.err || "Lỗi cập nhật");
     }
 };
+
 window.removeMemberFromTask = async (memberId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
     
-    // Gọi API xóa ở Server
     if (await TaskAPI.removeMember(currentTask._id, memberId)) {
-        
-        // 1. Cập nhật danh sách thành viên của TASK CHÍNH (Local State)
         currentTask.members = currentTask.members.filter(m => m._id !== memberId);
-
-        // 2. (MỚI) Cập nhật luôn danh sách thành viên trong SUBTASKS (Local State)
-        // Duyệt qua tất cả các việc con (works) và xóa người này ra khỏi đó
-        if (currentTask.works && currentTask.works.length > 0) {
+        if (currentTask.works) {
             currentTask.works.forEach(work => {
-                if (work.members) {
-                    work.members = work.members.filter(m => m._id !== memberId);
-                }
+                if (work.members) work.members = work.members.filter(m => m._id !== memberId);
             });
         }
-
-        // 3. Render lại giao diện ngay lập tức
         TaskView.updateBoardCard(currentTask, isOverdue);
-        refreshUI(); // Hàm này sẽ vẽ lại Subtask list với dữ liệu mới đã lọc
-        
+        refreshUI();
         toast.success("Đã xóa thành viên");
     }
 };
 
 window.handleSubtaskDrop = async (e, workId) => {
     e.preventDefault();
-    if (!canEditTask) return toast.error("Bạn không có quyền gán việc.");
-    
+    if (!canEditTask) return toast.error("Bạn không có quyền.");
     const memberId = e.dataTransfer.getData("memberId_subtask");
     if (memberId && await TaskAPI.toggleMemberSubtask(workId, memberId)) {
         const data = await TaskAPI.getDetail(currentTask._id);
@@ -392,25 +377,60 @@ window.handleSubtaskDrop = async (e, workId) => {
     }
 };
 
-// Toggle menu 3 chấm (export ra global)
 window.toggleSubtaskMenu = (workId) => {
     const menu = document.getElementById(`subtask-menu-${workId}`);
-    // Đóng các menu khác trước
     document.querySelectorAll('.subtask-dropdown').forEach(el => {
         if(el !== menu) el.style.display = 'none';
     });
-    // Toggle menu hiện tại
-    if (menu) {
-        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-    }
+    if (menu) menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
 };
 
-// --- LOGIC FILE MANAGER ---
+window.enableEditComment = (commentId) => {
+    document.getElementById(`comment-view-${commentId}`).style.display = 'none';
+    document.getElementById(`comment-edit-${commentId}`).style.display = 'block';
+};
 
+window.cancelEditComment = (commentId) => {
+    document.getElementById(`comment-view-${commentId}`).style.display = 'block';
+    document.getElementById(`comment-edit-${commentId}`).style.display = 'none';
+};
+
+window.saveEditComment = async (commentId) => {
+    const newContent = document.getElementById(`input-edit-${commentId}`).value.trim();
+    if (!newContent) return toast.error("Nội dung trống");
+
+    try {
+        const data = await TaskAPI.updateComment(commentId, newContent);
+        if (data.comment) {
+            const idx = currentTask.comments.findIndex(c => c._id === commentId);
+            if (idx !== -1) currentTask.comments[idx] = data.comment;
+            TaskView.renderComments(currentTask.comments);
+            toast.success("Đã sửa bình luận");
+        } else {
+            toast.error(data.err || "Lỗi");
+        }
+    } catch (err) { toast.error("Lỗi kết nối"); }
+};
+
+window.deleteComment = async (commentId) => {
+    showConfirm("Bạn muốn xóa bình luận này?", async () => {
+        try {
+            const success = await TaskAPI.deleteComment(commentId);
+            if (success) {
+                currentTask.comments = currentTask.comments.filter(c => c._id !== commentId);
+                TaskView.renderComments(currentTask.comments);
+                toast.success("Đã xóa bình luận");
+            } else {
+                toast.error("Lỗi xóa");
+            }
+        } catch (err) { toast.error("Lỗi kết nối"); }
+    });
+};
+
+// --- FILE MANAGER ---
 async function loadFileManager() {
     const container = document.getElementById('file-list-container');
     container.innerHTML = '<div style="font-size:0.8rem; color:#666;">Đang tải...</div>';
-
     const data = await TaskAPI.getFiles(currentTask._id, currentFolderId);
     renderFileList(data.folders, data.files);
     renderBreadcrumb();
@@ -425,7 +445,6 @@ function renderFileList(folders, files) {
         return;
     }
 
-    // 1. Render Folders
     folders.forEach(f => {
         const el = document.createElement('div');
         el.className = 'file-item';
@@ -435,56 +454,35 @@ function renderFileList(folders, files) {
             <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.name}</div>
             <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
         `;
-        
-        // Click để vào folder
         el.addEventListener('click', (e) => {
-            if(e.target.classList.contains('btn-delete-file')) return;
-            navigateFolder(f._id, f.name);
+            if(!e.target.classList.contains('btn-delete-file')) navigateFolder(f._id, f.name);
         });
-
-        // Hover để hiện nút xóa
+        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('folder', f._id));
         el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
         el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
-        
-        // Xóa folder
-        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('folder', f._id));
-
         container.appendChild(el);
     });
 
-    // 2. Render Files
     files.forEach(f => {
         const el = document.createElement('div');
         el.className = 'file-item';
         el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
-        
-        // Icon tùy theo loại file
-        let icon = 'fa-file';
-        let color = '#6b778c';
+        let icon = 'fa-file'; let color = '#6b778c';
         if (f.mimetype.includes('image')) { icon = 'fa-file-image'; color = '#a6c5f7'; }
         else if (f.mimetype.includes('pdf')) { icon = 'fa-file-pdf'; color = '#d93025'; }
-        else if (f.mimetype.includes('word')) { icon = 'fa-file-word'; color = '#0079bf'; }
-
-        // URL file
+        
         const fileUrl = `http://localhost:5000/${f.path.replace(/\\/g, '/')}`;
-
         el.innerHTML = `
             <i class="fa-solid ${icon}" style="font-size: 2rem; color: ${color}; display: block; margin-bottom: 5px;"></i>
             <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.originalName}">${f.originalName}</div>
             <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
         `;
-
-        // Click để mở file
         el.addEventListener('click', (e) => {
-            if(e.target.classList.contains('btn-delete-file')) return;
-            window.open(fileUrl, '_blank');
+            if(!e.target.classList.contains('btn-delete-file')) window.open(fileUrl, '_blank');
         });
-
+        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('file', f._id));
         el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
         el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
-        
-        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('file', f._id));
-
         container.appendChild(el);
     });
 }
@@ -492,40 +490,28 @@ function renderFileList(folders, files) {
 function renderBreadcrumb() {
     const bc = document.getElementById('file-breadcrumb');
     bc.innerHTML = '';
-    
     currentFolderPath.forEach((item, index) => {
         const span = document.createElement('span');
         span.innerHTML = (index === 0) ? `<i class="fa-solid fa-house"></i>` : item.name;
-        span.style.cursor = 'pointer';
-        span.style.padding = '0 4px';
-        
+        span.style.cursor = 'pointer'; span.style.padding = '0 4px';
         if (index === currentFolderPath.length - 1) {
-            span.style.fontWeight = 'bold';
-            span.style.color = '#000';
+            span.style.fontWeight = 'bold'; span.style.color = '#000';
         } else {
-            span.style.color = '#0079bf';
-            span.innerHTML += ' <span style="color:#666">/</span> ';
+            span.style.color = '#0079bf'; span.innerHTML += ' <span style="color:#666">/</span> ';
         }
-
         span.addEventListener('click', () => {
-            // Quay lại folder này: cắt mảng path từ đầu đến index hiện tại
             currentFolderPath = currentFolderPath.slice(0, index + 1);
             currentFolderId = item.id;
             loadFileManager();
         });
-
         bc.appendChild(span);
     });
 }
 
 function navigateFolder(folderId, folderName) {
     currentFolderId = folderId;
-    // Nếu về gốc
-    if (folderId === null) {
-        currentFolderPath = [{ id: null, name: 'Gốc' }];
-    } else {
-        currentFolderPath.push({ id: folderId, name: folderName });
-    }
+    if (folderId === null) currentFolderPath = [{ id: null, name: 'Gốc' }];
+    else currentFolderPath.push({ id: folderId, name: folderName });
     loadFileManager();
 }
 
@@ -543,16 +529,13 @@ async function handleUploadFile(e) {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
     const file = e.target.files[0];
     if (!file) return;
-
     toast.info("Đang tải lên...");
     try {
         await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
         loadFileManager();
         toast.success("Tải lên thành công");
-    } catch (err) {
-        toast.error("Lỗi tải lên");
-    }
-    e.target.value = ''; // Reset input
+    } catch (err) { toast.error("Lỗi tải lên"); }
+    e.target.value = ''; 
 }
 
 async function deleteItem(type, id) {

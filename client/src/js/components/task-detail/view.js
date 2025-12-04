@@ -29,12 +29,11 @@ export const TaskView = {
         });
         if (colorPicker) colorPicker.value = task.color;
 
-        // --- [MỚI] XỬ LÝ START TIME ---
+        // Start Time
         const startInput = document.getElementById('detail-start-time');
         if (startInput) {
             if (task.startTime) {
                 const s = new Date(task.startTime);
-                // Chỉnh múi giờ local để hiển thị đúng trong input datetime-local
                 s.setMinutes(s.getMinutes() - s.getTimezoneOffset());
                 startInput.value = s.toISOString().slice(0, 16);
             } else {
@@ -42,7 +41,7 @@ export const TaskView = {
             }
         }
 
-        // --- XỬ LÝ DEADLINE ---
+        // Deadline
         const deadlineInput = document.getElementById('detail-deadline');
         const timeDisplay = document.getElementById('time-remaining-display');
         if (deadlineInput && task.deadline) {
@@ -96,7 +95,6 @@ export const TaskView = {
         const isDisabled = !canEdit || isOverdue;
 
         list.innerHTML = works.map(w => {
-            // Avatar người làm
             let subMembersHTML = '';
             if (w.members && w.members.length > 0) {
                 subMembersHTML = w.members.map(m => 
@@ -119,13 +117,16 @@ export const TaskView = {
                 </div>
             ` : '';
 
+            // --- SỬA LỖI CHECKBOX TẠI ĐÂY ---
+            // Đã xóa style="pointer-events:none;" ở thẻ <input>
             return `
             <div class="subtask-item ${w.isDone ? 'completed' : ''}" 
                  style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid #eee; cursor:${isDisabled?'not-allowed':'default'}; position:relative;"
                  ondrop="window.handleSubtaskDrop(event, '${w._id}')" ondragover="event.preventDefault()">
                  
                 <input type="checkbox" ${w.isDone ? 'checked' : ''} ${isDisabled ? 'disabled' : ''} 
-                       onclick="event.stopPropagation(); window.toggleSubtask('${w._id}')" style="pointer-events:none;">
+                       onclick="event.stopPropagation(); window.toggleSubtask('${w._id}')" 
+                       style="cursor: pointer; width: 16px; height: 16px;">
                 
                 <span class="subtask-text" style="flex-grow:1; ${w.isDone?'text-decoration:line-through; color:#999':''}" 
                       onclick="${!isDisabled ? `window.toggleSubtask('${w._id}')` : ''}">${w.title}</span>
@@ -168,7 +169,6 @@ export const TaskView = {
     },
 
     toggleEditMode: (canEdit) => {
-        // Thêm detail-start-time vào danh sách cần toggle
         const ids = ['detail-title', 'detail-desc', 'btn-save-desc', 'new-subtask-input', 'btn-add-subtask', 'detail-tag-input', 'btn-save-tag', 'detail-start-time', 'detail-deadline', 'btn-add-member-detail', 'btn-delete-task-detail'];
         ids.forEach(id => {
             const el = document.getElementById(id);
@@ -189,15 +189,22 @@ export const TaskView = {
         const card = document.querySelector(`.task-card[data-task-id="${task._id}"]`);
         if (!card) return;
         card.querySelector('.task-title').textContent = task.title;
-        card.querySelector('.task-desc').textContent = task.dec;
+        // card.querySelector('.task-desc').textContent = task.dec; // Tạm ẩn nếu không muốn hiện desc ngoài board
         
         let tagEl = card.querySelector('.task-tag');
         if (!tagEl && task.tag) {
             tagEl = document.createElement('div'); tagEl.className = 'task-tag';
-            card.querySelector('.task-title').before(tagEl);
+            // Tìm vị trí để chèn tag (trước tiêu đề)
+            const titleEl = card.querySelector('.task-title');
+            if(titleEl) titleEl.parentNode.insertBefore(tagEl, titleEl);
+            else card.prepend(tagEl); // Fallback
         }
         if (tagEl) {
-            if (task.tag) { tagEl.textContent = task.tag; tagEl.style.backgroundColor = task.color || '#00c2e0'; tagEl.style.display = 'inline-block'; }
+            if (task.tag) { 
+                tagEl.textContent = task.tag; 
+                tagEl.style.backgroundColor = task.color || '#00c2e0'; 
+                tagEl.style.display = 'inline-block'; 
+            }
             else tagEl.style.display = 'none';
         }
         card.style.borderLeft = isOverdue ? "4px solid #d93025" : "";
@@ -206,5 +213,50 @@ export const TaskView = {
         if (membersContainer && task.members) {
             membersContainer.innerHTML = task.members.map(u => `<img src="${u.avatar}" title="${u.username}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: -8px;">`).join('');
         }
-    }
+    },
+    renderComments: (comments) => {
+        const list = document.getElementById('comment-list');
+        if (!list) return;
+        
+        // Lấy thông tin user hiện tại
+        const me = JSON.parse(localStorage.getItem('maneasily_user')) || {};
+        document.getElementById('my-comment-avatar').src = me.avatar || "https://www.gravatar.com/avatar/default?d=mp";
+
+        list.innerHTML = comments.map(c => {
+            const isMyComment = c.user?._id === me._id;
+            
+            // Nút thao tác (chỉ hiện nếu là comment của mình)
+            const actions = isMyComment ? `
+                <div class="comment-actions" style="font-size: 0.75rem; margin-top: 5px; color: #5e6c84;">
+                    <span style="cursor:pointer; margin-right:8px; text-decoration:underline;" onclick="window.enableEditComment('${c._id}')">Sửa</span>
+                    <span style="cursor:pointer; text-decoration:underline;" onclick="window.deleteComment('${c._id}')">Xóa</span>
+                </div>
+            ` : '';
+
+            return `
+            <div class="comment-item" id="comment-item-${c._id}" style="display:flex; gap:10px; margin-bottom:15px;">
+                <img src="${c.user?.avatar}" style="width:32px; height:32px; border-radius:50%;">
+                
+                <div style="flex-grow:1;">
+                    <div id="comment-view-${c._id}" style="background:#fff; padding:10px; border-radius:8px; border:1px solid #dfe1e6;">
+                        <div style="font-weight:600; font-size:0.85rem; margin-bottom:4px;">
+                            ${c.user?.username} 
+                            <span style="font-weight:400; color:#999; font-size:0.7rem;">${new Date(c.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div id="comment-content-${c._id}" style="white-space: pre-wrap;">${c.content}</div>
+                    </div>
+
+                    <div id="comment-edit-${c._id}" style="display:none;">
+                        <textarea id="input-edit-${c._id}" style="width:100%; padding:8px; border:1px solid #0079bf; border-radius:6px; min-height:60px;">${c.content}</textarea>
+                        <div style="margin-top:5px; display:flex; gap:5px;">
+                            <button onclick="window.saveEditComment('${c._id}')" class="btn-modal btn-submit" style="padding:4px 10px; font-size:0.8rem;">Lưu</button>
+                            <button onclick="window.cancelEditComment('${c._id}')" class="btn-modal btn-cancel" style="padding:4px 10px; font-size:0.8rem;">Hủy</button>
+                        </div>
+                    </div>
+
+                    ${actions}
+                </div>
+            </div>`;
+        }).join('');
+    },
 };

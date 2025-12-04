@@ -315,6 +315,48 @@ const projectCtrl = {
             res.json({ msg: "Đã mời thành viên ra khỏi dự án." });
 
         } catch (err) { return res.status(500).json({ err: err.message }); }
+    },
+    getHomeStats: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const now = new Date();
+            const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(now.setHours(23, 59, 59, 999));
+
+            // 1. Đếm số dự án đang tham gia
+            const totalProjects = await Projects.countDocuments({ members: userId });
+
+            // 2. Đếm công việc cần làm HÔM NAY (Có deadline hôm nay và chưa xong)
+            // Tìm các task mà user là thành viên HOẶC user là người tạo (tùy logic, ở đây lấy theo members)
+            // Giả sử logic: Task user được assign
+            const tasksToday = await Tasks.countDocuments({
+                members: userId,
+                deadline: { $gte: startOfDay, $lte: endOfDay },
+                // Lưu ý: Cần lọc task chưa xong. Ở đây ta tạm tính tất cả task có deadline hôm nay.
+                // Nếu muốn chính xác hơn cần check column type, nhưng tạm thời đếm theo deadline.
+            });
+
+            // 3. Đếm Task quá hạn (Deadline < now và chưa xong - logic tương đối)
+            const tasksOverdue = await Tasks.countDocuments({
+                members: userId,
+                deadline: { $lt: new Date() } // Cần kết hợp logic chưa xong nếu có field isDone
+            });
+
+            // 4. Lấy 3 dự án mới nhất để hiển thị nhanh
+            const recentProjects = await Projects.find({ members: userId })
+                .sort({ updatedAt: -1 })
+                .limit(3)
+                .select("title img updatedAt");
+
+            res.json({ 
+                totalProjects, 
+                tasksToday, 
+                tasksOverdue, 
+                recentProjects 
+            });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     }
 };
 

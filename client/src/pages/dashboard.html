@@ -4,32 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tổng quan - Maneasily</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
-  <link rel="stylesheet" href="/src/css/dashboard-layout.css">
-  <style>
-      .welcome-banner {
-          background: linear-gradient(135deg, #ff7f32 0%, #ffb75e 100%);
-          color: white;
-          padding: 30px;
-          border-radius: 12px;
-          margin-bottom: 30px;
-      }
-      .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-      }
-      .stat-card {
-          background: white; padding: 20px; border-radius: 8px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      }
-  </style>
+  <link rel="stylesheet" href="/src/css/components/dashboard-layout.css">
+  <link rel="stylesheet" href="/src/css/pages/dashboard.css">
 </head>
 
 <body>
-
   <div class="app-container">
     {{> sidebar active_overview=true }}
 
@@ -37,25 +29,59 @@
         {{> nav-top }}
 
         <div class="page-content">
-            <div class="welcome-banner">
-                <h2 id="welcome-msg">Xin chào!</h2>
-                <p>Chào mừng bạn quay trở lại làm việc.</p>
-            </div>
+            <div class="dashboard-content">
+                
+                <div class="welcome-banner">
+                    <h1 style="margin: 0 0 10px 0; font-size: 2rem;">Xin chào, <span id="user-display-name">...</span></h1>
+                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">Hôm nay là <span id="current-date" style="font-weight: 600;">...</span>. Chúc bạn một ngày làm việc hiệu quả.</p>
+                </div>
 
-            <h3>Thống kê nhanh</h3>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>Dự án đang chạy</h4>
-                    <p style="font-size: 2rem; font-weight: bold; color: #ff7f32;">3</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-briefcase"></i></div>
+                        <div class="stat-info">
+                            <h4>Dự án tham gia</h4>
+                            <p class="stat-value" id="stat-projects">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="stat-info">
+                            <h4>Việc cần làm hôm nay</h4>
+                            <p class="stat-value" id="stat-tasks-today">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-info">
+                            <h4>Công việc quá hạn</h4>
+                            <p class="stat-value" id="stat-tasks-overdue">0</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h4>Công việc hôm nay</h4>
-                    <p style="font-size: 2rem; font-weight: bold; color: #2e8b57;">12</p>
+
+                <div class="dashboard-main-grid">
+                    <div class="projects-section">
+                        <div class="section-header">
+                            <h3 class="section-title">Dự án truy cập gần đây</h3>
+                            <a href="/src/pages/projects.html" class="btn-link">Xem tất cả</a>
+                        </div>
+                        <div id="recent-projects-list">
+                            <p style="color: var(--text-sub)">Đang tải...</p>
+                        </div>
+                    </div>
+
+                    <div class="activity-section">
+                        <div class="section-header">
+                            <h3 class="section-title">Hoạt động mới nhất</h3>
+                            <a href="/src/pages/activity.html" class="btn-link">Xem thêm</a>
+                        </div>
+                        <div class="activity-mini-list" id="recent-activity-list">
+                            <p style="color: var(--text-sub)">Đang tải...</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h4>Đã hoàn thành</h4>
-                    <p style="font-size: 2rem; font-weight: bold; color: #42526e;">85%</p>
-                </div>
+
             </div>
         </div>
     </div>

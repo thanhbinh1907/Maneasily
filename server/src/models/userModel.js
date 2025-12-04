@@ -53,9 +53,15 @@ const userSchema = new mongoose.Schema(
             default: false
         },
         
+        // Cài đặt cho trang Hoạt động (Activity) - KHÔNG ĐỔI
         activitySettings: {
-            pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }], // Danh sách ID dự án đã ghim
-            projectOrder: [{ type: mongoose.Types.ObjectId, ref: "projects" }]    // Thứ tự sắp xếp
+            pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }], 
+            projectOrder: [{ type: mongoose.Types.ObjectId, ref: "projects" }]    
+        },
+
+        // [MỚI] Cài đặt riêng cho trang Dự án (Project List)
+        projectSettings: {
+            pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }]
         }
     },
     {

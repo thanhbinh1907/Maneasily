@@ -16,4 +16,7 @@ router.put('/update', auth, userCtrl.updateProfile);
 // Route phản hồi lời mời tham gia dự án (Yêu cầu đăng nhập)
 router.post('/invitation/response', auth, userCtrl.respondInvitation);
 
+// Route ghim dự án
+router.put('/pin', auth, userCtrl.togglePinProject);
+
 export default router;

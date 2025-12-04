@@ -110,6 +110,44 @@ const userCtrl = {
 
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
+    // Hàm Toggle Ghim Dự án 
+    togglePinProject: async (req, res) => {
+        try {
+            const { projectId } = req.body;
+            const userId = req.user.id;
+
+            const user = await Users.findById(userId);
+            if (!user) return res.status(404).json({ err: "User không tồn tại" });
+
+            // Kiểm tra trong projectSettings
+            const pinnedList = user.projectSettings?.pinnedProjects || [];
+            const isPinned = pinnedList.some(id => id.toString() === projectId);
+
+            let newUser;
+
+            if (isPinned) {
+                // Bỏ ghim khỏi projectSettings
+                newUser = await Users.findByIdAndUpdate(userId, {
+                    $pull: { "projectSettings.pinnedProjects": projectId }
+                }, { new: true });
+            } else {
+                // Thêm ghim vào projectSettings
+                newUser = await Users.findByIdAndUpdate(userId, {
+                    $addToSet: { "projectSettings.pinnedProjects": projectId }
+                }, { new: true });
+            }
+
+            res.json({ 
+                msg: isPinned ? "Đã bỏ ghim dự án" : "Đã ghim dự án lên đầu", 
+                // Trả về danh sách pinned mới của projectSettings
+                pinnedProjects: newUser.projectSettings.pinnedProjects,
+                isPinned: !isPinned
+            });
+
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
+    },
     // --- CẬP NHẬT HỒ SƠ ---
     updateProfile: async (req, res) => {
         try {

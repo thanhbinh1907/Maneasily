@@ -3,8 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import http from 'http'; // Cần thiết cho Socket.io
-import { Server } from 'socket.io'; // Cần thiết cho Socket.io
+import http from 'http'; 
+import { Server } from 'socket.io'; 
 
 // Imports Router
 import projectRouter from './routers/projectRouter.js';
@@ -12,11 +12,15 @@ import authRouter from './routers/authRouter.js';
 import userRouter from './routers/userRouter.js';
 import notificationRouter from './routers/notificationRouter.js';
 import contactRouter from './routers/contactRouter.js';
-import './routers/activityRouter.js';
+// [FIX QUAN TRỌNG] Import thêm 2 router này
+import activityRouter from './routers/activityRouter.js';
+import fileRouter from './routers/fileRouter.js'; 
 
 import session from 'express-session';
 import passport from 'passport';
 import './config/passport.js';
+
+import searchRouter from './routers/searchRouter.js';
 
 dotenv.config();
 
@@ -27,16 +31,14 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173", // URL Client của bạn
+        origin: process.env.CLIENT_URL || "http://localhost:5173", 
         methods: ["GET", "POST"]
     }
 });
 
-// Danh sách user đang online
 let onlineUsers = [];
 
 io.on('connection', (socket) => {
-    // Khi client gửi sự kiện 'join' (lúc đăng nhập)
     socket.on('join', (userId) => {
         if (!onlineUsers.some(u => u.userId === userId)) {
             onlineUsers.push({ userId, socketId: socket.id });
@@ -58,16 +60,15 @@ io.on('connection', (socket) => {
 });
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173", // Chỉ cho phép Frontend gọi
+  origin: process.env.CLIENT_URL || "http://localhost:5173", 
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"], // QUAN TRỌNG: Cho phép header Authorization
+  allowedHeaders: ["Content-Type", "Authorization"], 
   credentials: true
 }));
 
 app.use(express.json());
 
-// 2. [QUAN TRỌNG] Middleware gắn io vào req 
-// (Phải đặt TRƯỚC các app.use Router bên dưới)
+// 2. Middleware gắn io vào req 
 app.use((req, res, next) => {
     req.io = io;
     req.onlineUsers = onlineUsers;
@@ -88,14 +89,20 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 5. Khai báo Routes (Sau khi đã gắn middleware socket)
+// 5. Khai báo Routes
 app.use('/api', projectRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api', notificationRouter);
 app.use('/api', contactRouter);
 
-// 6. Khởi động Server bằng 'server.listen' (Không dùng app.listen)
+// [FIX QUAN TRỌNG] Đăng ký 2 route này để hết lỗi 404
+app.use('/api', activityRouter);
+app.use('/api', fileRouter);
+
+app.use('/api', searchRouter);
+
+// 6. Khởi động Server
 server.listen(PORT, () => {
     console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
 });

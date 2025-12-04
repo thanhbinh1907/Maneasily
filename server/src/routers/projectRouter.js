@@ -53,4 +53,10 @@ router.post('/task/comment', auth, taskCtrl.addComment);
 // Schedule data
 router.get('/schedule/tasks', auth, taskCtrl.getScheduleData);
 
+// COMMENTS
+router.post('/task/comment', auth, taskCtrl.addComment);
+router.put('/task/comment/:commentId', auth, taskCtrl.updateComment);
+router.delete('/task/comment/:commentId', auth, taskCtrl.deleteComment);
+router.get('/dashboard/stats', auth, projectCtrl.getHomeStats);
+
 export default router;

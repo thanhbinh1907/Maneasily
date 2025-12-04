@@ -1,32 +1,157 @@
+/* File: client/src/css/pages/schedule.css */
+
 .schedule-page {
-    padding-bottom: 40px;
+    padding-bottom: 60px;
+}
+
+/* --- 1. HEADER SECTION --- */
+.schedule-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
 }
 
 .page-title {
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    color: #172b4d;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 5px 0;
+    letter-spacing: -0.5px;
 }
 
-/* Khung chứa biểu đồ */
-.chart-container {
-    background: #fff;
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    background: var(--bg-surface);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.btn-date-filter {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-date-filter.active {
+    background-color: var(--bg-active);
+    color: var(--primary-color);
+}
+
+.btn-date-filter:hover {
+    color: var(--text-main);
+}
+
+/* --- 2. STATS CARDS --- */
+.stats-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--bg-surface);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Màu sắc icon */
+.stat-card.blue .stat-icon {
+    background-color: #e9f2ff;
+    color: #0c66e4;
+}
+
+.stat-card.green .stat-icon {
+    background-color: #e6f4ea;
+    color: #22c55e;
+}
+
+.stat-card.red .stat-icon {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
     border-radius: 12px;
-    border: 1px solid #dfe1e6;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+    line-height: 1;
+}
+
+/* --- 3. CHARTS --- */
+.chart-container {
+    background: var(--bg-surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 25px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
     display: flex;
     flex-direction: column;
 }
 
 .chart-header h3 {
-    margin: 0 0 15px 0;
+    margin: 0 0 20px 0;
     font-size: 1.1rem;
-    color: #44546f;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+}
+
+.chart-header h3 i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
 }
 
 .canvas-wrapper {
@@ -35,26 +160,38 @@
     flex-grow: 1;
 }
 
-/* Layout kích thước */
 .large-chart {
-    height: 400px; /* Chiều cao cố định cho Timeline */
+    height: 450px;
 }
 
 .charts-row {
     display: flex;
-    gap: 20px;
+    gap: 24px;
 }
 
 .half-chart {
     flex: 1;
-    height: 350px;
+    height: 380px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+    .schedule-header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .stats-overview-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
     .charts-row {
         flex-direction: column;
     }
-    .large-chart, .half-chart {
-        height: 300px;
+
+    .large-chart,
+    .half-chart {
+        height: 320px;
     }
 }

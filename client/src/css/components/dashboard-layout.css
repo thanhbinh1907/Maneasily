@@ -1,64 +1,166 @@
+/* File: client/src/css/components/dashboard-layout.css */
+
+/* --- 1. IMPORT FONT --- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* --- 2. VARIABLES & THEME SYSTEM --- */
 * {
-    box-sizing: border-box; /* Giúp padding không cộng thêm vào kích thước phần tử */
+    box-sizing: border-box;
 }
 
 :root {
-    --sidebar-width: 260px;
-    --header-height: 56px;
-    --bg-color: #f4f5f7;
-    --hover-color: #ebecf0;
-    --active-color: #e9f2ff;
-    --active-text: #0c66e4;
+    /* --- LIGHT MODE (Mặc định) --- */
+    --bg-body: #f8f9fd;
+    --bg-surface: #ffffff;
+    --bg-hover: #f4f5f7;
+    --bg-active: #e9f2ff;
+    --bg-input: #ffffff;
+
+    --text-main: #172b4d;
+    --text-sub: #5e6c84;
+    --text-placeholder: #8898aa;
+
     --border-color: #dfe1e6;
+    --border-focus: #0c66e4;
+
+    --primary-color: #ff7f32;
+    --primary-light: #fff2e8;
+
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+    /* Z-Index System */
+    --z-header: 100;
+    --z-dropdown: 200;
+    --z-modal: 1000;
+    
+    /* [ĐÃ SỬA] Tăng chiều cao Header lên 96px cho thoáng */
+    --header-height: 96px; 
 }
 
+/* --- DARK MODE --- */
+[data-theme="dark"] {
+    --bg-body: #0f111a;
+    --bg-surface: #1e2130;
+    --bg-hover: #2b2f42;
+    --bg-active: rgba(255, 127, 50, 0.15);
+    --bg-input: #161922;
+
+    --text-main: #e2e8f0;
+    --text-sub: #94a3b8;
+    --text-placeholder: #475569;
+
+    --border-color: #2d3246;
+    --border-focus: #ff7f32;
+
+    --primary-color: #ff9f5e;
+    --primary-light: rgba(255, 127, 50, 0.1);
+
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* --- 3. GLOBAL STYLES --- */
 body {
-    background-color: var(--bg-color);
-    overflow-x: hidden;
-    margin: 0; /* Reset margin body */
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* --- KẾT CẤU CHUNG --- */
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #333b50;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* --- 4. LAYOUT STRUCTURE --- */
 .app-container {
     display: flex;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
 }
 
-/* --- 1. SIDEBAR --- */
+/* SIDEBAR */
 .app-sidebar {
-    width: var(--sidebar-width);
-    background-color: #ffffff;
+    width: 260px;
+    background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: width 0.3s ease;
-    z-index: 20; 
+    z-index: 50;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
 }
 
+/* Sidebar Header & Logo */
 .sidebar-header {
-    height: var(--header-height);
+    /* [ĐÃ SỬA] Dùng biến height chung để đồng bộ với Nav Top */
+    height: var(--header-height); 
     display: flex;
     align-items: center;
-    padding: 0 20px;
-    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+    margin-bottom: 10px;
 }
 
-.sidebar-logo {
+.logo-wrapper {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #333;
-    font-weight: 700;
-    font-size: 1.2rem;
-    line-height: 1;
+    color: inherit;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.sidebar-logo img { width: 32px; margin-right: 10px; display: block; }
+.logo-wrapper:hover {
+    transform: scale(1.05) translateY(-2px); 
+}
 
+.logo-wrapper:hover .logo-img {
+    filter: drop-shadow(0 0 8px rgba(255, 127, 50, 0.5));
+}
+
+.logo-img {
+    width: 54px; 
+    height: auto;
+    margin-right: 12px;
+    object-fit: contain;
+    transition: filter 0.3s ease;
+}
+
+.app-name {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+/* Sidebar Menu */
 .sidebar-menu {
-    padding: 12px 10px;
+    padding: 20px 12px;
     flex-grow: 1;
     overflow-y: auto;
 }
@@ -66,236 +168,411 @@ body {
 .menu-item {
     display: flex;
     align-items: center;
-    padding: 10px 16px;
-    color: #42526e;
+    padding: 12px 16px;
+    color: var(--text-sub);
     text-decoration: none;
     font-weight: 500;
-    border-radius: 6px;
-    margin-bottom: 4px;
+    border-radius: 10px;
+    margin-bottom: 6px;
     transition: all 0.2s;
 }
-.menu-item i { width: 24px; font-size: 1.1rem; margin-right: 10px; text-align: center; }
-.menu-item:hover { background-color: var(--hover-color); color: #172b4d; }
-.menu-item.active { background-color: var(--active-color); color: var(--active-text); }
 
-/* --- 2. MAIN AREA --- */
+.menu-item i {
+    width: 24px;
+    font-size: 1.1rem;
+    margin-right: 12px;
+    text-align: center;
+}
+
+.menu-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+.menu-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* MAIN AREA */
 .app-main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    width: calc(100% - var(--sidebar-width));
+    width: calc(100% - 260px);
+    position: relative;
 }
 
-/* --- 3. NAV TOP (Header ngang) --- */
+/* --- [ĐÃ SỬA LẠI] NAV TOP: Header cao, Search gọn gàng --- */
 .app-nav-top {
-    height: var(--header-height);
-    background-color: #ffffff;
+    /* Giữ chiều cao header là 80px cho thoáng (như bạn đã đồng ý) */
+    height: 80px; 
+    background-color: var(--bg-surface);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    
-    /* SỬA: Tăng khoảng cách 2 bên để thoáng hơn (Cũ là 20px) */
-    padding: 0 32px; 
-    
-    flex-shrink: 0;
+    padding: 0 32px;
+    position: relative;
+    z-index: var(--z-header);
+    /* Bỏ gap lớn để tránh đẩy các phần tử quá xa */
+}
+
+/* Nav Left */
+.nav-left {
+    /* Không dùng flex-grow nữa để thanh tìm kiếm không bị kéo giãn */
+    display: flex;
+    align-items: center;
 }
 
 /* Search Bar */
 .nav-search {
     position: relative;
-    width: 300px;
-    display: flex; 
-    align-items: center;
+    /* [QUAN TRỌNG] Giới hạn độ rộng cố định (như ban đầu) */
+    width: 320px; 
 }
+
 .nav-search input {
     width: 100%;
-    height: 36px;
-    padding: 0 12px 0 36px; 
+    /* Chiều cao 44px là vừa đẹp với header 80px (không quá to, không quá nhỏ) */
+    height: 44px; 
+    padding: 0 16px 0 44px; /* Icon cách chữ vừa phải */
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    outline: none;
-    font-size: 0.9rem;
-    line-height: normal;
+    background-color: var(--bg-body);
+    border-radius: 24px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    color: var(--text-main);
 }
+
 .nav-search i {
     position: absolute;
-    left: 12px;
+    left: 16px; /* Vị trí icon chuẩn */
     top: 50%;
     transform: translateY(-50%);
-    color: #6b778c;
-    font-size: 0.9rem;
+    color: var(--text-sub);
+    font-size: 1.1rem;
+}
+
+.nav-search input:focus {
+    background-color: var(--bg-surface);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 127, 50, 0.1);
+    outline: none;
+    /* Khi focus có thể cho rộng ra một chút xíu để trải nghiệm tốt hơn (tuỳ chọn) */
+    /* width: 350px; */ 
 }
 
 /* Nav Right */
-.nav-right { display: flex; align-items: center; gap: 16px; height: 100%; }
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Khoảng cách giữa các icon vừa phải */
+    flex-shrink: 0;
+}
+
+.nav-icon-btn,
+.user-info {
+    position: relative;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+}
 
 .nav-icon-btn {
-    position: relative;
-    font-size: 1.2rem;
-    color: #42526e;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    height: 32px; width: 32px; 
+    height: 40px;
+    width: 40px;
     border-radius: 50%;
-    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    transition: all 0.2s;
 }
-.nav-icon-btn:hover { background-color: var(--hover-color); }
+
+.nav-icon-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+.nav-icon-btn i {
+    font-size: 1.3rem;
+}
 
 .nav-icon-btn .badge {
-    position: absolute; top: 0; right: 0;
-    background: #ff5630; color: #fff; font-size: 0.6rem;
-    padding: 1px 4px; border-radius: 10px; border: 2px solid #fff;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #e53e3e;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 10px;
+    border: 2px solid #fff;
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    position: relative;
-    padding: 4px 8px;
-    border-radius: 6px;
-    height: 36px;
+    gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 30px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
 }
-.user-info:hover { background-color: var(--hover-color); }
+
+.user-info:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-color);
+}
+
 .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+/* --- DROPDOWNS --- */
+.dropdown-menu,
+.noti-dropdown {
+    display: none;
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+    z-index: var(--z-dropdown);
+    animation: fadeInDrop 0.2s ease-out;
+}
+
+.dropdown-menu.show,
+.noti-dropdown.show {
     display: block;
 }
-.user-name { font-weight: 600; font-size: 0.9rem; color: #172b4d; }
 
-/* Dropdown */
+@keyframes fadeInDrop {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .dropdown-menu {
-    position: absolute; top: 100%; right: 0; margin-top: 4px;
-    background: #fff; border: 1px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-radius: 6px; width: 200px;
-    display: none; z-index: 100;
+    width: 220px;
+    padding: 8px 0;
 }
-.dropdown-menu.show { display: block; }
+
 .dropdown-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 16px; text-decoration: none; color: #172b4d; font-size: 0.9rem;
-}
-.dropdown-item:hover { background-color: var(--hover-color); }
-.dropdown-item.logout { color: #de350b; border-top: 1px solid #eee; }
-
-/* --- 4. PAGE CONTENT --- */
-.page-content {
-    /* SỬA: Tăng padding trái/phải lên 32px cho cân với Header */
-    padding: 24px 32px; 
-    flex-grow: 1;
-    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+    cursor: pointer;
 }
 
-/* 5.Notification Dropdown Custom Style */
+.dropdown-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--primary-color);
+}
+
+.dropdown-item.logout {
+    color: #d93025;
+    border-top: 1px solid var(--border-color);
+    margin-top: 4px;
+}
+
+.dropdown-item.logout:hover {
+    background-color: rgba(217, 48, 37, 0.1);
+}
+
+/* Notification Dropdown */
 .noti-dropdown {
-    width: 320px;
-    right: -100px; /* Căn chỉnh vị trí */
-    max-height: 400px;
-    display: none; /* Mặc định ẩn */
+    width: 380px;
+    right: -60px;
+    max-height: 80vh;
     flex-direction: column;
+    overflow: hidden;
 }
 
-/* Khi có class show thì hiện */
 .noti-dropdown.show {
     display: flex;
 }
 
 .noti-header {
-    padding: 12px 16px;
+    padding: 14px 16px;
+    font-weight: 700;
+    color: var(--text-main);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 600;
-    font-size: 0.95rem;
+    background-color: var(--bg-surface);
 }
 
 .noti-list {
+    flex-grow: 1;
     overflow-y: auto;
-    max-height: 350px;
+    max-height: 400px;
+    background-color: var(--bg-surface);
 }
 
-.noti-item {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f4f5f7;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-
-.noti-item:hover { background-color: var(--hover-color); }
-.noti-item.unread { background-color: #e9f2ff; } /* Màu nền cho tin chưa đọc */
-
-.noti-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.noti-content { font-size: 0.85rem; color: #172b4d; flex-grow: 1; }
-.noti-time { font-size: 0.75rem; color: #6b778c; margin-top: 4px; display: block; }
-.noti-dot { width: 8px; height: 8px; background: #0c66e4; border-radius: 50%; margin-top: 6px; }
-
-/* --- Notification Item Styling Updated --- */
 .noti-item {
     padding: 12px 16px;
-    border-bottom: 1px solid #f4f5f7;
-    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     gap: 12px;
-    align-items: flex-start;
-    position: relative; /* Để định vị menu con */
+    cursor: pointer;
     transition: background 0.1s;
+    align-items: flex-start;
+    color: var(--text-main);
 }
 
-.noti-item:hover { background-color: #fafbfc; }
-.noti-item.unread { background-color: #e9f2ff; }
+.noti-item:hover {
+    background-color: var(--bg-hover);
+}
 
-/* 3-Dots Button */
-.noti-options-btn {
-    width: 24px; height: 24px;
+.noti-item.unread {
+    background-color: var(--bg-active);
+}
+
+.noti-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px;
     border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    color: #6b778c;
-    visibility: hidden; /* Ẩn mặc định */
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    margin-left: auto; /* Đẩy sang phải cùng */
+    object-fit: cover;
+    background-color: #ccc;
+}
+
+.noti-content {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text-main);
+    flex: 1;
+    word-break: break-word;
+}
+
+.noti-time {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    margin-top: 4px;
+}
+
+.noti-dot {
+    width: 8px;
+    height: 8px;
+    background: #0c66e4;
+    border-radius: 50%;
+    margin-top: 6px;
     flex-shrink: 0;
 }
 
-.noti-item:hover .noti-options-btn { visibility: visible; } /* Hover vào item mới hiện nút */
-.noti-options-btn:hover { background-color: #ebecf0; color: #172b4d; }
-
-/* Popup Menu (Khi ấn 3 chấm) */
-.noti-item-menu {
-    position: absolute;
-    top: 30px; right: 10px;
-    background: white;
-    border: 1px solid #dfe1e6;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-radius: 6px;
-    width: 160px;
-    z-index: 1000;
-    display: none; /* Mặc định ẩn */
-    flex-direction: column;
-    padding: 4px 0;
+/* Page Content */
+.page-content {
+    padding: 32px 40px;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
-.noti-item-menu.show { display: flex; }
+@media (max-width: 900px) {
+    .app-sidebar {
+        position: fixed;
+        left: -100%;
+        height: 100%;
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+    }
 
-.noti-menu-action {
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    color: #172b4d;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
+    .app-main {
+        width: 100%;
+    }
+
+    .nav-search {
+        display: none;
+    }
+
+    .noti-dropdown {
+        width: 320px;
+        right: -60px;
+    }
 }
-.noti-menu-action:hover { background-color: #f4f5f7; }
-.noti-menu-action.delete { color: #d93025; }
 
-/* Loading Spinner nhỏ ở dưới */
-.noti-loading {
-    text-align: center; padding: 10px; color: #6b778c; font-size: 0.8rem;
+/* --- SEARCH DROPDOWN --- */
+.search-dropdown-menu {
     display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    width: 100%;
+    min-width: 350px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    padding: 10px 0;
+    max-height: 400px;
+    overflow-y: auto;
 }
+
+.search-dropdown-menu.show {
+    display: block;
+}
+
+.search-section-title {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    background-color: var(--bg-hover);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+.search-section-title:first-child { border-top: none; }
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-main);
+    text-decoration: none;
+}
+
+.search-result-item:hover {
+    background-color: var(--bg-active);
+}
+
+.search-icon-box {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    background-color: var(--bg-hover);
+    color: var(--primary-color);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.search-info h4 { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+.search-info p { margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-sub); }

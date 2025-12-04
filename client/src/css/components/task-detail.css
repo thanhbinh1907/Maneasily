@@ -1,13 +1,18 @@
-/* Modal Fullscreen/Large */
+/* File: client/src/css/components/task-detail.css */
+
+/* --- 1. CẤU TRÚC MODAL (GIỮ NGUYÊN LAYOUT) --- */
 .task-detail-modal {
-    max-width: 900px; /* Rộng hơn modal thường */
+    max-width: 900px;
     width: 95%;
     padding: 0;
     display: flex;
     flex-direction: column;
     height: 85vh;
     overflow: hidden;
-    background: #f4f5f7; /* Màu nền xám nhẹ giống Trello */
+    /* FIX MÀU: */
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
 }
 
 .task-detail-body {
@@ -16,50 +21,97 @@
     overflow: hidden;
 }
 
-/* Cột Trái (Nội dung chính) */
+/* Header Background (Chứa nút đóng) */
+/* Chỉ đổi màu nền, không đổi padding/margin */
+.task-detail-modal > div:first-child {
+    background-color: var(--bg-hover) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* --- 2. LAYOUT 2 CỘT (GIỮ NGUYÊN) --- */
 .detail-main {
     flex: 2.5;
     padding: 20px 30px;
     overflow-y: auto;
-    background: #fff;
-    border-right: 1px solid #ddd;
+    /* FIX MÀU: */
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
 }
 
-/* Cột Phải (Sidebar) */
 .detail-sidebar {
     flex: 1;
     padding: 20px;
-    background: #f4f5f7;
+    /* FIX MÀU: */
+    background: var(--bg-hover);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    border-left: 1px solid var(--border-color);
 }
 
-/* Section Styles */
+/* --- 3. CÁC THÀNH PHẦN CHI TIẾT --- */
 .detail-section { margin-bottom: 25px; }
 .detail-label {
-    font-size: 0.85rem; font-weight: 700; color: #5e6c84;
+    font-size: 0.85rem; font-weight: 700; 
+    color: var(--text-sub);
     margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
 }
 
-/* Header Task Title */
+/* Title Input */
 #detail-title {
-    font-size: 1.5rem; font-weight: 700; color: #172b4d;
-    border: none; width: 100%; padding: 5px;
+    font-size: 1.5rem; font-weight: 700; 
+    color: var(--text-main);
+    border: 1px solid transparent; 
+    width: 100%; padding: 5px;
     background: transparent;
+    border-radius: 4px;
 }
-#detail-title:focus { background: #fff; border: 2px solid #0079bf; outline: none; }
+#detail-title:focus { 
+    background: var(--bg-input); 
+    border-color: var(--border-focus); 
+    outline: none; 
+}
 
-/* Description */
+/* Description Textarea */
 #detail-desc {
-    width: 100%; min-height: 80px; border: 1px solid #dfe1e6;
-    padding: 10px; border-radius: 4px; resize: vertical; background: #fafbfc;
+    width: 100%; min-height: 80px; 
+    padding: 10px; border-radius: 4px; resize: vertical; 
+    font-family: inherit;
+    /* FIX MÀU: */
+    background: var(--bg-input); 
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
 }
 
-/* Subtasks */
+/* Thanh công cụ File (Fix nền trắng) */
+.file-manager-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding: 8px; border-radius: 6px;
+    /* FIX MÀU: */
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-color) !important;
+}
+.file-manager-toolbar button, 
+.file-manager-toolbar label {
+    /* FIX MÀU: */
+    background-color: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+/* Input thêm Subtask */
+#new-subtask-input {
+    background: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+/* Progress Bar */
 .progress-container {
-    background: #dfe1e6; border-radius: 4px; height: 8px; width: 100%;
+    background: var(--border-color);
+    border-radius: 4px; height: 8px; width: 100%;
     overflow: hidden; margin-top: 5px;
 }
 .progress-bar {
@@ -67,70 +119,155 @@
 }
 .subtask-item {
     display: flex; align-items: center; gap: 10px;
-    padding: 8px; border-bottom: 1px solid #eee;
+    padding: 8px; 
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
 }
 .subtask-text { flex-grow: 1; }
-.completed .subtask-text { text-decoration: line-through; color: #999; }
+.completed .subtask-text { 
+    text-decoration: line-through; 
+    color: var(--text-placeholder);
+}
 
-/* Comments */
+/* --- 4. FIX MÀU: THÀNH VIÊN & BÌNH LUẬN --- */
+
+/* Fix thẻ thành viên (Member Chips) */
+.member-chip {
+    background-color: var(--bg-surface) !important; /* Đè style inline trắng */
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+.member-chip:hover {
+    background-color: var(--bg-hover) !important;
+}
+
+/* Fix Bình luận cũ (Existing Comments) */
+/* Chọn các div có id bắt đầu bằng 'comment-view-' */
+.comment-item div[id^="comment-view-"] {
+    background-color: var(--bg-input) !important; /* Đè nền trắng */
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+.comment-item div[id^="comment-view-"] span {
+    color: var(--text-sub) !important;
+}
+
+/* Khung soạn thảo bình luận mới */
+.comment-box { 
+    background: var(--bg-input);
+    padding: 10px; border-radius: 8px; 
+    border: 1px solid var(--border-color);
+    flex-grow: 1; 
+    color: var(--text-main);
+}
+#comment-input {
+    background: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
 .comment-item { display: flex; gap: 10px; margin-bottom: 15px; }
 .comment-avatar { width: 32px; height: 32px; border-radius: 50%; }
-.comment-box { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #dfe1e6; flex-grow: 1; }
 .comment-header { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
 
-/* Sidebar Widgets */
+/* --- 5. SIDEBAR WIDGETS --- */
 .sidebar-group h4 {
-    font-size: 0.8rem; text-transform: uppercase; color: #5e6c84; margin-bottom: 8px;
+    font-size: 0.8rem; text-transform: uppercase; 
+    color: var(--text-sub);
+    margin-bottom: 8px;
 }
+
 .sidebar-btn {
     display: flex; align-items: center; gap: 8px;
     width: 100%; padding: 8px 12px; margin-bottom: 8px;
-    background: #eaecf0; border: none; border-radius: 4px;
-    cursor: pointer; font-weight: 600; color: #172b4d; text-align: left;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer; font-weight: 600; 
+    color: var(--text-main);
+    text-align: left;
 }
-.sidebar-btn:hover { background: #dfe1e6; }
+.sidebar-btn:hover { 
+    background: var(--bg-active);
+    border-color: var(--border-focus);
+}
 
-/* Input Deadline Custom */
+/* --- 6. FIX LỊCH (DATEPICKER) - QUAN TRỌNG --- */
+
+/* 1. Tag Input, Start Time, Deadline: Style cơ bản */
+#detail-tag-input,
+#detail-start-time,
+#detail-deadline {
+    background: var(--bg-input);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    
+    /* Mặc định cho Light Mode: Icon màu đen */
+    color-scheme: light; 
+}
+
+/* 2. Chỉ khi ở Dark Mode: Icon chuyển thành màu trắng */
+[data-theme="dark"] #detail-start-time,
+[data-theme="dark"] #detail-deadline {
+    color-scheme: dark;
+}
+
+/* Input Deadline Custom Display (nếu có dùng) */
 .deadline-display {
-    background: #fff; border: 1px solid #dfe1e6; padding: 5px 10px; 
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    padding: 5px 10px; 
     border-radius: 4px; font-size: 0.9rem;
+    color: var(--text-main);
 }
 .time-remaining { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
 .time-ok { color: #2e8b57; }
 .time-late { color: #d93025; }
 
 /* --- Subtask Menu (3 chấm) --- */
-.subtask-menu-container {
-    position: relative;
-}
+.subtask-menu-container { position: relative; }
 .subtask-menu-btn {
-    color: #6b778c; cursor: pointer; padding: 5px; 
-    font-size: 1rem; transition: color 0.2s;
+    color: var(--text-sub);
+    cursor: pointer; padding: 5px; 
+    font-size: 1rem; border-radius: 4px;
 }
-.subtask-menu-btn:hover { color: #172b4d; background: #ebecf0; border-radius: 4px; }
+.subtask-menu-btn:hover { 
+    color: var(--text-main);
+    background: var(--bg-hover);
+}
 
 .subtask-dropdown {
     display: none;
     position: absolute; right: 0; top: 100%;
-    background: white; border: 1px solid #dfe1e6;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    /* FIX MÀU: */
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
     border-radius: 6px; width: 180px; z-index: 10;
     overflow: hidden;
 }
 .subtask-dropdown-item {
     padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;
-    font-size: 0.9rem; color: #172b4d;
+    font-size: 0.9rem; 
+    color: var(--text-main);
 }
-.subtask-dropdown-item:hover { background-color: #f4f5f7; }
-.subtask-dropdown-item.delete { color: #d93025; border-top: 1px solid #eee; }
+.subtask-dropdown-item:hover { 
+    background-color: var(--bg-hover);
+}
+.subtask-dropdown-item.delete { color: #d93025; border-top: 1px solid var(--border-color); }
 
 /* --- Subtask Modal Tabs --- */
 .subtask-tab-btn {
     flex: 1; border: none; background: none; padding: 12px;
-    font-weight: 600; color: #5e6c84; cursor: pointer;
+    font-weight: 600; 
+    color: var(--text-sub);
+    cursor: pointer;
     border-bottom: 2px solid transparent;
 }
-.subtask-tab-btn:hover { background: #f9f9f9; color: #172b4d; }
+.subtask-tab-btn:hover { 
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
 .subtask-tab-btn.active { color: #0079bf; border-bottom-color: #0079bf; }
 
 .subtask-tab-content { display: none; }
@@ -138,5 +275,25 @@
 
 .sub-member-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px; border-bottom: 1px solid #f4f5f7;
+    padding: 8px; 
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
 }
+
+/* Scrollbar Sidebar */
+.detail-sidebar::-webkit-scrollbar { width: 6px; }
+.detail-sidebar::-webkit-scrollbar-thumb {
+    background-color: var(--border-color); border-radius: 3px;
+}
+
+/* Fix nút đóng và Dropdown thành viên */
+.close-modal { color: var(--text-sub) !important; }
+.close-modal:hover { color: var(--text-main) !important; }
+
+#add-member-dropdown {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-main) !important;
+}
+#add-member-dropdown p { color: var(--text-sub) !important; }
+.member-option:hover { background-color: var(--bg-hover) !important; }

@@ -8,6 +8,7 @@ import { initColumnModal, openColumnModal } from './components/column-modal.js';
 import { showConfirm } from './utils/confirm.js';
 import { initTaskDetailModal, openTaskDetail } from './components/task-detail/index.js';
 import { io } from "socket.io-client";
+import { initSearch } from './components/search.js'; 
 
 let currentProjectId = null;
 let boardContainer = null;
@@ -16,7 +17,7 @@ let projectMembers = [];
 let socket = null;
 let socketDebounceTimer = null;
 
-/* =========================================s
+/* =========================================
    HELPER FUNCTIONS
    ========================================= */
 function isTaskOverdue(deadline) {
@@ -33,7 +34,6 @@ function createTaskCardElement(task) {
   card.className = 'task-card';
   card.setAttribute('data-task-id', task._id);
   
-  // Logic Viền Đỏ (Quá hạn)
   if (isTaskOverdue(task.deadline)) {
       card.style.borderLeft = "4px solid #d93025"; 
   }
@@ -42,7 +42,6 @@ function createTaskCardElement(task) {
   const tagHTML = task.tag ? `<div class="task-tag" style="background-color: ${tagColor};">${task.tag}</div>` : '';
   const descHTML = task.dec ? `<div class="task-desc">${task.dec}</div>` : '';
 
-  // Render thành viên
   let membersHTML = '';
   if (task.members && task.members.length > 0) {
       membersHTML = task.members.map(u => 
@@ -50,7 +49,6 @@ function createTaskCardElement(task) {
       ).join('');
   }
 
-  // Nút xóa Task
   let deleteBtnHTML = '';
   if (isUserAdminOrManager) {
       deleteBtnHTML = `<i class="fa-regular fa-trash-can btn-delete-task" title="Xóa công việc" style="cursor: pointer; color: #d93025; font-size: 0.9rem; opacity: 0.6; transition: opacity 0.2s;"></i>`;
@@ -71,7 +69,6 @@ function createTaskCardElement(task) {
     </div>
   `;
 
-  // Logic Xóa Task
   if (isUserAdminOrManager) {
       const delBtn = card.querySelector('.btn-delete-task');
       delBtn.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
@@ -95,13 +92,11 @@ function createTaskCardElement(task) {
           });
       });
 
-      // Logic Kéo thả thành viên
       card.addEventListener('dragover', (e) => { e.preventDefault(); card.style.backgroundColor = "#ebecf0"; });
       card.addEventListener('dragleave', () => { card.style.backgroundColor = "#fff"; });
       card.addEventListener('drop', async (e) => {
           e.preventDefault();
           card.style.backgroundColor = "#fff";
-          toast.info("Tính năng gán thành viên đang phát triển...");
       });
   }
 
@@ -218,17 +213,73 @@ function renderBoard(boardData) {
 
   isUserAdminOrManager = (currentUser._id === ownerId) || adminIds.includes(currentUser._id);
 
-  // [SỬA ĐỔI] Xử lý nút Thêm Cột ngay tại đây
   const btnAddColumn = document.getElementById('btn-add-column-header');
   if (btnAddColumn) {
       if (isUserAdminOrManager) {
           btnAddColumn.style.display = 'flex';
-          // Gán sự kiện click trực tiếp (dùng onclick để tránh bị gán chồng nhiều lần)
           btnAddColumn.onclick = () => openColumnModal();
       } else {
           btnAddColumn.style.display = 'none';
       }
   }
+
+  // --- XỬ LÝ NÚT GHIM (STAR) ---
+  const starBtn = document.querySelector('.btn-star');
+  const starIcon = starBtn.querySelector('i');
+  
+  // Lấy danh sách ghim từ projectSettings
+  const pinnedList = currentUser.projectSettings?.pinnedProjects || [];
+  const isPinned = pinnedList.includes(currentProjectId);
+
+  if (isPinned) {
+      starIcon.classList.remove('fa-regular');
+      starIcon.classList.add('fa-solid');
+      starIcon.style.color = '#ffab00';
+  } else {
+      starIcon.classList.remove('fa-solid');
+      starIcon.classList.add('fa-regular');
+      starIcon.style.color = '';
+  }
+
+  const newStarBtn = starBtn.cloneNode(true);
+  starBtn.parentNode.replaceChild(newStarBtn, starBtn);
+
+  newStarBtn.addEventListener('click', async () => {
+      try {
+          const res = await fetch(`${API_BASE_URL}/users/pin`, {
+              method: 'PUT',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  'Authorization': localStorage.getItem('maneasily_token')
+              },
+              body: JSON.stringify({ projectId: currentProjectId })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+              toast.success(data.msg);
+              
+              if (data.isPinned) {
+                  newStarBtn.querySelector('i').classList.replace('fa-regular', 'fa-solid');
+                  newStarBtn.querySelector('i').style.color = '#ffab00';
+              } else {
+                  newStarBtn.querySelector('i').classList.replace('fa-solid', 'fa-regular');
+                  newStarBtn.querySelector('i').style.color = '';
+              }
+
+              if (!currentUser.projectSettings) currentUser.projectSettings = {};
+              currentUser.projectSettings.pinnedProjects = data.pinnedProjects;
+              
+              localStorage.setItem('maneasily_user', JSON.stringify(currentUser));
+
+          } else {
+              toast.error(data.err || "Lỗi cập nhật ghim");
+          }
+      } catch (e) {
+          console.error(e);
+          toast.error("Lỗi kết nối server");
+      }
+  });
 
   if(boardContainer) {
       boardContainer.innerHTML = ''; 
@@ -239,7 +290,6 @@ function renderBoard(boardData) {
       });
   }
 
-  // --- SỬA: RENDER HEADER MEMBERS (CHỈ CÒN ICON) ---
   const headerMembers = document.getElementById('board-header-members');
   if (headerMembers && boardData.members) {
       headerMembers.innerHTML = boardData.members.map(m => {
@@ -313,12 +363,10 @@ function initTaskDragAndDrop() {
           const oldColumnList = evt.from;
           const newColumnList = evt.to;
           
-          // --- [MỚI] CẬP NHẬT SỐ LƯỢNG TASK TRÊN UI NGAY LẬP TỨC ---
           const oldColEl = oldColumnList.closest('.board-column');
           const newColEl = newColumnList.closest('.board-column');
           
           if (oldColEl) {
-              // Đếm số con trực tiếp trong list để cập nhật số
               const countEl = oldColEl.querySelector('.task-count');
               if (countEl) countEl.textContent = oldColumnList.children.length;
           }
@@ -326,7 +374,6 @@ function initTaskDragAndDrop() {
               const countEl = newColEl.querySelector('.task-count');
               if (countEl) countEl.textContent = newColumnList.children.length;
           }
-          // ----------------------------------------------------------
   
           const taskId = itemEl.getAttribute('data-task-id');
           const oldColumnId = oldColumnList.getAttribute('data-column-id');
@@ -339,7 +386,6 @@ function initTaskDragAndDrop() {
               headers: { 'Content-Type': 'application/json', 'Authorization': localStorage.getItem('maneasily_token') },
               body: JSON.stringify({ idTask: taskId, idColumn: oldColumnId, idColumnNew: newColumnId, taskOrder, taskOrderNew })
           }).catch(err => {
-              // Nếu lỗi mạng thì reload lại để hoàn tác
               toast.error("Lỗi cập nhật vị trí");
               fetchAndRenderBoard(currentProjectId);
           });
@@ -347,22 +393,6 @@ function initTaskDragAndDrop() {
       });
     });
   }
-
-function initAddColumnButton() {
-    const headerAddBtn = document.getElementById('btn-add-column-header');
-    if (headerAddBtn && isUserAdminOrManager) {
-        initColumnModal(currentProjectId, (newColumn) => {
-            const newColumnEl = createColumnElement(newColumn);
-            boardContainer.appendChild(newColumnEl);
-            initTaskDragAndDrop(); 
-            boardContainer.scrollTo({ left: boardContainer.scrollWidth, behavior: 'smooth' });
-        });
-        
-        const newBtn = headerAddBtn.cloneNode(true);
-        headerAddBtn.parentNode.replaceChild(newBtn, headerAddBtn);
-        newBtn.addEventListener('click', () => openColumnModal());
-    }
-}
 
 function handleTaskAdded(newTask, columnId) {
     const columnEl = document.querySelector(`.board-column[data-column-id="${columnId}"]`);
@@ -373,7 +403,14 @@ function handleTaskAdded(newTask, columnId) {
     if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
 }
 
-// --- HÀM TẢI DỮ LIỆU (Tách ra để dùng lại) ---
+function handleColumnAdded(newColumn) {
+    const newColumnEl = createColumnElement(newColumn);
+    boardContainer.appendChild(newColumnEl);
+    initTaskDragAndDrop(); 
+    boardContainer.scrollTo({ left: boardContainer.scrollWidth, behavior: 'smooth' });
+}
+
+// --- HÀM TẢI DỮ LIỆU ---
 async function fetchAndRenderBoard(projectId) {
     try {
         const res = await fetch(`${API_BASE_URL}/project/${projectId}`);
@@ -383,10 +420,9 @@ async function fetchAndRenderBoard(projectId) {
         if (data.project) {
             renderBoard(data.project);
             
-            // Re-init Drag & Drop sau khi render lại
             if(isUserAdminOrManager) {
                 initColumnDragAndDrop();
-                initTaskDragAndDrop(); // Hàm này cần gọi lại để gán Sortable cho DOM mới
+                initTaskDragAndDrop(); 
             }
         }
     } catch (err) {
@@ -394,15 +430,7 @@ async function fetchAndRenderBoard(projectId) {
     }
 }
 
-function handleColumnAdded(newColumn) {
-    const newColumnEl = createColumnElement(newColumn);
-    boardContainer.appendChild(newColumnEl);
-    initTaskDragAndDrop(); // Kích hoạt kéo thả cho cột mới
-    // Cuộn màn hình sang phải để thấy cột mới
-    boardContainer.scrollTo({ left: boardContainer.scrollWidth, behavior: 'smooth' });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const projectId = params.get('id');
     boardContainer = document.getElementById('board-content-container');
@@ -415,28 +443,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentProjectId = projectId; 
 
-    // --- 1. KẾT NỐI SOCKET (SỬA ĐỔI ĐỂ TỰ RE-JOIN) ---
+    // --- 1. KẾT NỐI SOCKET ---
     socket = io("http://localhost:5000");
         
-    // [MỚI] Lắng nghe sự kiện 'connect'. 
-    // Mỗi khi kết nối (lần đầu hoặc sau khi rớt mạng/reset server), nó sẽ tự chạy lại lệnh join.
     socket.on('connect', () => {
         console.log("⚡ Đã kết nối Socket, đang vào phòng:", projectId);
         socket.emit('joinBoard', projectId);
     });
 
-    // Logic nhận thông báo (giữ nguyên)
     socket.on('boardUpdated', (data) => {
         const currentUser = JSON.parse(localStorage.getItem('maneasily_user'));
         
-        // 1. Nếu là chính mình -> Bỏ qua
         if (currentUser && data.updaterId === currentUser._id) {
             return;
         }
 
-        console.log("⚡ Nhận tín hiệu update:", data); // Log để kiểm tra
+        console.log("⚡ Nhận tín hiệu update:", data); 
 
-        // 2. Debounce reload
         if (socketDebounceTimer) clearTimeout(socketDebounceTimer);
         socketDebounceTimer = setTimeout(() => {
             fetchAndRenderBoard(projectId);
@@ -448,10 +471,23 @@ document.addEventListener('DOMContentLoaded', () => {
     initTaskModal(handleTaskAdded); 
     initTaskDetailModal(); 
     
-    // [QUAN TRỌNG] Thêm dòng này để Modal cột nhận được Project ID
     initColumnModal(projectId, handleColumnAdded); 
+    initSearch(); // [MỚI] Khởi tạo tìm kiếm cho trang Board
     
     // --- 3. TẢI DỮ LIỆU LẦN ĐẦU ---
-    fetchAndRenderBoard(projectId);
+    await fetchAndRenderBoard(projectId);
     checkOverdueNotification();
+
+    // --- DEEP LINKING: Tự động mở task nếu có param 'openTask' ---
+    const openTaskId = params.get('openTask');
+    if (openTaskId) {
+        // Xóa param khỏi URL
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + projectId;
+        window.history.replaceState({path:newUrl}, '', newUrl);
+        
+        // Mở modal (delay nhẹ để đảm bảo DOM render)
+        setTimeout(() => {
+            openTaskDetail(openTaskId, isUserAdminOrManager, projectMembers);
+        }, 500); 
+    }
 });

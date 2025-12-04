@@ -1,12 +1,19 @@
 <header class="app-nav-top">
     <div class="nav-left">
-        <div class="nav-search">
+        <div class="nav-search" style="position: relative;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Tìm kiếm...">
+            
+            <input type="text" id="global-search-input" placeholder="Tìm kiếm..." autocomplete="off">
+            
+            <div id="search-results-dropdown" class="search-dropdown-menu"></div>
         </div>
     </div>
 
     <div class="nav-right">
+        <div class="nav-icon-btn" id="theme-toggle-btn" title="Chế độ tối/sáng">
+            <i class="fa-regular fa-moon"></i>
+        </div>
+
         <div class="nav-icon-btn" id="noti-bell-btn">
             <i class="fa-regular fa-bell"></i>
             <span class="badge" id="noti-badge" style="display: none;">0</span>

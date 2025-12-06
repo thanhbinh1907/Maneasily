@@ -1,10 +1,12 @@
 /* File: client/src/css/pages/activity.css */
-
+.page-content.activity-page {
+    padding: 0 !important; 
+    overflow-y: hidden; 
+}
 .activity-page {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding-bottom: 20px;
 }
 
 .activity-header {
@@ -16,6 +18,9 @@
     font-weight: 800;
     color: var(--text-main);
     margin-bottom: 5px;
+    padding: 32px 40px 0 40px; /* Top, Right, Bottom, Left */
+    margin-bottom: 30px;
+    flex-shrink: 0; /* Không cho header bị co lại */
 }
 
 .activity-header p {
@@ -24,8 +29,9 @@
 
 .activity-scroll-wrapper {
     flex-grow: 1;
-    overflow-y: auto;
-    padding-right: 10px;
+    overflow-y: auto; 
+    padding: 0 40px 20px 40px; 
+    scrollbar-gutter: stable;
 }
 
 .activity-board-container {

@@ -265,21 +265,51 @@ function renderTimeline(tasks) {
     });
 }
 
-// --- 6. BIỂU ĐỒ TRẠNG THÁI (STATUS) ---
+// --- 6. BIỂU ĐỒ TRẠNG THÁI (STATUS - THEO THỜI GIAN) ---
 function renderStatusChart(tasks) {
     const ctx = document.getElementById('statusChart').getContext('2d');
     if (chartInstances.status) chartInstances.status.destroy();
 
-    const statusCounts = {};
+    const now = new Date();
+
+    // Khởi tạo bộ đếm
+    let stats = {
+        notStarted: 0, // Chưa đến giờ bắt đầu
+        inProgress: 0, // Đang làm
+        done: 0,       // Đã xong
+        overdue: 0     // Quá hạn
+    };
+
     tasks.forEach(t => {
-        const status = (t.column && t.column.title) ? t.column.title : 'Chưa phân loại';
-        statusCounts[status] = (statusCounts[status] || 0) + 1;
+        // 1. Kiểm tra Đã xong (Dựa vào tên cột)
+        const colTitle = (t.column && t.column.title) ? t.column.title.toLowerCase() : '';
+        const isDone = colTitle.includes('done') || colTitle.includes('hoàn thành') || colTitle.includes('xong');
+
+        if (isDone) {
+            stats.done++;
+            return; // Đã xong thì không tính các trạng thái kia nữa
+        }
+
+        // 2. Kiểm tra thời gian
+        const deadline = t.deadline ? new Date(t.deadline) : null;
+        const startTime = t.startTime ? new Date(t.startTime) : null;
+
+        if (deadline && deadline < now) {
+            // Có deadline và đã qua thời điểm hiện tại -> Quá hạn
+            stats.overdue++;
+        } else if (startTime && startTime > now) {
+            // Có thời gian bắt đầu và chưa đến giờ -> Chưa bắt đầu
+            stats.notStarted++;
+        } else {
+            // Còn lại -> Đang làm
+            stats.inProgress++;
+        }
     });
 
-    const labels = Object.keys(statusCounts);
-    const data = Object.values(statusCounts);
+    const dataValues = [stats.notStarted, stats.inProgress, stats.done, stats.overdue];
     
-    if (labels.length === 0) {
+    // Nếu không có dữ liệu nào thì xóa biểu đồ
+    if (dataValues.every(val => val === 0)) {
         if(chartInstances.status) chartInstances.status.clear();
         return;
     }
@@ -287,18 +317,36 @@ function renderStatusChart(tasks) {
     chartInstances.status = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels,
+            labels: ['Chưa bắt đầu', 'Đang làm', 'Đã xong', 'Quá hạn'],
             datasets: [{
-                data: data,
-                backgroundColor: ['#0c66e4', '#22c55e', '#f59f00', '#e53e3e', '#9053c6'],
-                borderWidth: 0
+                data: dataValues,
+                backgroundColor: [
+                    '#94a3b8', // Xám (Chưa bắt đầu)
+                    '#0c66e4', // Xanh dương (Đang làm)
+                    '#22c55e', // Xanh lá (Đã xong)
+                    '#e53e3e'  // Đỏ (Quá hạn)
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right' }
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            // Tính phần trăm để hiển thị trong Tooltip
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.chart._metasets[context.datasetIndex].total;
+                            let percentage = Math.round((value / total) * 100) + '%';
+                            return `${label}: ${value} (${percentage})`;
+                        }
+                    }
+                }
             },
             cutout: '70%'
         }
@@ -343,7 +391,11 @@ function renderProjectChart(tasks) {
             scales: {
                 y: { beginAtZero: true, grid: { color: '#f4f5f7' } },
                 x: { grid: { display: false } }
-            }
+            },
+            ticks: {
+                stepSize: 1,   // Bắt buộc bước nhảy là 1 đơn vị
+                precision: 0   // Không hiển thị số thập phân
+            },
         }
     });
 }

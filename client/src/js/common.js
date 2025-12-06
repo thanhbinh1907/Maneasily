@@ -1,6 +1,61 @@
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
 
+const originalFetch = window.fetch; 
+
+window.fetch = async (...args) => {
+  // Gọi API như bình thường
+  const response = await originalFetch(...args);
+
+  // Kiểm tra nếu Server trả về lỗi 401 (Unauthorized)
+  if (response.status === 401) {
+      // Clone response để đọc nội dung lỗi mà không ảnh hưởng luồng chính
+      const clone = response.clone();
+      try {
+          const data = await clone.json();
+          
+          // Kiểm tra thông báo lỗi từ Backend (auth.js middleware)
+          // Backend trả về: { err: "Phiên đăng nhập hết hạn. Hãy đăng nhập lại." }
+          const errorMsg = data.err || "";
+
+          // Chỉ xử lý nếu lỗi liên quan đến Token/Hết hạn và KHÔNG phải đang ở trang đăng nhập
+          if (
+              (errorMsg.includes("hết hạn") || errorMsg.includes("Token không hợp lệ") || errorMsg.includes("Token missing")) &&
+              !window.location.pathname.includes('signin.html')
+          ) {
+              handleSessionExpired();
+              
+              // Trả về một promise reject để code ở các file khác dừng lại, không chạy tiếp logic lỗi
+              return Promise.reject("Session Expired");
+          }
+      } catch (e) {
+          // Lỗi parse JSON, bỏ qua
+      }
+  }
+
+  return response;
+};
+
+// Hàm xử lý đăng xuất
+function handleSessionExpired() {
+  // 1. Kiểm tra xem đã xử lý chưa (tránh spam thông báo nếu gọi nhiều API cùng lúc)
+  if (localStorage.getItem('session_expired_handling')) return;
+  localStorage.setItem('session_expired_handling', 'true');
+
+  // 2. Xóa dữ liệu đăng nhập
+  localStorage.removeItem('maneasily_token');
+  localStorage.removeItem('maneasily_user');
+
+  // 3. Thông báo
+  toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+
+  // 4. Chuyển hướng sau 2 giây
+  setTimeout(() => {
+      localStorage.removeItem('session_expired_handling'); // Reset cờ
+      window.location.href = '/src/pages/signin.html';
+  }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   
   // --- 1. XỬ LÝ LOGIN TỪ URL (Callback) ---

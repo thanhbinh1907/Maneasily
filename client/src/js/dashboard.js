@@ -136,6 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlElement = document.documentElement;
     
     if (themeBtn) {
+        // Kiểm tra theme đã lưu ngay khi vào trang để set icon đúng
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            // Nếu đang là Dark Mode -> Đổi thành hình Mặt trời
+            themeBtn.querySelector('i').className = 'fa-regular fa-sun';
+        }    
+
         themeBtn.addEventListener('click', () => {
             const isDark = htmlElement.getAttribute('data-theme') === 'dark';
             if (!isDark) {

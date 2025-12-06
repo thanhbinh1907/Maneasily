@@ -177,7 +177,7 @@ const authCtrl = {
             const loginToken = jwt.sign(
                 { id: req.user._id },
                 process.env.JWT_SECRET,
-                { expiresIn: "7d" }
+                { expiresIn: "3d" }
             );
 
             // QUAN TRỌNG: Vì đây là chuyển hướng (Redirect) từ server về client,

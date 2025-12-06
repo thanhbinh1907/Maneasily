@@ -69,6 +69,10 @@
 }
 
 /* Search Input */
+.search-member-container {
+    position: relative; 
+}
+
 .search-member-container label {
     font-weight: 600;
     color: var(--text-main);
@@ -167,7 +171,7 @@
 /* Search Dropdown */
 .search-dropdown {
     position: absolute;
-    top: 100%;
+    top: 100%; /* Sẽ nằm ngay dưới .search-member-container */
     left: 0;
     width: 100%;
     background: var(--bg-surface);

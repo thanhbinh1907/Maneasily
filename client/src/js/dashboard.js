@@ -39,8 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
 
     async function loadDashboardData() {
+        const projList = document.getElementById('recent-projects-list');
+        if (!projList) return;
+
         try {
-            // Gọi API thống kê
             const res = await fetch(`${API_BASE_URL}/dashboard/stats`, {
                 headers: { 'Authorization': token }
             });
@@ -53,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 animateValue("stat-tasks-overdue", 0, data.tasksOverdue, 500);
 
                 // B. Render Recent Projects
-                const projList = document.getElementById('recent-projects-list');
                 if (data.recentProjects && data.recentProjects.length > 0) {
                     projList.innerHTML = data.recentProjects.map(p => `
                         <a href="/src/pages/Board.html?id=${p._id}" class="recent-project-card">
@@ -69,8 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     projList.innerHTML = '<p style="color:var(--text-sub); font-style:italic;">Chưa có dự án nào.</p>';
                 }
 
-                // C. Load Activities (Tận dụng API activity cũ hoặc data mới nếu bạn đã viết thêm)
-                // Ở đây mình sẽ gọi API activity để lấy list mới nhất
+                // C. Load Activities
                 loadRecentActivities();
             }
         } catch (err) {
@@ -79,27 +79,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadRecentActivities() {
+        // [GUARD CLAUSE] Kiểm tra phần tử chứa activity
+        const actList = document.getElementById('recent-activity-list');
+        if (!actList) return;
+
         try {
-            // Sử dụng API activity có sẵn để lấy 5 hoạt động mới nhất
-            const res = await fetch(`${API_BASE_URL}/activity/dashboard`, { // API này trả về theo project, ta cần xử lý lại chút hoặc dùng API logs chung
+            // Sử dụng API activity để lấy dữ liệu
+            const res = await fetch(`${API_BASE_URL}/activity/dashboard`, { 
                 headers: { 'Authorization': token }
             });
-            // *Lưu ý: API /activity/dashboard hiện tại của bạn trả về group theo Project. 
-            // Để đơn giản, ta sẽ gọi API /activity/logs (nếu bạn đã public) hoặc mock tạm ở đây nếu chưa có API lấy all logs.
-            // Tuy nhiên, để nhanh nhất, mình sẽ dùng data giả lập hoặc bạn cần mở thêm 1 API get all logs.
-            // GIẢI PHÁP TẠM: Gọi /activity/dashboard và flat lại.
             
             const data = await res.json();
             if (data.boardData) {
-                // Gộp tất cả logs từ các project lại và sort
+                // Gộp tất cả logs từ các project lại
                 let allLogs = [];
                 data.boardData.forEach(item => {
                     allLogs = [...allLogs, ...item.activities];
                 });
+                
+                // Sắp xếp theo thời gian mới nhất
                 allLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                const recentLogs = allLogs.slice(0, 5); // Lấy 5 cái mới nhất
+                
+                const recentLogs = allLogs.slice(0, 5); // Chỉ lấy 5 hoạt động mới nhất
 
-                const actList = document.getElementById('recent-activity-list');
                 if (recentLogs.length > 0) {
                     actList.innerHTML = recentLogs.map(log => `
                         <div class="activity-mini-item">

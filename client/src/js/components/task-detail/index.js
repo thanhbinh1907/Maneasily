@@ -4,13 +4,14 @@ import '../../../css/components/task-detail.css';
 
 import { TaskAPI } from './api.js';
 import { TaskView, formatTimeRemaining } from './view.js';
+import { API_BASE_URL } from '../../config.js';
 
 let currentTask = null;
 let canEditTask = false;
 let isOverdue = false;
 let allProjectMembers = [];
 let currentSubtaskWork = null; 
-let currentFolderId = null; // null = Gốc
+let currentFolderId = null; 
 let currentFolderPath = [{ id: null, name: 'Gốc' }];
 
 // --- 1. KHỞI TẠO SỰ KIỆN (INIT) ---
@@ -107,9 +108,15 @@ export function initTaskDetailModal() {
 
     // 1.7. File Manager Events
     document.getElementById('btn-create-folder')?.addEventListener('click', handleCreateFolder);
-    document.getElementById('file-upload-input')?.addEventListener('change', handleUploadFile);
     document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, 'Gốc')); 
     
+    document.body.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'file-upload-input') {
+            console.log("⚡ Đã bắt được sự kiện chọn file!"); // Kiểm tra trong Console (F12)
+            handleUploadFile(e);
+        }
+    });
+
     // Đóng các menu khi click ra ngoài
     window.addEventListener('click', () => { 
         const dd = document.getElementById('add-member-dropdown');
@@ -125,6 +132,9 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
     
     canEditTask = isAdmin;
     allProjectMembers = members;
+
+    currentFolderId = null;
+    currentFolderPath = [{ id: null, name: 'Gốc' }];
     
     document.getElementById('detail-title').value = "Đang tải...";
     document.getElementById('btn-save-desc').style.display = 'none';
@@ -495,22 +505,33 @@ function renderFileList(folders, files) {
         const el = document.createElement('div');
         el.className = 'file-item';
         el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
-        let icon = 'fa-file'; let color = '#6b778c';
-        if (f.mimetype.includes('image')) { icon = 'fa-file-image'; color = '#a6c5f7'; }
-        else if (f.mimetype.includes('pdf')) { icon = 'fa-file-pdf'; color = '#d93025'; }
         
-        const fileUrl = `http://localhost:5000/${f.path.replace(/\\/g, '/')}`;
+        let icon = 'fa-file'; let color = '#6b778c';
+        if (f.mimetype && f.mimetype.includes('image')) { icon = 'fa-file-image'; color = '#a6c5f7'; }
+        else if (f.mimetype && f.mimetype.includes('pdf')) { icon = 'fa-file-pdf'; color = '#d93025'; }
+        
+        const serverRoot = API_BASE_URL.replace('/api', '');
+        
+        let rawPath = f.path.replace(/\\/g, '/'); 
+        if (rawPath.includes('uploads/')) {
+            rawPath = rawPath.substring(rawPath.indexOf('uploads/'));
+        }
+        
+        const fileUrl = `${serverRoot}/${rawPath}`;
+
         el.innerHTML = `
             <i class="fa-solid ${icon}" style="font-size: 2rem; color: ${color}; display: block; margin-bottom: 5px;"></i>
             <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.originalName}">${f.originalName}</div>
             <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
         `;
+        
         el.addEventListener('click', (e) => {
             if(!e.target.classList.contains('btn-delete-file')) window.open(fileUrl, '_blank');
         });
         el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('file', f._id));
         el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
         el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
+        
         container.appendChild(el);
     });
 }
@@ -547,22 +568,50 @@ async function handleCreateFolder() {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
     const name = prompt("Nhập tên thư mục mới:");
     if (name) {
-        await TaskAPI.createFolder(name, currentTask._id, currentFolderId);
-        loadFileManager();
-        toast.success("Đã tạo thư mục");
+        try {
+            const data = await TaskAPI.createFolder(name, currentTask._id, currentFolderId);
+            if (data && data.folder) {
+                loadFileManager();
+                toast.success("Đã tạo thư mục");
+            } else {
+                toast.error("Lỗi tạo thư mục");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Lỗi kết nối server");
+        }
     }
 }
 
 async function handleUploadFile(e) {
+    console.log("📂 Bắt đầu xử lý file...");
+    
     if (!canEditTask) return toast.error("Bạn không có quyền.");
+    
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+        console.log("❌ Không có file nào được chọn");
+        return;
+    }
+    console.log("📄 File đã chọn:", file.name);
+    
     toast.info("Đang tải lên...");
+    
     try {
-        await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
-        loadFileManager();
-        toast.success("Tải lên thành công");
-    } catch (err) { toast.error("Lỗi tải lên"); }
+        const data = await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
+        console.log("✅ Server phản hồi:", data);
+
+        if (data && data.file) {
+            await loadFileManager(); 
+            toast.success("Tải lên thành công");
+        } else {
+            console.error("❌ Lỗi dữ liệu:", data);
+            toast.error("Lỗi tải lên (Không nhận được dữ liệu)");
+        }
+    } catch (err) { 
+        console.error("❌ Lỗi kết nối:", err);
+        toast.error("Lỗi kết nối khi tải file"); 
+    }
     e.target.value = ''; 
 }
 

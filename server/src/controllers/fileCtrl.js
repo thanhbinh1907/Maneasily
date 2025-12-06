@@ -52,10 +52,12 @@ const fileCtrl = {
 
             const { taskId, folderId } = req.body;
             
+            const relativePath = `uploads/${req.file.filename}`;
+
             const newFile = new Files({
                 originalName: req.file.originalname,
                 filename: req.file.filename,
-                path: req.file.path,
+                path: relativePath, // Lưu cái này vào DB
                 mimetype: req.file.mimetype,
                 size: req.file.size,
                 task: taskId,

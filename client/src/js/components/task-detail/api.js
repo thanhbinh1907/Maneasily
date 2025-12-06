@@ -85,11 +85,12 @@ export const TaskAPI = {
 
     uploadFile: async (file, taskId, folderId) => {
         const formData = new FormData();
-        formData.append('file', file);
+        
         formData.append('taskId', taskId);
         if (folderId) formData.append('folderId', folderId);
+        
+        formData.append('file', file);
 
-        // Lưu ý: Khi dùng FormData, KHÔNG set Content-Type header thủ công (để trình duyệt tự set boundary)
         const token = localStorage.getItem('maneasily_token');
         const res = await fetch(`${API_BASE_URL}/file`, {
             method: 'POST',

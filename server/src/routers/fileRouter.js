@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
+import path from 'path'; // Nhớ import path
 import fs from 'fs';
 import auth from '../middleware/auth.js';
 import fileCtrl from '../controllers/fileCtrl.js';
@@ -10,16 +10,19 @@ const router = express.Router();
 // Cấu hình lưu trữ
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = 'uploads/';
+        // [SỬA] Dùng đường dẫn tuyệt đối để tránh lỗi không tìm thấy thư mục
+        const uploadDir = path.join(process.cwd(), 'uploads');
+        
         // Tạo thư mục nếu chưa có
         if (!fs.existsSync(uploadDir)){
-            fs.mkdirSync(uploadDir);
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        // Đặt tên file unique: timestamp + tên gốc
-        cb(null, Date.now() + '-' + file.originalname);
+        // Xử lý tên file an toàn (bỏ ký tự đặc biệt)
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, Date.now() + '-' + safeName);
     }
 });
 

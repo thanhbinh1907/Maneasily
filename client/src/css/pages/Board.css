@@ -186,6 +186,13 @@
     padding: 8px 8px 12px 8px;
     flex-shrink: 0;
 }
+.column-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+    overflow: hidden; 
+    flex-grow: 1;
+}
 
 .column-title {
     font-size: 0.95rem;

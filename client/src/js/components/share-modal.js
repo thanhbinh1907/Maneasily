@@ -90,7 +90,6 @@ export function renderProjectMembers(members, boardData) {
 }
 
 async function handleRoleAction(action, memberId, projectId) {
-    // Action: 'promote', 'demote', 'remove-member'
     let msg = "Bạn chắc chắn muốn thực hiện hành động này?";
     if (action === 'promote') msg = "Cấp quyền quản lý cho thành viên này?";
     if (action === 'demote') msg = "Hủy quyền quản lý của thành viên này?";
@@ -109,7 +108,7 @@ async function handleRoleAction(action, memberId, projectId) {
             
             if (res.ok) {
                 toast.success("Cập nhật thành công!");
-                setTimeout(() => location.reload(), 500); // Reload để cập nhật lại danh sách và quyền
+                setTimeout(() => location.reload(), 500); 
             } else {
                 const d = await res.json();
                 toast.error(d.err || "Lỗi");
@@ -125,45 +124,38 @@ export function initShareFeature(projectId, canEdit = false) {
     if (!shareBtn || !modal) return;
 
     const closeBtn = document.getElementById('close-share-modal');
-    const searchContainer = document.querySelector('.search-member-container'); // Ô tìm kiếm
-    const tabLinkBtn = document.querySelector('.tab-btn[data-tab="tab-link"]'); // Nút tab Link
+    const searchContainer = document.querySelector('.search-member-container'); 
+    const tabLinkBtn = document.querySelector('.tab-btn[data-tab="tab-link"]'); 
     const searchInput = document.getElementById('user-search-input');
-    const dropdown = document.getElementById('search-results-dropdown');
+    
+    // [ĐÃ SỬA] Đổi ID dropdown sang user-results-dropdown
+    const dropdown = document.getElementById('user-results-dropdown');
+    
     const linkInput = document.getElementById('share-link-input'); 
     const btnCopyLink = document.getElementById('btn-copy-link');
     const tabBtns = document.querySelectorAll('.tab-btn');
 
     // --- LOGIC ẨN/HIỆN THEO QUYỀN ---
     if (!canEdit) {
-        // Nếu là Member thường:
-        // 1. Ẩn ô tìm kiếm (không cho thêm người)
         if (searchContainer) searchContainer.style.display = 'none';
-        
-        // 2. Ẩn tab "Sao chép liên kết"
         if (tabLinkBtn) tabLinkBtn.style.display = 'none';
-        
-        // 3. Đổi tên nút mở modal cho hợp lý hơn
-        // shareBtn.innerHTML = `<i class="fa-solid fa-users"></i> Thành viên`; 
     } else {
-        // Nếu là Admin/Manager: Hiện lại đầy đủ (phòng trường hợp đổi user không reload)
         if (searchContainer) searchContainer.style.display = 'block';
         if (tabLinkBtn) tabLinkBtn.style.display = 'inline-block';
     }
 
     // Mở Modal
-    shareBtn.replaceWith(shareBtn.cloneNode(true)); // Reset event cũ
+    shareBtn.replaceWith(shareBtn.cloneNode(true)); 
     const newShareBtn = document.getElementById('btn-manage-members');
     
     newShareBtn.addEventListener('click', () => {
         modal.style.display = 'flex';
         
-        // Reset về tab đầu tiên
         tabBtns.forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => {
             c.classList.remove('active'); c.style.display = 'none';
         });
         
-        // Mặc định active tab Invite
         const firstTabBtn = document.querySelector('.tab-btn[data-tab="tab-invite"]');
         const firstTabContent = document.getElementById('tab-invite');
         if(firstTabBtn) firstTabBtn.classList.add('active');
@@ -176,9 +168,6 @@ export function initShareFeature(projectId, canEdit = false) {
         if(dropdown) dropdown.style.display = 'none';
     });
 
-    // ... (Phần logic Đóng Modal, Chuyển Tab, Copy Link, Tìm kiếm... GIỮ NGUYÊN NHƯ CŨ)
-    // Lưu ý: Chỉ cần copy đoạn logic sự kiện bên dưới vào đây là được
-    
     // Đóng Modal
     const closeModal = () => modal.style.display = 'none';
     closeBtn?.addEventListener('click', closeModal);
@@ -275,26 +264,18 @@ export function initShareFeature(projectId, canEdit = false) {
                     body: JSON.stringify({ projectId, userId: userToAdd._id })
                 });
 
-                const data = await res.json(); // 👇 Đọc dữ liệu JSON trước để lấy thông báo
+                const data = await res.json(); 
 
                 if(res.ok) {
-                    // --- TRƯỜNG HỢP THÀNH CÔNG (200) ---
-                    // Server sẽ trả về msg: "Đã thêm thành công" HOẶC "Đã gửi lời mời..."
                     toast.success(data.msg); 
                     
                     dropdown.style.display = 'none';
                     searchInput.value = '';
 
-                    // 👇 Logic thông minh: 
-                    // Nếu là "gửi lời mời" (Private mode) -> KHÔNG reload trang (vì user chưa vào dự án ngay)
-                    // Nếu là "thêm trực tiếp" -> Reload để hiện avatar
                     if (!data.msg.includes("lời mời")) {
                         setTimeout(() => location.reload(), 1000);
                     }
                 } else {
-                    // --- TRƯỜNG HỢP LỖI (400, 403...) ---
-                    // Server trả về err: "Thành viên đã tồn tại" hoặc "Đang chờ xác nhận"
-                    // Hiển thị đúng lỗi server trả về để bạn biết nguyên nhân
                     toast.error(data.err || "Lỗi thêm thành viên");
                 }
             } catch(e) { 

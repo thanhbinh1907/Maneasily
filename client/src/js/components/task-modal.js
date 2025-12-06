@@ -19,15 +19,13 @@ export function initTaskModal(onSuccess) {
     const colorPicker = document.getElementById('custom-color-picker');
     const radios = document.querySelectorAll('input[name="taskColor"]');
 
-    const startTime = document.getElementById('task-start-time').value;
-    const deadline = document.getElementById('task-deadline-create').value;
+    // ❌ SAI: Đừng lấy giá trị ở đây, vì lúc này người dùng chưa nhập gì cả!
+    // const startTime = document.getElementById('task-start-time').value;
+    // const deadline = document.getElementById('task-deadline-create').value;
 
-    // Nếu người dùng chọn màu từ Picker -> Bỏ chọn các ô tròn có sẵn
     colorPicker?.addEventListener('input', () => {
         radios.forEach(r => r.checked = false);
     });
-
-    // Nếu người dùng chọn ô tròn -> (Không cần làm gì thêm, radio tự xử lý)
 
     form?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -39,6 +37,10 @@ export function initTaskModal(onSuccess) {
         const title = document.getElementById('task-title').value;
         const dec = document.getElementById('task-desc').value;
         const tag = document.getElementById('task-tag').value;
+        
+        // ✅ ĐÚNG: Lấy giá trị thời gian NGAY KHI BẤM SUBMIT
+        const startTime = document.getElementById('task-start-time').value;
+        const deadline = document.getElementById('task-deadline-create').value;
         
         // Lấy màu: Ưu tiên Radio, nếu không có thì lấy Picker
         let color = '#00c2e0';
@@ -56,7 +58,7 @@ export function initTaskModal(onSuccess) {
                 headers: { 'Content-Type': 'application/json', 'Authorization': token },
                 body: JSON.stringify({ 
                     title, dec, tag, color, 
-                    startTime, deadline,
+                    startTime, deadline, // Bây giờ biến này mới có dữ liệu đúng
                     columnId: activeColumnId, 
                     projectId: activeProjectId 
                 })

@@ -29,84 +29,115 @@ function isTaskOverdue(deadline) {
    PHẦN 1: RENDER GIAO DIỆN (VIEW)
    ========================================= */
 
-function createTaskCardElement(task) {
-  const card = document.createElement('div');
-  card.className = 'task-card';
-  card.setAttribute('data-task-id', task._id);
+   function createTaskCardElement(task) {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.setAttribute('data-task-id', task._id);
+    
+    // --- [LOGIC MỚI: XỬ LÝ TRẠNG THÁI & MÀU VIỀN] ---
+    // 1. Kiểm tra hoàn thành: Có subtask VÀ tất cả đều xong
+    const isAllWorksDone = task.works && task.works.length > 0 && task.works.every(w => w.isDone);
+    
+    // 2. Kiểm tra quá hạn
+    const isLate = isTaskOverdue(task.deadline);
   
-  if (isTaskOverdue(task.deadline)) {
-      card.style.borderLeft = "4px solid #d93025"; 
+    // 3. Xét màu viền (Ưu tiên: Xanh -> Đỏ)
+    if (isAllWorksDone) {
+        card.style.borderLeft = "4px solid #2e8b57"; // Xanh lá (Đã xong)
+    } else if (isLate) {
+        card.style.borderLeft = "4px solid #d93025"; // Đỏ (Quá hạn)
+    }
+    // ------------------------------------------------
+  
+    // Render Tag
+    const tagColor = task.color || '#00c2e0';
+    const tagHTML = task.tag ? `<div class="task-tag" style="background-color: ${tagColor};">${task.tag}</div>` : '';
+    
+    // Render Mô tả ngắn
+    const descHTML = task.dec ? `<div class="task-desc">${task.dec}</div>` : '';
+  
+    // Render Thành viên
+    let membersHTML = '';
+    if (task.members && task.members.length > 0) {
+        membersHTML = task.members.map(u => 
+            `<img src="${u.avatar}" title="${u.username}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: -8px;">`
+        ).join('');
+    }
+  
+    // Render Nút xóa (chỉ cho Admin/Manager)
+    let deleteBtnHTML = '';
+    if (isUserAdminOrManager) {
+        deleteBtnHTML = `<i class="fa-regular fa-trash-can btn-delete-task" title="Xóa công việc" style="cursor: pointer; color: #d93025; font-size: 0.9rem; opacity: 0.6; transition: opacity 0.2s;"></i>`;
+    }
+  
+    // Icon đồng hồ (Màu đỏ nếu quá hạn & chưa xong)
+    const clockIconColor = (!isAllWorksDone && isLate) ? 'color:#d93025' : '';
+    const deadlineHTML = task.deadline ? `<i class="fa-regular fa-clock" style="${clockIconColor}"></i>` : '';
+  
+    // Gắn HTML vào thẻ
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+          ${tagHTML}
+          ${deleteBtnHTML}
+      </div>
+      <div class="task-title">${task.title}</div>
+      ${descHTML}
+      <div class="task-footer">
+          <div class="task-members" style="display: flex; padding-left: 8px;">${membersHTML}</div>
+          <div class="task-stats">
+              ${deadlineHTML}
+          </div>
+      </div>
+    `;
+  
+    // --- XỬ LÝ SỰ KIỆN ---
+    
+    // 1. Sự kiện cho Admin (Xóa, Drag & Drop visual)
+    if (isUserAdminOrManager) {
+        const delBtn = card.querySelector('.btn-delete-task');
+        
+        // Hiệu ứng hover nút xóa
+        delBtn.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
+        delBtn.addEventListener('mouseleave', () => delBtn.style.opacity = '0.6');
+        
+        // Xử lý xóa
+        delBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            showConfirm("Bạn chắc chắn muốn xóa công việc này?", async () => {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/task/${task._id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': localStorage.getItem('maneasily_token') }
+                    });
+                    if (res.ok) {
+                        card.remove();
+                        toast.success("Đã xóa công việc");
+                    } else {
+                        toast.error("Lỗi khi xóa");
+                    }
+                } catch (err) { toast.error("Lỗi server"); }
+            });
+        });
+  
+        // Hiệu ứng khi kéo thả đè lên
+        card.addEventListener('dragover', (e) => { e.preventDefault(); card.style.backgroundColor = "#ebecf0"; });
+        card.addEventListener('dragleave', () => { card.style.backgroundColor = "#fff"; });
+        card.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            card.style.backgroundColor = "#fff";
+        });
+    }
+  
+    // 2. Sự kiện mở chi tiết (Click vào card)
+    card.addEventListener('click', (e) => {
+        // Nếu click vào nút xóa thì không mở modal
+        if (e.target.closest('.btn-delete-task')) return;
+        
+        openTaskDetail(task._id, isUserAdminOrManager, projectMembers);
+    });
+  
+    return card;
   }
-
-  const tagColor = task.color || '#00c2e0';
-  const tagHTML = task.tag ? `<div class="task-tag" style="background-color: ${tagColor};">${task.tag}</div>` : '';
-  const descHTML = task.dec ? `<div class="task-desc">${task.dec}</div>` : '';
-
-  let membersHTML = '';
-  if (task.members && task.members.length > 0) {
-      membersHTML = task.members.map(u => 
-          `<img src="${u.avatar}" title="${u.username}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: -8px;">`
-      ).join('');
-  }
-
-  let deleteBtnHTML = '';
-  if (isUserAdminOrManager) {
-      deleteBtnHTML = `<i class="fa-regular fa-trash-can btn-delete-task" title="Xóa công việc" style="cursor: pointer; color: #d93025; font-size: 0.9rem; opacity: 0.6; transition: opacity 0.2s;"></i>`;
-  }
-
-  card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-        ${tagHTML}
-        ${deleteBtnHTML}
-    </div>
-    <div class="task-title">${task.title}</div>
-    ${descHTML}
-    <div class="task-footer">
-        <div class="task-members" style="display: flex; padding-left: 8px;">${membersHTML}</div>
-        <div class="task-stats">
-            ${task.deadline ? `<i class="fa-regular fa-clock" style="${isTaskOverdue(task.deadline) ? 'color:#d93025' : ''}"></i>` : ''}
-        </div>
-    </div>
-  `;
-
-  if (isUserAdminOrManager) {
-      const delBtn = card.querySelector('.btn-delete-task');
-      delBtn.addEventListener('mouseenter', () => delBtn.style.opacity = '1');
-      delBtn.addEventListener('mouseleave', () => delBtn.style.opacity = '0.6');
-      
-      delBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); 
-          showConfirm("Bạn chắc chắn muốn xóa công việc này?", async () => {
-              try {
-                  const res = await fetch(`${API_BASE_URL}/task/${task._id}`, {
-                      method: 'DELETE',
-                      headers: { 'Authorization': localStorage.getItem('maneasily_token') }
-                  });
-                  if (res.ok) {
-                      card.remove();
-                      toast.success("Đã xóa công việc");
-                  } else {
-                      toast.error("Lỗi khi xóa");
-                  }
-              } catch (err) { toast.error("Lỗi server"); }
-          });
-      });
-
-      card.addEventListener('dragover', (e) => { e.preventDefault(); card.style.backgroundColor = "#ebecf0"; });
-      card.addEventListener('dragleave', () => { card.style.backgroundColor = "#fff"; });
-      card.addEventListener('drop', async (e) => {
-          e.preventDefault();
-          card.style.backgroundColor = "#fff";
-      });
-  }
-
-  card.addEventListener('click', (e) => {
-      if (e.target.closest('.btn-delete-task')) return;
-      openTaskDetail(task._id, isUserAdminOrManager, projectMembers);
-  });
-
-  return card;
-}
 
 function createColumnElement(column) {
   const columnEl = document.createElement('div');

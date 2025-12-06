@@ -19,11 +19,17 @@ const projectCtrl = {
                     populate: {
                         path: "tasks",
                         model: "tasks",
-                        populate: {
-                            path: "members",
-                            model: "users",
-                            select: "username avatar"
+                        populate: [ 
+                        { 
+                            path: "members", 
+                            model: "users", 
+                            select: "username avatar" 
+                        },
+                        {
+                            path: "works", 
+                            model: "works"
                         }
+                    ]
                     },
                 });
             

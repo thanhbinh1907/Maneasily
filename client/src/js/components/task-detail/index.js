@@ -145,19 +145,24 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
 
 // --- 3. REFRESH UI ---
 function refreshUI() {
+    // [LOGIC MỚI] Kiểm tra chưa đến giờ bắt đầu
+    const isNotStarted = currentTask.startTime && new Date() < new Date(currentTask.startTime);
+
     TaskView.renderInfo(currentTask);
     TaskView.renderMembers(currentTask.members, canEditTask);
-    TaskView.renderSubtasks(currentTask.works, canEditTask, isOverdue);
+    
+    // [CẬP NHẬT] Truyền thêm isNotStarted vào view
+    TaskView.renderSubtasks(currentTask.works, canEditTask, isOverdue, isNotStarted);
+    
     TaskView.renderComments(currentTask.comments);
     TaskView.toggleEditMode(canEditTask);
 
+    // ... (Phần logic comment giữ nguyên) ...
     const currentUser = JSON.parse(localStorage.getItem('maneasily_user'));
     const isMember = currentTask.members.some(m => m._id === currentUser._id);
-    
     const commentInput = document.getElementById('comment-input');
-    const commentBtn = document.getElementById('btn-post-comment');
     
-    if (commentInput && commentBtn) {
+    if (commentInput) {
         const commentContainer = commentInput.parentElement; 
         if (canEditTask || isMember) {
             commentContainer.style.display = 'block';
@@ -205,6 +210,7 @@ async function handleUpdate(field) {
     }
 }
 
+// --- 1. Hàm handleAddSubtask (Thêm công việc con) ---
 async function handleAddSubtask() {
     const input = document.getElementById('new-subtask-input');
     if (!input.value.trim()) return;
@@ -212,7 +218,11 @@ async function handleAddSubtask() {
     if (data.work) {
         input.value = "";
         currentTask.works.push(data.work);
-        refreshUI();
+        
+        refreshUI(); // Cập nhật giao diện Modal
+        
+        // [MỚI] Cập nhật ngay lập tức thẻ ngoài Board (Viền xanh/đỏ)
+        TaskView.updateBoardCard(currentTask, isOverdue);
     }
 }
 
@@ -301,14 +311,24 @@ window.toggleSubtaskMember = async (workId, memberId) => {
     }
 };
 
+// --- 2. Hàm window.toggleSubtask ---
 window.toggleSubtask = async (workId) => {
+    // 1. Kiểm tra quá hạn
     if (isOverdue) return toast.error("Đã quá hạn!");
+
+    // 2. [LOGIC MỚI] Kiểm tra chưa đến giờ bắt đầu
+    if (currentTask.startTime && new Date() < new Date(currentTask.startTime)) {
+        return toast.error("Chưa đến thời gian bắt đầu!");
+    }
+
     const w = currentTask.works.find(x => x._id === workId);
     if (!w) return;
 
     const oldState = w.isDone;
-    w.isDone = !w.isDone;
-    refreshUI();
+    w.isDone = !w.isDone; // Đổi trạng thái client
+    
+    refreshUI(); 
+    TaskView.updateBoardCard(currentTask, isOverdue);
 
     try {
         const success = await TaskAPI.toggleSubtask(workId);
@@ -316,22 +336,30 @@ window.toggleSubtask = async (workId) => {
     } catch (err) {
         w.isDone = oldState;
         refreshUI();
+        TaskView.updateBoardCard(currentTask, isOverdue);
         toast.error("Lỗi kết nối!");
     }
 };
 
+// --- 3. Hàm window.deleteSubtask (Xóa công việc con) ---
 window.deleteSubtask = async (workId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền xóa.");
     
     showConfirm("Xóa công việc con này?", async () => {
         if (await TaskAPI.deleteSubtask(workId)) {
+            // Xóa khỏi danh sách hiện tại
             currentTask.works = currentTask.works.filter(w => w._id !== workId);
-            refreshUI();
+            
+            refreshUI(); // Cập nhật giao diện Modal
+            
+            // [MỚI] Cập nhật ngay lập tức thẻ ngoài Board (Viền xanh/đỏ)
+            // (Phòng trường hợp xóa xong thì tất cả các việc còn lại đều đã Done -> Xanh)
+            TaskView.updateBoardCard(currentTask, isOverdue);
+            
             toast.success("Đã xóa");
         } else toast.error("Lỗi xóa");
     });
 };
-
 window.addMemberToTask = async (memberId) => {
     if (!canEditTask) return toast.error("Bạn không có quyền.");
     if (isOverdue) return toast.error("Task đã quá hạn!");

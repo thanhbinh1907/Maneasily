@@ -1,15 +1,52 @@
-export const formatTimeRemaining = (deadline) => {
+export const formatTimeRemaining = (deadline, startTime) => {
+    const now = new Date();
+
+    // 1. [MỚI] Ưu tiên: Kiểm tra thời gian bắt đầu (Nếu chưa đến giờ)
+    if (startTime) {
+        const start = new Date(startTime);
+        const diffStart = start - now; // Tính mili-giây chênh lệch
+
+        if (diffStart > 0) {
+            // Nếu thời gian chênh lệch > 0 => Chưa bắt đầu
+            const hours = Math.floor(diffStart / (1000 * 60 * 60));
+            const days = Math.floor(hours / 24);
+            
+            let text = "";
+            if (days > 0) {
+                text = `Bắt đầu sau: ${days} ngày ${hours % 24} giờ`;
+            } else {
+                text = `Bắt đầu sau: ${hours} giờ ${Math.floor((diffStart / (1000 * 60)) % 60)} phút`;
+            }
+
+            // Trả về HTML màu cam cho trạng thái chờ
+            return { 
+                html: `<span style="color:#e67e22; font-weight:600"><i class="fa-regular fa-hourglass-half"></i> ${text}</span>`, 
+                isOverdue: false 
+            };
+        }
+    }
+
+    // 2. Logic cũ: Kiểm tra Deadline (Chỉ chạy khi đã bắt đầu)
     if (!deadline) return { html: "", isOverdue: false };
-    const diff = new Date(deadline) - new Date();
+    
+    const diff = new Date(deadline) - now;
     const isOverdue = diff < 0;
     
-    if (isOverdue) return { html: `<span class="time-late" style="color:#d93025; font-weight:bold">⚠️ Đã quá hạn!</span>`, isOverdue: true };
+    if (isOverdue) {
+        return { 
+            html: `<span class="time-late" style="color:#d93025; font-weight:bold">⚠️ Đã quá hạn!</span>`, 
+            isOverdue: true 
+        };
+    }
     
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
     
     const text = days > 0 ? `Còn lại: ${days} ngày ${hours % 24} giờ` : `Còn lại: ${hours} giờ`;
-    return { html: `<span class="time-ok" style="color:#2e8b57">${text}</span>`, isOverdue: false };
+    return { 
+        html: `<span class="time-ok" style="color:#2e8b57">${text}</span>`, 
+        isOverdue: false 
+    };
 };
 
 export const TaskView = {
@@ -20,12 +57,11 @@ export const TaskView = {
         const colEl = document.getElementById('detail-column-name');
         if(colEl) colEl.textContent = (task.column && task.column.title) ? task.column.title : "...";
 
-        // Color Radio & Picker
+        // Color
         const colorRadios = document.querySelectorAll('input[name="detailColor"]');
         const colorPicker = document.getElementById('detail-custom-color');
-        let match = false;
         colorRadios.forEach(r => {
-            if (r.value === task.color) { r.checked = true; match = true; } else r.checked = false;
+            if (r.value === task.color) r.checked = true; else r.checked = false;
         });
         if (colorPicker) colorPicker.value = task.color;
 
@@ -43,15 +79,21 @@ export const TaskView = {
 
         // Deadline
         const deadlineInput = document.getElementById('detail-deadline');
+        if (deadlineInput) {
+            if (task.deadline) {
+                const d = new Date(task.deadline);
+                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                deadlineInput.value = d.toISOString().slice(0, 16);
+            } else {
+                deadlineInput.value = "";
+            }
+        }
+
+        // [CẬP NHẬT] Gọi hàm formatTimeRemaining với cả 2 tham số
         const timeDisplay = document.getElementById('time-remaining-display');
-        if (deadlineInput && task.deadline) {
-            const d = new Date(task.deadline);
-            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-            deadlineInput.value = d.toISOString().slice(0, 16);
-            timeDisplay.innerHTML = formatTimeRemaining(task.deadline).html;
-        } else if (deadlineInput) {
-            deadlineInput.value = "";
-            timeDisplay.innerHTML = "";
+        if (timeDisplay) {
+            // Truyền thêm task.startTime vào đây
+            timeDisplay.innerHTML = formatTimeRemaining(task.deadline, task.startTime).html;
         }
     },
 
@@ -80,7 +122,7 @@ export const TaskView = {
         `).join('');
     },
 
-    renderSubtasks: (works, canEdit, isOverdue) => {
+    renderSubtasks: (works, canEdit, isOverdue, isNotStarted) => {
         const list = document.getElementById('subtask-list');
         if (!list) return;
 
@@ -92,7 +134,8 @@ export const TaskView = {
         document.getElementById('detail-progress-bar').style.width = `${percent}%`;
         document.getElementById('subtask-count').textContent = total > 0 ? `${completed}/${total}` : "0";
 
-        const isDisabled = !canEdit || isOverdue;
+        // [LOGIC MỚI] Khóa nếu: Không có quyền OR Quá hạn OR Chưa bắt đầu
+        const isDisabled = !canEdit || isOverdue || isNotStarted;
 
         list.innerHTML = works.map(w => {
             let subMembersHTML = '';
@@ -105,7 +148,6 @@ export const TaskView = {
             const menuHTML = canEdit ? `
                 <div class="subtask-menu-container">
                     <i class="fa-solid fa-ellipsis subtask-menu-btn" onclick="event.stopPropagation(); window.toggleSubtaskMenu('${w._id}')"></i>
-                    
                     <div id="subtask-menu-${w._id}" class="subtask-dropdown">
                         <div class="subtask-dropdown-item" onclick="event.stopPropagation(); window.openSubtaskManager('${w._id}')">
                             <i class="fa-solid fa-users-gear"></i> Quản lý thành viên
@@ -117,8 +159,6 @@ export const TaskView = {
                 </div>
             ` : '';
 
-            // --- SỬA LỖI CHECKBOX TẠI ĐÂY ---
-            // Đã xóa style="pointer-events:none;" ở thẻ <input>
             return `
             <div class="subtask-item ${w.isDone ? 'completed' : ''}" 
                  style="display:flex; align-items:center; gap:10px; padding:8px; border-bottom:1px solid #eee; cursor:${isDisabled?'not-allowed':'default'}; position:relative;"
@@ -188,32 +228,44 @@ export const TaskView = {
     updateBoardCard: (task, isOverdue) => {
         const card = document.querySelector(`.task-card[data-task-id="${task._id}"]`);
         if (!card) return;
+
+        // 1. Cập nhật tiêu đề & tag (Giữ nguyên cũ)
         card.querySelector('.task-title').textContent = task.title;
-        // card.querySelector('.task-desc').textContent = task.dec; // Tạm ẩn nếu không muốn hiện desc ngoài board
         
         let tagEl = card.querySelector('.task-tag');
         if (!tagEl && task.tag) {
             tagEl = document.createElement('div'); tagEl.className = 'task-tag';
-            // Tìm vị trí để chèn tag (trước tiêu đề)
             const titleEl = card.querySelector('.task-title');
             if(titleEl) titleEl.parentNode.insertBefore(tagEl, titleEl);
-            else card.prepend(tagEl); // Fallback
         }
         if (tagEl) {
             if (task.tag) { 
                 tagEl.textContent = task.tag; 
                 tagEl.style.backgroundColor = task.color || '#00c2e0'; 
                 tagEl.style.display = 'inline-block'; 
-            }
-            else tagEl.style.display = 'none';
+            } else tagEl.style.display = 'none';
         }
-        card.style.borderLeft = isOverdue ? "4px solid #d93025" : "";
 
+        // --- 2. [LOGIC MỚI] Cập nhật màu viền (Xanh/Đỏ) ---
+        // Kiểm tra hoàn thành: Có subtask VÀ tất cả đều xong
+        const isAllWorksDone = task.works && task.works.length > 0 && task.works.every(w => w.isDone);
+
+        if (isAllWorksDone) {
+            card.style.borderLeft = "4px solid #2e8b57"; // Xanh lá
+        } else if (isOverdue) {
+            card.style.borderLeft = "4px solid #d93025"; // Đỏ
+        } else {
+            card.style.borderLeft = ""; // Reset về mặc định
+        }
+        // --------------------------------------------------
+
+        // 3. Cập nhật thành viên (Giữ nguyên cũ)
         const membersContainer = card.querySelector('.task-members');
         if (membersContainer && task.members) {
             membersContainer.innerHTML = task.members.map(u => `<img src="${u.avatar}" title="${u.username}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: -8px;">`).join('');
         }
     },
+
     renderComments: (comments) => {
         const list = document.getElementById('comment-list');
         if (!list) return;

@@ -206,7 +206,6 @@ body {
 
 /* --- [ĐÃ SỬA LẠI] NAV TOP: Header cao, Search gọn gàng --- */
 .app-nav-top {
-    /* Giữ chiều cao header là 80px cho thoáng (như bạn đã đồng ý) */
     height: 80px; 
     flex-shrink: 0;
     background-color: var(--bg-surface);

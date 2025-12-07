@@ -1,0 +1,27 @@
+{
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/", "destination": "/index.html" },
+      { "source": "/dashboard", "destination": "/src/pages/dashboard.html" },
+      { "source": "/signin", "destination": "/src/pages/signin.html" },
+      { "source": "/signup", "destination": "/src/pages/signup.html" },
+      { "source": "/board", "destination": "/src/pages/Board.html" },
+      { "source": "/projects", "destination": "/src/pages/projects.html" },
+      { "source": "/pricing", "destination": "/src/pages/pricing.html" },
+      { "source": "/contact", "destination": "/src/pages/contact.html" },
+      { "source": "/features", "destination": "/src/pages/features.html" },
+      { "source": "/schedule", "destination": "/src/pages/schedule.html" },
+      { "source": "/settings", "destination": "/src/pages/settings.html" },
+      { "source": "/help", "destination": "/src/pages/help-center.html" },
+      { "source": "/resources", "destination": "/src/pages/resources.html" },
+      { "source": "/reset-password", "destination": "/src/pages/reset-password.html" },
+      { "source": "/how-it-works", "destination": "/src/pages/how-it-works.html" },
+      { "source": "/careers", "destination": "/src/pages/careers.html" },
+      { "source": "/community", "destination": "/src/pages/community.html" },
+      { "source": "/support", "destination": "/src/pages/support.html" },
+      { "source": "/download", "destination": "/src/pages/download.html" },
+      { "source": "/blog-article", "destination": "/src/pages/blog-article.html" },
+      { "source": "/blog-tips", "destination": "/src/pages/blog-tips.html" },
+      { "source": "/blog-teamwork", "destination": "/src/pages/blog-teamwork.html" }
+    ]
+  }

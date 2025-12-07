@@ -16,6 +16,7 @@ import contactRouter from './routers/contactRouter.js';
 import activityRouter from './routers/activityRouter.js';
 import fileRouter from './routers/fileRouter.js';
 import searchRouter from './routers/searchRouter.js';
+import downloadRouter from './routers/downloadRouter.js';
 
 import session from 'express-session';
 import passport from 'passport';
@@ -111,6 +112,7 @@ app.use('/api', contactRouter);
 app.use('/api', activityRouter);
 app.use('/api', fileRouter);
 app.use('/api', searchRouter);
+app.use('/api', downloadRouter);
 
 startScheduler();
 

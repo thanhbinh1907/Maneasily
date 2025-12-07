@@ -186,13 +186,12 @@ const userCtrl = {
     // --- XỬ LÝ PHẢN HỒI LỜI MỜI (Đồng ý / Từ chối) ---
     respondInvitation: async (req, res) => {
         try {
-            const { invitationId, status } = req.body; // status: 'accepted' hoặc 'rejected'
+            const { invitationId, status } = req.body; 
             const userId = req.user.id;
 
             // 1. Tìm lời mời
             const invite = await Invitations.findById(invitationId);
             if (!invite) {
-                // Nếu không tìm thấy invite (đã xóa), ta vẫn nên tìm và sửa thông báo cũ để nó không hiện nút nữa
                 await Notifications.findOneAndUpdate(
                     { link: invitationId, recipient: userId, type: 'invite' },
                     { type: 'system', content: 'Lời mời này không còn hiệu lực.' }
@@ -204,17 +203,30 @@ const userCtrl = {
                 return res.status(403).json({ err: "Bạn không có quyền." });
             }
 
+            // Lấy thông tin dự án để ghi log và thông báo
+            const project = await Projects.findById(invite.project);
+            const projectName = project ? project.title : "Dự án";
+
             // 2. Xử lý Logic Đồng ý
             if (status === 'accepted') {
                 await Projects.findByIdAndUpdate(invite.project, { $addToSet: { members: userId } });
                 await Users.findByIdAndUpdate(userId, { $addToSet: { projects: invite.project } });
-                await logActivity(req, invite.project, "joined", "Thành viên mới", "đã tham gia dự án", "member");
+                
+                // [SỬA Ở ĐÂY] Thay "Thành viên mới" bằng projectName
+                await logActivity(
+                    req, 
+                    invite.project, 
+                    "joined", 
+                    projectName, // <-- Đã sửa thành tên dự án
+                    "đã tham gia dự án", 
+                    "member"
+                );
 
                 // Báo cho người mời biết
                 const notif = await Notifications.create({
                     recipient: invite.sender,
                     sender: userId,
-                    content: `đã chấp nhận tham gia dự án.`,
+                    content: `đã chấp nhận tham gia dự án "${projectName}"`,
                     type: 'system',
                     link: `/src/pages/Board.html?id=${invite.project}`
                 });
@@ -224,29 +236,23 @@ const userCtrl = {
 
             // --- 2.b. Xử lý Logic Từ chối ---
             else if (status === 'rejected') {
-                // Báo cho người mời biết: TỪ CHỐI
                 const notif = await Notifications.create({
                     recipient: invite.sender,
                     sender: userId,
-                    content: `đã từ chối lời mời tham gia dự án.`,
+                    content: `đã từ chối lời mời tham gia dự án "${projectName}"`,
                     type: 'system',
-                    link: '#' // Không cần link vì đã từ chối
+                    link: '#' 
                 });
                 await notif.populate("sender", "username avatar");
                 sendNotification(req, invite.sender, notif);
             }
-            // --- [QUAN TRỌNG] 3. Cập nhật chính thông báo của người nhận ---
-            // Đổi nó từ dạng 'invite' (có nút) sang 'system' (chữ thường)
-            // Và sửa lại nội dung để lưu vào lịch sử
+
+            // 3. Cập nhật trạng thái thông báo
             await Notifications.findOneAndUpdate(
                 { link: invitationId, recipient: userId, type: 'invite' },
                 { 
-                    // Tạo 2 loại type mới để lưu trạng thái lịch sử
                     type: status === 'accepted' ? 'invite_accepted' : 'invite_rejected',
-                    
-                    // content: (GIỮ NGUYÊN KHÔNG SỬA GÌ CẢ)
-                    
-                    isRead: true // Đánh dấu đã đọc
+                    isRead: true 
                 }
             );
 

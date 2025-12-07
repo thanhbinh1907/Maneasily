@@ -328,4 +328,5 @@ export function initNotifications() {
             badge.style.display = 'none';
         }
     }
+    fetchNotifications(1);
 }

@@ -223,7 +223,7 @@ const projectCtrl = {
                 req, 
                 project._id, 
                 "joined project", 
-                userJoined.username, // Target là tên người vào
+                project.title, 
                 "đã tham gia qua liên kết công khai", 
                 "member"
             );

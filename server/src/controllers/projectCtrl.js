@@ -270,10 +270,24 @@ const projectCtrl = {
                 return res.status(403).json({ err: "Chỉ chủ dự án mới được cấp quyền quản lý." });
             }
 
+            // [MỚI] Tìm thông tin thành viên để lấy tên hiển thị log
+            const member = await Users.findById(memberId);
+            const memberName = member ? member.username : "Thành viên";
+
             await Projects.findByIdAndUpdate(projectId, {
                 $addToSet: { admins: memberId } // Thêm vào danh sách quản lý
             });
-            await logActivity(req, projectId, "promoted member", "Thành viên", "đã cấp quyền quản lý", "member");
+
+            // [SỬA LẠI] Thay "Thành viên" bằng memberName
+            await logActivity(
+                req, 
+                projectId, 
+                "promoted member", 
+                memberName, // <--- Target là Tên thành viên được thăng chức
+                "đã cấp quyền quản lý", 
+                "member"
+            );
+            
             res.json({ msg: "Đã cấp quyền quản lý!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },

@@ -181,12 +181,10 @@ const authCtrl = {
             );
 
             // QUAN TRỌNG: Vì đây là chuyển hướng (Redirect) từ server về client,
-            // ta không thể trả về JSON như bình thường.
-            // Ta phải chuyển hướng trình duyệt về trang chủ Client kèm theo Token trên URL.
-            
+
             // URL Client (Frontend) - Đổi port nếu frontend bạn chạy port khác 3000/5173
-            const clientURL = "http://localhost:5173"; 
-            
+            const clientURL = process.env.CLIENT_URL || "http://localhost:5173";
+
             res.redirect(`${clientURL}/index.html?token=${loginToken}`);
 
         } catch (err) {

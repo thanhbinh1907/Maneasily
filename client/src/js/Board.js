@@ -390,6 +390,10 @@ function initTaskDragAndDrop() {
         group: 'shared-tasks', 
         animation: 150,
         ghostClass: 'task-ghost',
+        
+        forceFallback: true,              
+        fallbackClass: 'sortable-fallback', 
+
         disabled: !isUserAdminOrManager,
         sort: isUserAdminOrManager,
         onEnd: function (evt) {
@@ -426,7 +430,7 @@ function initTaskDragAndDrop() {
         }
       });
     });
-  }
+}
 
 function handleTaskAdded(newTask, columnId) {
     const columnEl = document.querySelector(`.board-column[data-column-id="${columnId}"]`);

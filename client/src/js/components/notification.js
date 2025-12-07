@@ -1,7 +1,5 @@
 import { API_BASE_URL } from '../config.js';
 import { toast } from '../utils/toast.js';
-// Import socket.io-client. 
-// Lưu ý: Đảm bảo bạn đã cài đặt: npm install socket.io-client
 import { io } from "socket.io-client"; 
 
 export function initNotifications() {
@@ -16,46 +14,53 @@ export function initNotifications() {
     let isLoading = false;
     let hasMore = true;
 
-    // --- 0. KẾT NỐI SOCKET.IO (REAL-TIME) ---
-    const user = JSON.parse(localStorage.getItem('maneasily_user'));
-    // Lưu ý: Port là 5000 (server), không phải client
+    // --- 1. KẾT NỐI SOCKET.IO (REAL-TIME) ---
+    // Lưu ý: Port là 5000 (server), thay đổi nếu bạn deploy
     const socket = io("http://localhost:5000"); 
+    const user = JSON.parse(localStorage.getItem('maneasily_user'));
 
     if (user) {
-        // Gửi sự kiện 'join' để server map userId với socketId
+        // Gửi sự kiện 'join' để server biết user nào đang online
         socket.emit("join", user._id);
 
         // Lắng nghe sự kiện có thông báo mới
         socket.on("newNotification", (newNotif) => {
-            // 1. Hiện Toast
+            // a. Hiện Toast thông báo góc màn hình
             toast.info(`🔔 ${newNotif.content}`);
 
-            // 2. Cập nhật Badge
+            // b. Phát âm thanh (nếu được bật trong Cài đặt)
+            const soundEnabled = user.settings?.notifications?.soundEnabled ?? true;
+            if (soundEnabled) {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a');
+                audio.volume = 0.5;
+                audio.play().catch(() => {}); // Bỏ qua lỗi nếu trình duyệt chặn tự phát
+            }
+
+            // c. Cập nhật Badge (số đỏ trên chuông)
             const currentCount = parseInt(badge.textContent || '0');
             updateBadge(currentCount + 1);
 
-            // 3. Thêm vào đầu danh sách
-            // Nếu đang hiện "Không có thông báo" thì xóa đi
-            const emptyMsg = listContainer.querySelector('p');
-            if (emptyMsg && emptyMsg.textContent.includes('Không có thông báo')) {
-                emptyMsg.remove();
-            }
+            // d. Thêm vào đầu danh sách (nếu danh sách đang mở)
+            const emptyMsg = listContainer.querySelector('.empty-msg');
+            if (emptyMsg) emptyMsg.remove();
 
-            // Tạo HTML và chèn lên đầu
             const itemHTML = createNotifItemHTML(newNotif);
             listContainer.insertAdjacentHTML('afterbegin', itemHTML);
         });
     }
 
-    // --- 1. Toggle Dropdown ---
+    // --- 2. XỬ LÝ SỰ KIỆN UI ---
+    
+    // Toggle Dropdown khi bấm chuông
     bellBtn?.addEventListener('click', (e) => {
         e.stopPropagation();
+        // Đóng các menu khác nếu đang mở
         document.getElementById('user-dropdown-menu')?.classList.remove('show');
-        const isClosed = !dropdown.classList.contains('show');
         
+        const isClosed = !dropdown.classList.contains('show');
         dropdown.classList.toggle('show');
 
-        // Nếu mở ra thì reset và load trang 1
+        // Nếu mở ra thì reset và tải lại trang 1
         if (isClosed) {
             resetAndLoad();
         }
@@ -65,19 +70,47 @@ export function initNotifications() {
     window.addEventListener('click', (e) => {
         if (!bellBtn.contains(e.target) && !dropdown.contains(e.target)) {
             dropdown?.classList.remove('show');
-            closeAllItemMenus();
         }
     });
 
-    // --- 2. Hàm Reset & Load ---
+    // Cuộn xuống để tải thêm (Infinite Scroll)
+    listContainer.addEventListener('scroll', () => {
+        if (listContainer.scrollTop + listContainer.clientHeight >= listContainer.scrollHeight - 20) {
+            if (!isLoading && hasMore) {
+                currentPage++;
+                fetchNotifications(currentPage);
+            }
+        }
+    });
+
+    // Nút "Đánh dấu tất cả là đã đọc"
+    markAllBtn?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+            await fetch(`${API_BASE_URL}/notifications/read-all`, {
+                method: 'PATCH',
+                headers: { 'Authorization': localStorage.getItem('maneasily_token') }
+            });
+            // Reset giao diện về đã đọc hết
+            document.querySelectorAll('.noti-item.unread').forEach(item => {
+                item.classList.remove('unread');
+                item.querySelector('.noti-dot')?.remove();
+            });
+            updateBadge(0);
+            toast.success("Đã đánh dấu tất cả là đã đọc");
+        } catch(err) { console.error(err); }
+    });
+
+
+    // --- 3. HÀM XỬ LÝ DỮ LIỆU ---
+
     function resetAndLoad() {
         currentPage = 1;
         hasMore = true;
-        listContainer.innerHTML = ''; // Xóa cũ
+        listContainer.innerHTML = ''; 
         fetchNotifications(1);
     }
 
-    // --- 3. Hàm Fetch Data ---
     async function fetchNotifications(page) {
         if (isLoading || !hasMore) return;
         isLoading = true;
@@ -87,7 +120,7 @@ export function initNotifications() {
         if (page > 1) {
             spinner = document.createElement('div');
             spinner.className = 'noti-loading';
-            spinner.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải thêm...';
+            spinner.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             listContainer.appendChild(spinner);
             listContainer.scrollTop = listContainer.scrollHeight;
         }
@@ -102,238 +135,187 @@ export function initNotifications() {
 
             if (data.notifications) {
                 if (page === 1 && data.notifications.length === 0) {
-                    listContainer.innerHTML = '<p style="padding:15px; text-align:center; color:#666; font-size:0.9rem;">Không có thông báo nào.</p>';
+                    listContainer.innerHTML = '<p class="empty-msg" style="padding:20px; text-align:center; color:#888; font-size:0.9rem;">Không có thông báo nào.</p>';
+                    updateBadge(0);
                 } else {
-                    appendNotifications(data.notifications);
+                    const html = data.notifications.map(n => createNotifItemHTML(n)).join('');
+                    listContainer.insertAdjacentHTML('beforeend', html);
                 }
                 
-                updateBadge(data.unreadCount);
+                // Chỉ cập nhật badge khi load trang 1 để đảm bảo số chính xác nhất
+                if (page === 1) updateBadge(data.unreadCount);
+                
                 hasMore = data.hasMore;
             }
         } catch (err) { 
             console.error("Lỗi tải thông báo", err);
+            listContainer.innerHTML = '<p style="padding:10px; color:red; text-align:center;">Lỗi kết nối!</p>';
         } finally {
             isLoading = false;
         }
     }
 
-    // --- 4. Render & Append ---
-    function appendNotifications(notifs) {
-        // Dùng insertAdjacentHTML thay vì appendChild để dùng chuỗi HTML từ helper
-        const html = notifs.map(n => createNotifItemHTML(n)).join('');
-        listContainer.insertAdjacentHTML('beforeend', html);
-    }
-
-    // --- Helper tạo HTML cho 1 item (Dùng chung cho Fetch và Socket) ---
+    // --- 4. RENDER HTML ---
     function createNotifItemHTML(n) {
-        const timeDisplay = new Date(n.createdAt).toLocaleString();
-        
-        // 👇 LOGIC MỚI: Nút bấm cho lời mời
-        let actionButtons = '';
+        const timeDisplay = new Date(n.createdAt).toLocaleDateString('vi-VN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const senderName = n.sender ? n.sender.username : 'Hệ thống';
+        const senderAvatar = n.sender ? n.sender.avatar : 'https://www.gravatar.com/avatar/default?d=mp';
+
+        let actionHTML = '';
+        let clickAttribute = `onclick="window.handleNotiClick('${n._id}', '${n.link}')"`;
+
+        // TRƯỜNG HỢP 1: LỜI MỜI MỚI (Hiện 2 nút)
         if (n.type === 'invite') {
-            // n.link chứa inviteId (do ta đã lưu ở backend)
-            actionButtons = `
-            <div class="invite-actions" style="margin-top: 8px; display: flex; gap: 8px;">
-                <button onclick="window.respondInvite(event, '${n.link}', 'accept', '${n._id}')" 
-                        style="padding: 4px 10px; background: #2e8b57; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+            clickAttribute = ''; 
+            actionHTML = `
+            <div class="invite-actions" id="actions-${n._id}" style="margin-top: 8px; display: flex; gap: 8px;">
+                <button class="btn-xs btn-primary" onclick="window.respondInvite(event, '${n.link}', 'accepted', '${n._id}')">
                     Đồng ý
                 </button>
-                <button onclick="window.respondInvite(event, '${n.link}', 'decline', '${n._id}')" 
-                        style="padding: 4px 10px; background: #dfe1e6; color: #333; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                <button class="btn-xs btn-danger-outline" onclick="window.respondInvite(event, '${n.link}', 'rejected', '${n._id}')">
                     Từ chối
                 </button>
+            </div>`;
+        } 
+        // TRƯỜNG HỢP 2: ĐÃ ĐỒNG Ý (Hiện chữ xanh)
+        else if (n.type === 'invite_accepted') {
+            clickAttribute = '';
+            actionHTML = `
+            <div style="margin-top: 5px; font-size: 0.85rem; color: #2e8b57; font-weight: 600;">
+                <i class="fa-solid fa-check"></i> Đã đồng ý tham gia
+            </div>`;
+        }
+        // TRƯỜNG HỢP 3: ĐÃ TỪ CHỐI (Hiện chữ đỏ)
+        else if (n.type === 'invite_rejected') {
+            clickAttribute = '';
+            actionHTML = `
+            <div style="margin-top: 5px; font-size: 0.85rem; color: #d93025; font-weight: 600;">
+                <i class="fa-solid fa-xmark"></i> Đã từ chối lời mời
             </div>`;
         }
 
         return `
-            <div class="noti-item ${n.isRead ? '' : 'unread'}" data-id="${n._id}">
-                <img src="${n.sender?.avatar || 'https://www.gravatar.com/avatar/default?d=mp'}" class="noti-avatar">
+            <div id="notif-${n._id}" class="noti-item ${n.isRead ? '' : 'unread'}" ${clickAttribute}>
+                <img src="${senderAvatar}" class="noti-avatar">
                 <div class="noti-content">
-                    <div>
-                        <span style="font-weight:600">${n.sender?.username}</span> ${n.content}
-                    </div>
-                    ${actionButtons} <span class="noti-time">${timeDisplay}</span>
+                    <p><strong>${senderName}</strong> ${n.content}</p>
+                    ${actionHTML}
+                    <span class="noti-time">${timeDisplay}</span>
                 </div>
                 ${!n.isRead ? '<div class="noti-dot"></div>' : ''}
+                <div class="noti-delete" title="Xóa" onclick="window.deleteOneNoti(event, '${n._id}')">
+                    <i class="fa-solid fa-times"></i>
                 </div>
+            </div>
         `;
     }
 
-    // 👇 HÀM XỬ LÝ: CHẤP NHẬN / TỪ CHỐI LỜI MỜI
-    window.respondInvite = async (e, inviteId, action, notifId) => {
-        e.stopPropagation(); // Ngăn việc click vào thông báo cha
-        
-        // 1. Tìm phần tử giao diện
-        const notifItem = document.querySelector(`.noti-item[data-id="${notifId}"]`);
-        const actionContainer = notifItem ? notifItem.querySelector('.invite-actions') : null;
+    // --- 5. WINDOW GLOBAL FUNCTIONS (Xử lý sự kiện từ HTML string) ---
 
-        // Hiệu ứng "Đang xử lý..." để user không bấm nhiều lần
-        if (actionContainer) {
-            actionContainer.innerHTML = '<span style="font-size:0.8rem; color:#666;">Đang xử lý...</span>';
-        }
+    // Xử lý Phản hồi Lời mời
+    window.respondInvite = async (e, inviteId, status, notifId) => {
+        e.stopPropagation(); 
+        
+        const container = document.getElementById(`actions-${notifId}`);
+        if(container) container.innerHTML = '<span style="font-size:0.8rem; color:#666;">Đang xử lý...</span>';
 
         try {
-            // 2. Gọi API phản hồi
-            const res = await fetch(`${API_BASE_URL}/users/invitation/response`, {
+            const res = await fetch(`${API_BASE_URL}/users/invitation/respond`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Authorization': localStorage.getItem('maneasily_token') 
                 },
-                body: JSON.stringify({ inviteId, action })
+                body: JSON.stringify({ invitationId: inviteId, status: status }) 
             });
+
             const data = await res.json();
 
             if (res.ok) {
-                toast.success(data.msg);
-
-                // 3. Đánh dấu thông báo là đã đọc (trong database)
-                await fetch(`${API_BASE_URL}/notification/${notifId}/read`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': localStorage.getItem('maneasily_token') }
-                });
+                toast.success(status === 'accepted' ? "Đã tham gia dự án!" : "Đã từ chối lời mời.");
                 
-                // 4. CẬP NHẬT GIAO DIỆN NGAY LẬP TỨC
-                if(notifItem) {
-                    // Xóa trạng thái chưa đọc (chấm đỏ, nền xanh)
-                    notifItem.classList.remove('unread');
-                    const dot = notifItem.querySelector('.noti-dot');
-                    if(dot) dot.remove();
-
-                    // Thay thế 2 nút bấm bằng dòng chữ kết quả
-                    if (actionContainer) {
-                        const statusText = action === 'accept' ? 'Bạn đã chấp nhận' : 'Bạn đã từ chối';
-                        const statusColor = action === 'accept' ? '#2e8b57' : '#d93025'; // Xanh lá hoặc Đỏ
-                        
-                        actionContainer.innerHTML = `
-                            <span style="font-size: 0.85rem; color: ${statusColor}; font-weight: 600; font-style: italic;">
-                                <i class="fa-solid ${action === 'accept' ? 'fa-check' : 'fa-xmark'}"></i> ${statusText}
-                            </span>
-                        `;
-                    }
+                // Cập nhật giao diện: Thay nút bằng chữ
+                if(container) {
+                    const color = status === 'accepted' ? '#2e8b57' : '#d93025';
+                    const text = status === 'accepted' ? 'Đã chấp nhận' : 'Đã từ chối';
+                    container.innerHTML = `<span style="color:${color}; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-check"></i> ${text}</span>`;
                 }
-                
-                // 5. Nếu chấp nhận -> Reload trang sau 1 giây để hiển thị Dự án mới
-                if (action === 'accept') {
-                    setTimeout(() => location.reload(), 1000);
+
+                // Đánh dấu đã đọc
+                markReadUI(notifId);
+
+                // Nếu chấp nhận -> Reload trang để thấy dự án mới
+                if (status === 'accepted') {
+                    setTimeout(() => window.location.reload(), 1000);
                 }
             } else {
-                // Nếu lỗi -> Hiện lại nút (để user thử lại) hoặc báo lỗi
-                toast.error(data.err || "Có lỗi xảy ra");
-                if (actionContainer) actionContainer.innerHTML = '<span style="color:red; font-size:0.8rem;">Lỗi. Vui lòng tải lại trang.</span>';
+                toast.error(data.err || "Lỗi xử lý");
+                if(container) container.innerHTML = '<span style="color:red; font-size:0.8rem;">Lỗi. Thử lại sau.</span>';
             }
         } catch(err) { 
-            console.error(err);
+            console.error(err); 
             toast.error("Lỗi kết nối");
-            if (actionContainer) actionContainer.innerHTML = '...'; // Reset tạm
         }
     };
 
-    // --- 5. Infinite Scroll Logic ---
-    listContainer.addEventListener('scroll', () => {
-        if (listContainer.scrollTop + listContainer.clientHeight >= listContainer.scrollHeight - 20) {
-            if (!isLoading && hasMore) {
-                currentPage++;
-                fetchNotifications(currentPage);
-            }
-        }
-    });
-
-    // --- 6. Helper Functions ---
-    function updateBadge(count) {
-        if (count > 0) {
-            badge.style.display = 'block';
-            badge.textContent = count > 99 ? '99+' : count;
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    function closeAllItemMenus() {
-        document.querySelectorAll('.noti-item-menu').forEach(el => el.classList.remove('show'));
-    }
-
-    // --- 7. Global Actions ---
-
-    window.toggleNotiItemMenu = (e, id) => {
-        e.stopPropagation();
-        closeAllItemMenus();
-        const menu = document.getElementById(`noti-menu-${id}`);
-        if(menu) menu.classList.add('show');
-    };
-
+    // Xử lý Click thông báo thường
     window.handleNotiClick = async (id, link) => {
-        await fetch(`${API_BASE_URL}/notification/${id}/read`, {
+        // Gọi API đánh dấu đã đọc
+        fetch(`${API_BASE_URL}/notification/${id}/read`, {
             method: 'PATCH',
             headers: { 'Authorization': localStorage.getItem('maneasily_token') }
-        });
+        }).catch(console.error);
         
-        if (link && link !== '#' && link !== 'undefined') {
+        // Cập nhật UI ngay lập tức
+        markReadUI(id);
+
+        // Chuyển trang (nếu có link hợp lệ)
+        if (link && link !== '#' && link !== 'undefined' && !link.includes('undefined')) {
             window.location.href = link;
-        } else {
-            const item = document.querySelector(`.noti-item[data-id="${id}"]`);
-            if(item) {
-                item.classList.remove('unread');
-                const dot = item.querySelector('.noti-dot');
-                if(dot) dot.remove();
-            }
-            const currentBadge = parseInt(badge.textContent || 0);
-            updateBadge(Math.max(0, currentBadge - 1));
         }
     };
 
-    window.markOneRead = async (e, id) => {
-        e.stopPropagation();
-        closeAllItemMenus();
-        try {
-            await fetch(`${API_BASE_URL}/notification/${id}/read`, {
-                method: 'PATCH',
-                headers: { 'Authorization': localStorage.getItem('maneasily_token') }
-            });
-            const item = document.querySelector(`.noti-item[data-id="${id}"]`);
-            if(item && item.classList.contains('unread')) {
-                item.classList.remove('unread');
-                const dot = item.querySelector('.noti-dot');
-                if(dot) dot.remove();
-                const currentBadge = parseInt(badge.textContent || 0);
-                updateBadge(Math.max(0, currentBadge - 1));
-            }
-            toast.success("Đã đánh dấu đã đọc");
-        } catch(err) { toast.error("Lỗi kết nối"); }
-    };
-
+    // Xóa 1 thông báo
     window.deleteOneNoti = async (e, id) => {
         e.stopPropagation();
-        closeAllItemMenus();
         try {
             const res = await fetch(`${API_BASE_URL}/notification/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': localStorage.getItem('maneasily_token') }
             });
             if (res.ok) {
-                const item = document.querySelector(`.noti-item[data-id="${id}"]`);
+                const item = document.getElementById(`notif-${id}`);
                 if(item) {
-                    item.remove();
+                    // Nếu đang unread thì giảm badge
                     if(item.classList.contains('unread')) {
-                        const currentBadge = parseInt(badge.textContent || 0);
-                        updateBadge(Math.max(0, currentBadge - 1));
+                        const current = parseInt(badge.textContent || 0);
+                        updateBadge(Math.max(0, current - 1));
                     }
+                    item.remove();
                 }
-                toast.success("Đã xóa thông báo");
-            } else {
-                toast.error("Không thể xóa");
             }
-        } catch(err) { toast.error("Lỗi kết nối"); }
+        } catch(err) { console.error(err); }
     };
 
-    markAllBtn?.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await fetch(`${API_BASE_URL}/notifications/read-all`, {
-            method: 'PATCH',
-            headers: { 'Authorization': localStorage.getItem('maneasily_token') }
-        });
-        resetAndLoad(); 
-    });
+    // Helper: Cập nhật UI đã đọc
+    function markReadUI(id) {
+        const item = document.getElementById(`notif-${id}`);
+        if (item && item.classList.contains('unread')) {
+            item.classList.remove('unread');
+            const dot = item.querySelector('.noti-dot');
+            if(dot) dot.remove();
+            
+            const current = parseInt(badge.textContent || 0);
+            updateBadge(Math.max(0, current - 1));
+        }
+    }
 
-    fetchNotifications(1);
+    function updateBadge(count) {
+        if (count > 0) {
+            badge.style.display = 'flex'; // Dùng flex để căn giữa số
+            badge.textContent = count > 99 ? '99+' : count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
 }

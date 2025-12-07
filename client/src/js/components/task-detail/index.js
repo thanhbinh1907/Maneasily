@@ -584,35 +584,49 @@ async function handleCreateFolder() {
 }
 
 async function handleUploadFile(e) {
-    console.log("📂 Bắt đầu xử lý file...");
+    console.log("📂 Bắt đầu sự kiện upload...");
     
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
+    // Reset input để có thể chọn lại cùng 1 file nếu lần trước lỗi
+    const input = e.target;
+    const file = input.files[0];
     
-    const file = e.target.files[0];
     if (!file) {
-        console.log("❌ Không có file nào được chọn");
+        console.log("❌ Người dùng đã hủy chọn file.");
         return;
     }
-    console.log("📄 File đã chọn:", file.name);
+
+    if (!canEditTask) {
+        toast.error("Bạn không có quyền tải file lên.");
+        input.value = '';
+        return;
+    }
     
-    toast.info("Đang tải lên...");
+    // Kiểm tra dung lượng (Ví dụ 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        toast.error("File quá lớn! Vui lòng chọn file dưới 10MB.");
+        input.value = '';
+        return;
+    }
+
+    toast.info(`Đang tải lên: ${file.name}...`);
     
     try {
         const data = await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
         console.log("✅ Server phản hồi:", data);
 
         if (data && data.file) {
-            await loadFileManager(); 
-            toast.success("Tải lên thành công");
+            await loadFileManager(); // Tải lại danh sách
+            toast.success("Tải lên thành công!");
         } else {
-            console.error("❌ Lỗi dữ liệu:", data);
-            toast.error("Lỗi tải lên (Không nhận được dữ liệu)");
+            console.error("❌ Lỗi dữ liệu server:", data);
+            toast.error(data.err || "Lỗi tải lên không xác định");
         }
     } catch (err) { 
         console.error("❌ Lỗi kết nối:", err);
-        toast.error("Lỗi kết nối khi tải file"); 
+        toast.error("Lỗi kết nối server (Kiểm tra lại Backend)"); 
+    } finally {
+        input.value = ''; // Luôn reset input dù thành công hay thất bại
     }
-    e.target.value = ''; 
 }
 
 async function deleteItem(type, id) {

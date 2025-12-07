@@ -41,6 +41,22 @@
                 </div>
             </div>
 
+            <div class="schedule-toolbar" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+    
+                <div class="dropdown export-dropdown" style="position: relative;">
+                    <button id="btn-export-calendar" class="btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
+                        <i class="fa-regular fa-calendar-plus"></i> Xuất Google Calendar
+                    </button>
+                    
+                    <div id="export-menu" class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; width: 160px; z-index: 100; margin-top: 5px;">
+                        <div class="dropdown-item" onclick="window.exportSchedule('week')">Trong Tuần này</div>
+                        <div class="dropdown-item" onclick="window.exportSchedule('month')">Trong Tháng này</div>
+                        <div class="dropdown-item" onclick="window.exportSchedule('all')" style="border-top: 1px solid #eee;">Tất cả công việc</div>
+                    </div>
+                </div>
+            
+            </div>
+
             <div class="stats-overview-grid">
                 <div class="stat-card blue">
                     <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
@@ -105,6 +121,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
 
   <script type="module" src="/src/js/dashboard.js"></script>
   <script type="module" src="/src/js/schedule.js"></script>

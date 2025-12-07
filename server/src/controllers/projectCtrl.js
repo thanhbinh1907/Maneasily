@@ -215,6 +215,41 @@ const projectCtrl = {
                 $addToSet: { projects: project._id }
             });
 
+            // --- [THÊM ĐOẠN NÀY] 1. Ghi Log Hoạt Động ---
+            // Lấy thông tin user vừa join để ghi tên vào log
+            const userJoined = await Users.findById(userId);
+            
+            await logActivity(
+                req, 
+                project._id, 
+                "joined project", 
+                userJoined.username, // Target là tên người vào
+                "đã tham gia qua liên kết công khai", 
+                "member"
+            );
+
+            // --- [THÊM ĐOẠN NÀY] 2. Gửi Thông Báo cho Chủ dự án ---
+            // (Để chủ dự án biết có người lạ vào)
+            if (project.userOwner.toString() !== userId) {
+                const notif = await Notifications.create({
+                    recipient: project.userOwner,
+                    sender: userId,
+                    content: `đã tham gia dự án "${project.title}" qua liên kết.`,
+                    type: 'system',
+                    link: `/src/pages/Board.html?id=${project._id}`
+                });
+                
+                await notif.populate("sender", "username avatar");
+                sendNotification(req, project.userOwner, notif);
+            }
+
+            // --- [THÊM ĐOẠN NÀY] 3. Realtime Socket ---
+            // Báo cho những người đang online trong board biết để cập nhật danh sách thành viên ngay lập tức
+            req.io.to(project._id.toString()).emit('boardUpdated', {
+                msg: 'New member joined',
+                updaterId: userId
+            });
+
             res.json({ msg: "Tham gia thành công!", projectId: project._id });
 
         } catch (err) {

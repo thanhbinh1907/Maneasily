@@ -10,21 +10,25 @@ import '../../css/components/toast.css';
 
 export const toast = {
     success: (message) => show(message, 'success'),
-    error: (message) => show(message, 'error')
+    error: (message) => show(message, 'error'),
+    info: (message) => show(message, 'info')
 };
 
 function show(message, type) {
     const container = document.getElementById('toast-container');
     const toastEl = document.createElement('div');
     
-    const icon = type === 'success' ? '<i class="fa-solid fa-check-circle"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
-    
+    // Chọn icon phù hợp
+    let icon = '';
+    if (type === 'success') icon = '<i class="fa-solid fa-check-circle"></i>';
+    else if (type === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+    else if (type === 'info') icon = '<i class="fa-solid fa-circle-info"></i>'; // <--- Icon cho Info
+
     toastEl.className = `toast toast-${type}`;
     toastEl.innerHTML = `${icon} <span>${message}</span>`;
     
     container.appendChild(toastEl);
 
-    // Tự động xóa sau 3s
     setTimeout(() => {
         toastEl.remove();
     }, 3000);

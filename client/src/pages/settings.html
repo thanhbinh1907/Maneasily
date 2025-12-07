@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cài đặt - Maneasily</title>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="/src/css/components/dashboard-layout.css">
+  <link rel="stylesheet" href="/src/css/pages/settings.css"> </head>
+<body>
+
+  <div class="app-container">
+    {{> sidebar active_settings=true }}
+
+    <div class="app-main">
+        {{> nav-top }}
+
+        <div class="page-content">
+            <div class="settings-container">
+                <h1 class="page-title">Cài đặt</h1>
+
+                <div class="settings-layout">
+                    <aside class="settings-sidebar">
+                        <nav class="settings-nav">
+                            <button class="nav-btn active" data-tab="tab-account">
+                                <i class="fa-regular fa-user"></i> Tài khoản
+                            </button>
+                            <button class="nav-btn" data-tab="tab-general">
+                                <i class="fa-solid fa-palette"></i> Chung & Giao diện
+                            </button>
+                            <button class="nav-btn" data-tab="tab-notifications">
+                                <i class="fa-regular fa-bell"></i> Thông báo
+                            </button>
+                            <button class="nav-btn" data-tab="tab-privacy">
+                                <i class="fa-solid fa-lock"></i> Riêng tư
+                            </button>
+                        </nav>
+                    </aside>
+
+                    <main class="settings-content">
+                        
+                        <div id="tab-account" class="settings-tab active">
+                            <div class="settings-card">
+                                <h3>Thông tin cá nhân</h3>
+                                <div class="form-group">
+                                    <label>Avatar (URL)</label>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <img id="preview-avatar" src="" class="avatar-preview">
+                                        <input type="text" id="set-avatar" class="form-input" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tên hiển thị</label>
+                                    <input type="text" id="set-username" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="text" id="set-email" class="form-input" disabled style="background: var(--bg-hover); cursor: not-allowed;">
+                                </div>
+                            </div>
+
+                            <div class="settings-card danger-zone">
+                                <h3 style="color: #d93025;">Vùng nguy hiểm</h3>
+                                <div class="danger-item">
+                                    <div>
+                                        <strong>Đổi mật khẩu</strong>
+                                        <p>Bạn sẽ nhận được email để đặt lại mật khẩu.</p>
+                                    </div>
+                                    <button id="btn-reset-pass" class="btn-danger-outline">Gửi yêu cầu</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-general" class="settings-tab">
+                            <div class="settings-card">
+                                <h3>Giao diện</h3>
+                                <div class="form-group">
+                                    <label>Chế độ hiển thị</label>
+                                    <select id="set-theme" class="form-select">
+                                        <option value="light">Sáng (Light)</option>
+                                        <option value="dark">Tối (Dark)</option>
+                                        </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngôn ngữ</label>
+                                    <select id="set-lang" class="form-select">
+                                        <option value="vi">Tiếng Việt</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-notifications" class="settings-tab">
+    
+                            <div class="settings-card">
+                                <h3><i class="fa-regular fa-envelope" style="margin-right: 8px;"></i> Qua Email</h3>
+                                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-sub);">
+                                    Chọn những email bạn muốn nhận.
+                                </p>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Lời mời & Cộng tác</strong>
+                                        <p>Khi có người mời bạn vào dự án hoặc giao việc cho bạn.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="notif-email-invite"> <span class="slider round"></span>
+                                    </label>
+                                </div>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Nhắc nhở hạn chót (Deadline)</strong>
+                                        <p>Gửi cảnh báo khi công việc sắp hết hạn.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="notif-email-deadline"> <span class="slider round"></span>
+                                    </label>
+                                </div>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Tin tức & Cập nhật</strong>
+                                        <p>Nhận thông tin về tính năng mới.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="notif-email-news"> <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card">
+                                <h3><i class="fa-regular fa-bell" style="margin-right: 8px;"></i> Trong ứng dụng</h3>
+                                
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Âm thanh thông báo</strong>
+                                        <p>Phát tiếng "Ting" khi có thông báo mới.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="notif-sound"> <span class="slider round"></span>
+                                    </label>
+                                </div>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Thông báo nổi (Toast)</strong>
+                                        <p>Hiện hộp thoại nhỏ góc màn hình khi có cập nhật mới.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="notif-toast"> <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                            
+                        <div id="tab-privacy" class="settings-tab">
+                            <div class="settings-card">
+                                <h3>Quyền riêng tư</h3>
+                                <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-sub);">
+                                    Kiểm soát cách người khác tương tác với tài khoản của bạn.
+                                </p>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Cho phép tìm kiếm</strong>
+                                        <p>Người khác có thể tìm thấy bạn qua Email hoặc Tên người dùng.</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="priv-searchable">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                        
+                                <div class="toggle-item">
+                                    <div class="toggle-info">
+                                        <strong>Yêu cầu phê duyệt tham gia</strong>
+                                        <p>Khi được mời, bạn sẽ không bị thêm tự động mà cần phải nhấn "Đồng ý".</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="priv-require-invite">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-actions">
+                            <button id="btn-save-settings" class="btn-primary-large">Lưu thay đổi</button>
+                        </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  {{> confirm-modal }}
+  
+  <script type="module" src="/src/js/dashboard.js"></script>
+  <script type="module" src="/src/js/settings.js"></script> 
+</body>
+</html>

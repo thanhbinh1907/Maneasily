@@ -1,30 +1,34 @@
-import Users from "../models/userModel.js";
-import Projects from "../models/projectModel.js";
-import Notifications from "../models/notificationModel.js";
-import Invitations from "../models/invitationModel.js"; 
-import { sendNotification } from "../utils/socketUtils.js";
-import { sendEmail } from "../utils/emailUtils.js";
-import { logActivity } from "../utils/activityUtils.js";
+import Users from '../models/userModel.js';
+import Projects from '../models/projectModel.js';
+import Invitations from '../models/invitationModel.js'; 
+import Notifications from '../models/notificationModel.js';
+import { sendEmail } from '../utils/emailUtils.js';
+import { sendNotification } from '../utils/socketUtils.js';
+import { logActivity } from '../utils/activityUtils.js';
 
 const userCtrl = {
-    // API Tìm kiếm người dùng (Tối ưu: Index + Prefix Regex + Lean + Projection)
+    // Tìm kiếm người dùng (Tối ưu: Index + Prefix Regex + Lean + Projection)
     searchUsers: async (req, res) => {
         try {
-            const { q } = req.query; 
-            if (!q) return res.json({ users: [] });
+            const { q } = req.query;
+            if (!q) return res.json({ users: [] }); 
 
-            // Regex: `^${q}` nghĩa là "Bắt đầu bằng từ khóa q"
-            // Ví dụ: q="dev" -> Tìm "developer", KHÔNG tìm "webdev"
-            // $options: 'i' -> Không phân biệt hoa thường
             const users = await Users.find({
-                $or: [
-                    { username: { $regex: `^${q}`, $options: 'i' } },
-                    { email: { $regex: `^${q}`, $options: 'i' } }
+                $and: [
+                    {
+                        $or: [
+                            { username: { $regex: `^${q}`, $options: 'i' } },
+                            { email: { $regex: `^${q}`, $options: 'i' } }
+                        ]
+                    },
+                    // Chỉ hiện người cho phép tìm kiếm
+                    // (Điều kiện $ne: false để mặc định là true nếu chưa có field này)
+                    { "settings.privacy.searchable": { $ne: false } }
                 ]
             })
-            .lean() // QUAN TRỌNG: Bỏ qua bước tạo Mongoose Document, trả về JSON thuần (nhanh gấp 2-3 lần)
-            .limit(5) // Chỉ lấy 5 kết quả đầu tiên
-            .select("username email avatar"); // Chỉ lấy 3 trường cần thiết
+            .lean()
+            .limit(5)
+            .select("username email avatar");
 
             res.json({ users });
         } catch (err) {
@@ -32,7 +36,7 @@ const userCtrl = {
         }
     },
 
-    // API Thêm thành viên (Giữ nguyên logic cũ)
+// --- 2. THÊM THÀNH VIÊN (Cập nhật: Dùng requireInvite thay isPrivate) ---
     addMemberToProject: async (req, res) => {
         try {
             const { projectId, userId: memberIdToAdd } = req.body;
@@ -41,62 +45,61 @@ const userCtrl = {
             const project = await Projects.findById(projectId);
             if (!project) return res.status(404).json({ err: "Dự án không tồn tại" });
 
-            // Check quyền (giữ nguyên logic cũ)
             const isOwner = project.userOwner.toString() === requesterId;
             const isManager = project.admins.includes(requesterId);
             if (!isOwner && !isManager) return res.status(403).json({ err: "Bạn không có quyền." });
 
-            // Lấy thông tin người được mời
             const userToAdd = await Users.findById(memberIdToAdd);
             const requester = await Users.findById(requesterId);
 
-            // Kiểm tra đã có trong dự án chưa
             if (project.members.includes(memberIdToAdd)) {
                 return res.status(400).json({ err: "Thành viên này đã có trong dự án." });
             }
 
-            // === LOGIC MỚI: KIỂM TRA PRIVATE MODE ===
-            if (userToAdd.isPrivate) {
-                // 1. Kiểm tra xem đã có lời mời pending chưa
+            // [MỚI] Kiểm tra setting requireInvite thay cho isPrivate
+            // Dùng toán tử ?? false để mặc định là false nếu chưa có setting
+            const shouldInvite = userToAdd.settings?.privacy?.requireInvite ?? false;
+
+            if (shouldInvite) {
+                // ... (Logic gửi lời mời & email giữ nguyên) ...
                 const existingInvite = await Invitations.findOne({
                     recipient: memberIdToAdd, project: projectId, status: 'pending'
                 });
                 if (existingInvite) return res.status(400).json({ err: "Đã gửi lời mời, đang chờ xác nhận." });
 
-                // 2. Tạo lời mời mới
                 const newInvite = new Invitations({
                     sender: requesterId, recipient: memberIdToAdd, project: projectId
                 });
                 await newInvite.save();
 
-                // 3. Gửi Thông báo (Loại 'invite' để frontend hiển thị nút)
                 const notif = await Notifications.create({
                     recipient: memberIdToAdd,
                     sender: requesterId,
                     content: `đã mời bạn tham gia dự án "${project.title}"`,
-                    type: 'invite', // Loại mới
-                    link: newInvite._id.toString() // Lưu ID lời mời vào link để tiện xử lý
+                    type: 'invite',
+                    link: newInvite._id.toString()
                 });
                 await notif.populate("sender", "username avatar");
                 sendNotification(req, memberIdToAdd, notif);
 
-                // 4. Gửi Email
-                await sendEmail(
-                    userToAdd.email,
-                    `Lời mời tham gia dự án: ${project.title}`,
-                    `<p>Xin chào <b>${userToAdd.username}</b>,</p>
-                     <p><b>${requester.username}</b> đã mời bạn tham gia dự án <b>${project.title}</b>.</p>
-                     <p>Vui lòng truy cập Maneasily để chấp nhận hoặc từ chối.</p>`
-                );
+                // Gửi Email nếu user cho phép (mặc định cho phép)
+                if (userToAdd.settings?.notifications?.emailOnInvite !== false) {
+                    await sendEmail(
+                        userToAdd.email,
+                        `Lời mời tham gia dự án: ${project.title}`,
+                        `<p>Xin chào <b>${userToAdd.username}</b>,</p>
+                        <p><b>${requester.username}</b> đã mời bạn tham gia dự án <b>${project.title}</b>.</p>
+                        <p>Vui lòng truy cập Maneasily để chấp nhận hoặc từ chối.</p>`
+                    );
+                }
 
-                return res.json({ msg: "Vì người dùng bật chế độ Riêng tư, một lời mời đã được gửi đi!" });
+                return res.json({ msg: "Đã gửi lời mời (do người dùng bật chế độ phê duyệt)." });
             } 
             
-            // === LOGIC CŨ: THÊM TRỰC TIẾP (Nếu không bật Private) ===
+            // Nếu không bật requireInvite -> Thêm thẳng
             await Projects.findByIdAndUpdate(projectId, { $addToSet: { members: memberIdToAdd } });
             await Users.findByIdAndUpdate(memberIdToAdd, { $addToSet: { projects: projectId } });
             
-            // Thông báo như cũ
             const notif = await Notifications.create({
                 recipient: memberIdToAdd, sender: requesterId,
                 content: `Bạn đã được thêm vào dự án "${project.title}"`,
@@ -148,33 +151,31 @@ const userCtrl = {
             return res.status(500).json({ err: err.message });
         }
     },
-    // --- CẬP NHẬT HỒ SƠ ---
+    // --- 3. CẬP NHẬT HỒ SƠ (Cập nhật: Nhận object settings) ---
     updateProfile: async (req, res) => {
         try {
-            // 👇 [SỬA] Nhận thêm isPrivate từ request body
-            const { username, avatar, isPrivate } = req.body;
+            // Nhận thêm settings từ body
+            const { username, avatar, settings } = req.body;
             const userId = req.user.id;
 
-            // 1. Validate cơ bản
             if (!username) return res.status(400).json({ err: "Tên người dùng không được để trống." });
             if (username.length < 6) return res.status(400).json({ err: "Tên người dùng phải có ít nhất 6 ký tự." });
 
-            // 2. Kiểm tra trùng user (giữ nguyên)
-            const userExists = await Users.findOne({ 
-                username: username, 
-                _id: { $ne: userId } 
-            });
+            const userExists = await Users.findOne({ username: username, _id: { $ne: userId } });
+            if (userExists) return res.status(400).json({ err: "Tên người dùng này đã có người sử dụng." });
 
-            if (userExists) {
-                return res.status(400).json({ err: "Tên người dùng này đã có người sử dụng." });
+            // Chuẩn bị dữ liệu update
+            let updateData = { username, avatar };
+
+            // Nếu frontend gửi settings lên thì update (dùng $set để merge)
+            if (settings) {
+                updateData.settings = settings;
             }
 
-            // 3. Cập nhật (Thêm isPrivate vào)
-            const updatedUser = await Users.findByIdAndUpdate(userId, {
-                username,
-                avatar,
-                isPrivate // ✅ Lưu trạng thái vào DB
-            }, { new: true }).select("-password");
+            const updatedUser = await Users.findByIdAndUpdate(userId, 
+                { $set: updateData }, 
+                { new: true }
+            ).select("-password");
 
             res.json({ msg: "Cập nhật thành công!", user: updatedUser });
 
@@ -182,74 +183,98 @@ const userCtrl = {
             return res.status(500).json({ err: err.message });
         }
     },
-    // --- HÀM MỚI: XỬ LÝ CHẤP NHẬN / TỪ CHỐI ---
+    // --- XỬ LÝ PHẢN HỒI LỜI MỜI (Đồng ý / Từ chối) ---
     respondInvitation: async (req, res) => {
         try {
-            const { inviteId, action } = req.body; 
+            const { invitationId, status } = req.body; // status: 'accepted' hoặc 'rejected'
             const userId = req.user.id;
 
-            const invite = await Invitations.findById(inviteId);
-            if (!invite) return res.status(404).json({ err: "Lời mời không tồn tại." });
-            if (invite.recipient.toString() !== userId) return res.status(403).json({ err: "Không có quyền." });
-
-            // Hàm phụ: Cập nhật thông báo cũ để mất nút bấm
-            const updateOriginalNotification = async (statusText) => {
+            // 1. Tìm lời mời
+            const invite = await Invitations.findById(invitationId);
+            if (!invite) {
+                // Nếu không tìm thấy invite (đã xóa), ta vẫn nên tìm và sửa thông báo cũ để nó không hiện nút nữa
                 await Notifications.findOneAndUpdate(
-                    { 
-                        recipient: userId, 
-                        type: 'invite', 
-                        link: inviteId 
-                    },
-                    {
-                        type: 'system', // Đổi về system
-                        content: `đã mời bạn tham gia dự án (Bạn đã ${statusText})`,
-                        isRead: true
-                    }
+                    { link: invitationId, recipient: userId, type: 'invite' },
+                    { type: 'system', content: 'Lời mời này không còn hiệu lực.' }
                 );
-            };
-
-            if (action === 'accept') {
-                // 1. Thêm vào dự án
-                await Projects.findByIdAndUpdate(invite.project, { $addToSet: { members: userId } });
-                await Users.findByIdAndUpdate(userId, { $addToSet: { projects: invite.project } });
-                
-                // 2. Cập nhật trạng thái lời mời
-                invite.status = 'accepted';
-                await invite.save();
-
-                // 3. Cập nhật thông báo cũ (ẩn nút)
-                await updateOriginalNotification("chấp nhận");
-
-                // 4. Tạo thông báo mới cho người mời (SỬA LẠI ĐOẠN NÀY ĐẦY ĐỦ)
-                const notif = await Notifications.create({
-                    recipient: invite.sender, 
-                    sender: userId,
-                    content: `đã chấp nhận lời mời vào dự án.`,
-                    type: 'system',
-                    link: `/src/pages/Board.html?id=${invite.project}` // Link đến dự án
-                });
-                
-                // Gửi Socket cho người mời
-                await notif.populate("sender", "username avatar");
-                sendNotification(req, invite.sender, notif);
-                
-                // 5. Ghi Log hoạt động
-                await logActivity(req, invite.project, "joined project", "Thành viên mới", "đã chấp nhận lời mời tham gia", "member");
-
-                return res.json({ msg: "Đã tham gia dự án!", projectId: invite.project });
-            } 
-            
-            if (action === 'decline') {
-                invite.status = 'declined';
-                await invite.save();
-
-                // Cập nhật thông báo cũ (ẩn nút)
-                await updateOriginalNotification("từ chối");
-
-                return res.json({ msg: "Đã từ chối lời mời." });
+                return res.status(404).json({ err: "Lời mời không tồn tại hoặc đã bị hủy." });
             }
 
-        } catch (err) { return res.status(500).json({ err: err.message }); }
+            if (invite.recipient.toString() !== userId) {
+                return res.status(403).json({ err: "Bạn không có quyền." });
+            }
+
+            // 2. Xử lý Logic Đồng ý
+            if (status === 'accepted') {
+                await Projects.findByIdAndUpdate(invite.project, { $addToSet: { members: userId } });
+                await Users.findByIdAndUpdate(userId, { $addToSet: { projects: invite.project } });
+                await logActivity(req, invite.project, "joined", "Thành viên mới", "đã tham gia dự án", "member");
+
+                // Báo cho người mời biết
+                const notif = await Notifications.create({
+                    recipient: invite.sender,
+                    sender: userId,
+                    content: `đã chấp nhận tham gia dự án.`,
+                    type: 'system',
+                    link: `/src/pages/Board.html?id=${invite.project}`
+                });
+                await notif.populate("sender", "username avatar");
+                sendNotification(req, invite.sender, notif);
+            }
+
+            // --- 2.b. Xử lý Logic Từ chối ---
+            else if (status === 'rejected') {
+                // Báo cho người mời biết: TỪ CHỐI
+                const notif = await Notifications.create({
+                    recipient: invite.sender,
+                    sender: userId,
+                    content: `đã từ chối lời mời tham gia dự án.`,
+                    type: 'system',
+                    link: '#' // Không cần link vì đã từ chối
+                });
+                await notif.populate("sender", "username avatar");
+                sendNotification(req, invite.sender, notif);
+            }
+            // --- [QUAN TRỌNG] 3. Cập nhật chính thông báo của người nhận ---
+            // Đổi nó từ dạng 'invite' (có nút) sang 'system' (chữ thường)
+            // Và sửa lại nội dung để lưu vào lịch sử
+            await Notifications.findOneAndUpdate(
+                { link: invitationId, recipient: userId, type: 'invite' },
+                { 
+                    // Tạo 2 loại type mới để lưu trạng thái lịch sử
+                    type: status === 'accepted' ? 'invite_accepted' : 'invite_rejected',
+                    
+                    // content: (GIỮ NGUYÊN KHÔNG SỬA GÌ CẢ)
+                    
+                    isRead: true // Đánh dấu đã đọc
+                }
+            );
+
+            // 4. Xóa lời mời
+            await Invitations.findByIdAndDelete(invitationId);
+
+            res.json({ msg: status === 'accepted' ? "Đã tham gia dự án!" : "Đã từ chối lời mời." });
+
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ err: err.message });
+        }
+    },
+    updateSettings: async (req, res) => {
+        try {
+            const { theme, notifications, privacy } = req.body;
+            // Sử dụng toán tử $set để chỉ cập nhật các trường gửi lên
+            await Users.findByIdAndUpdate(req.user.id, {
+                $set: {
+                    "settings.theme": theme,
+                    "settings.notifications": notifications,
+                    "settings.privacy": privacy
+                }
+            });
+            res.json({ msg: "Đã lưu cài đặt" });
+        } catch (err) {
+            return res.status(500).json({ err: err.message });
+        }
     }
 };
 

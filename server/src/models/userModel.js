@@ -48,11 +48,6 @@ const userSchema = new mongoose.Schema(
         resetPasswordToken: { type: String },
         resetPasswordExpires: { type: Date },  
         
-        isPrivate: {
-            type: Boolean,
-            default: false
-        },
-        
         // Cài đặt cho trang Hoạt động (Activity) - KHÔNG ĐỔI
         activitySettings: {
             pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }], 
@@ -62,6 +57,19 @@ const userSchema = new mongoose.Schema(
         // [MỚI] Cài đặt riêng cho trang Dự án (Project List)
         projectSettings: {
             pinnedProjects: [{ type: mongoose.Types.ObjectId, ref: "projects" }]
+        },
+        settings: {
+            theme: { type: String, enum: ['light', 'dark', 'auto'], default: 'light' },
+            language: { type: String, default: 'vi' },
+            notifications: {
+                emailOnInvite: { type: Boolean, default: true },
+                emailOnDeadline: { type: Boolean, default: true },
+                soundEnabled: { type: Boolean, default: true }
+            },
+            privacy: {
+                searchable: { type: Boolean, default: true },      
+                requireInvite: { type: Boolean, default: false }
+            }
         }
     },
     {

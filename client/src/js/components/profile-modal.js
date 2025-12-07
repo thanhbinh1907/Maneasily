@@ -4,7 +4,7 @@ import '../../css/components/modal.css';
 import '../../css/components/profile-modal.css';
 
 export function initProfileModal() {
-    // 1. KIỂM TRA VÀ TỰ ĐỘNG CHÈN HTML (Cập nhật HTML mới)
+    // 1. KIỂM TRA VÀ TỰ ĐỘNG CHÈN HTML (Nếu chưa có)
     if (!document.getElementById('profile-modal')) {
         const modalHTML = `
         <div id="profile-modal" class="modal-overlay">
@@ -30,10 +30,10 @@ export function initProfileModal() {
 
                     <div class="private-mode-container">
                         <div class="private-label-group">
-                            <span style="font-weight: 600; color: #44546f;">Chế độ Private</span>
+                            <span style="font-weight: 600; color: #44546f;">Yêu cầu phê duyệt</span>
                             <div class="tooltip-wrapper">
                                 <i class="fa-regular fa-circle-question help-icon"></i>
-                                <span class="tooltip-text">Khi bật chế độ này, bạn sẽ không còn tự động nhận lời mời vào công việc, sẽ có thông báo hoặc email gửi đến khi có lời mời.</span>
+                                <span class="tooltip-text">Khi bật: Bạn sẽ KHÔNG bị tự động thêm vào dự án. Sẽ có lời mời gửi đến Email và Thông báo để bạn xác nhận.</span>
                             </div>
                         </div>
                         <label class="switch">
@@ -41,7 +41,7 @@ export function initProfileModal() {
                             <span class="slider round"></span>
                         </label>
                     </div>
-                    </div>
+                </div>
                 <div class="modal-footer">
                     <button class="btn-modal btn-cancel" id="btn-cancel-profile">Hủy</button>
                     <button class="btn-modal btn-submit" id="btn-save-profile">Lưu thay đổi</button>
@@ -50,7 +50,8 @@ export function initProfileModal() {
         </div>`;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
-    // 2. LOGIC XỬ LÝ (Như cũ nhưng tối ưu hơn)
+
+    // 2. LOGIC XỬ LÝ
     const profileLink = document.querySelector('a[href="/src/pages/profile.html"]'); // Nút kích hoạt trên Header
     const profileModal = document.getElementById('profile-modal');
     
@@ -76,17 +77,20 @@ export function initProfileModal() {
 
         usernameInput.value = currentUser.username;
         avatarInput.value = currentUser.avatar;
-        document.getElementById('profile-email-display').textContent = currentUser.email;
-        document.getElementById('profile-preview-img').src = currentUser.avatar || "https://www.gravatar.com/avatar/default?d=mp";
+        emailDisplay.textContent = currentUser.email;
+        previewImg.src = currentUser.avatar || "https://www.gravatar.com/avatar/default?d=mp";
         
-        // 👇 [THÊM] Set trạng thái toggle từ dữ liệu user
+        // [CẬP NHẬT] Load trạng thái từ settings.privacy.requireInvite
+        // Mặc định là false (Tắt - Tự động vào) nếu chưa có setting
+        const privacySettings = currentUser.settings?.privacy || {};
         if (privateToggle) {
-            privateToggle.checked = currentUser.isPrivate || false;
+            privateToggle.checked = privacySettings.requireInvite ?? false;
         }
 
         document.getElementById('user-dropdown-menu')?.classList.remove('show');
         profileModal.style.display = 'flex';
     });
+
     // Các nút đóng
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
@@ -103,19 +107,32 @@ export function initProfileModal() {
     });
 
     // Lưu thay đổi
-    document.getElementById('btn-save-profile').addEventListener('click', async () => {
+    saveBtn.addEventListener('click', async () => {
         const newUsername = usernameInput.value.trim();
         const newAvatar = avatarInput.value.trim();
-        // 👇 [THÊM] Lấy giá trị toggle
-        const newIsPrivate = privateToggle.checked; 
+        
+        // [CẬP NHẬT] Lấy giá trị toggle
+        const isRequireInvite = privateToggle.checked; 
 
         if (!newUsername) return toast.error("Tên người dùng không được để trống");
 
-        const saveBtn = document.getElementById('btn-save-profile');
         saveBtn.innerText = "Đang lưu...";
         saveBtn.disabled = true;
 
         try {
+            // Lấy lại user hiện tại từ localStorage để merge setting (tránh mất các setting khác như theme, notif...)
+            const currentUser = JSON.parse(localStorage.getItem('maneasily_user')) || {};
+            const currentSettings = currentUser.settings || {};
+
+            // Tạo object settings mới, giữ lại các giá trị cũ và chỉ ghi đè privacy.requireInvite
+            const newSettings = {
+                ...currentSettings, // Giữ theme, language, notifications...
+                privacy: {
+                    ...(currentSettings.privacy || {}), // Giữ searchable...
+                    requireInvite: isRequireInvite // Cập nhật cái này
+                }
+            };
+
             const res = await fetch(`${API_BASE_URL}/users/update`, {
                 method: 'PUT',
                 headers: {
@@ -125,7 +142,7 @@ export function initProfileModal() {
                 body: JSON.stringify({ 
                     username: newUsername, 
                     avatar: newAvatar,
-                    isPrivate: newIsPrivate // ✅ Gửi lên server
+                    settings: newSettings // Gửi toàn bộ cấu trúc settings đã merge
                 })
             });
 
@@ -133,9 +150,11 @@ export function initProfileModal() {
 
             if (res.ok) {
                 toast.success("Cập nhật hồ sơ thành công!");
+                
+                // Lưu lại user mới vào localStorage
                 localStorage.setItem('maneasily_user', JSON.stringify(data.user));
                 
-                // Cập nhật Header
+                // Cập nhật Header ngay lập tức
                 const navAvatar = document.getElementById('nav-user-avatar');
                 const navName = document.getElementById('nav-user-name');
                 if (navAvatar) navAvatar.src = data.user.avatar;
@@ -146,6 +165,7 @@ export function initProfileModal() {
                 toast.error(data.err || "Cập nhật thất bại");
             }
         } catch (err) {
+            console.error(err);
             toast.error("Lỗi kết nối server");
         } finally {
             saveBtn.innerText = "Lưu thay đổi";

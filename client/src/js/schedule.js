@@ -436,10 +436,10 @@ function renderStatusChart(tasks) {
         type: 'doughnut',
         data: {
             labels: [
-                'Not Started', // Bạn có thể thêm key này vào locales nếu muốn
-                t('schedule.stat_active'), 
-                'Done', 
-                t('schedule.stat_overdue')
+                t('schedule.stat_not_started'), // Chưa bắt đầu
+                t('schedule.stat_active'),      // Đang thực hiện
+                t('schedule.stat_done'),        // Hoàn thành
+                t('schedule.stat_overdue')      // Đã quá hạn
             ],
             datasets: [{
                 data: dataValues,

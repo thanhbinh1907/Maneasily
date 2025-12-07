@@ -248,6 +248,20 @@ export const resources = {
         "board.breadcrumb_projects": "Dự án", // [MỚI]
         "board.add_column": "Thêm cột",
         "board.manage_members": "Quản lý thành viên",
+
+        // --- Schedule Page ---
+        "schedule.chart_status_title": "Trạng thái", // Tiêu đề biểu đồ
+        
+        // Nhãn biểu đồ (Chart Labels)
+        "schedule.stat_not_started": "Chưa bắt đầu",
+        "schedule.stat_active": "Đang thực hiện",
+        "schedule.stat_done": "Hoàn thành",
+        "schedule.stat_overdue": "Đã quá hạn",
+
+        // --- Settings - Notifications (Bổ sung) ---
+        "settings.deadline_days": "Nhắc trước (Ngày)",
+        "settings.deadline_hours": "Khẩn cấp (Giờ)",
+        "settings.deadline_info": "* Hệ thống sẽ gửi mail nhắc nhở vào 7:00 sáng (theo ngày) và kiểm tra mỗi 30 phút (theo giờ).",
     },
     en: {
         // --- Sidebar ---
@@ -496,5 +510,19 @@ export const resources = {
         "board.breadcrumb_projects": "Projects", // [NEW]
         "board.add_column": "Add Column",
         "board.manage_members": "Manage Members",
+
+        // --- Schedule Page ---
+        "schedule.chart_status_title": "Status",
+
+        // Chart Labels
+        "schedule.stat_not_started": "Not Started",
+        "schedule.stat_active": "In Progress",
+        "schedule.stat_done": "Done",
+        "schedule.stat_overdue": "Overdue",
+
+        // --- Settings - Notifications (Additions) ---
+        "settings.deadline_days": "Days Before",
+        "settings.deadline_hours": "Urgent (Hours)",
+        "settings.deadline_info": "* The system sends email reminders at 7:00 AM (daily) and checks every 30 minutes (hourly).",
     }
 };

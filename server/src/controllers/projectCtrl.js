@@ -292,7 +292,7 @@ const projectCtrl = {
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
 
-// --- 2. Tước quyền Manager (Về thành viên thường) ---
+    // --- 2. Tước quyền Manager (Về thành viên thường) ---
     demoteToMember: async (req, res) => {
         try {
             const { projectId, memberId } = req.body;
@@ -303,15 +303,29 @@ const projectCtrl = {
                 return res.status(403).json({ err: "Chỉ chủ dự án mới được thu hồi quyền." });
             }
 
+            // [MỚI] Tìm thông tin thành viên để lấy tên cho log hoạt động
+            const member = await Users.findById(memberId);
+            const memberName = member ? member.username : "Thành viên";
+
             await Projects.findByIdAndUpdate(projectId, {
                 $pull: { admins: memberId } // Xóa khỏi danh sách quản lý
             });
 
-            // 👇 [SỬA LẠI ĐOẠN NÀY] Thêm "const notif =" vào trước
+            // [MỚI] Ghi log hoạt động
+            await logActivity(
+                req, 
+                projectId, 
+                "demoted member", 
+                memberName, // Target: Tên người bị tước quyền
+                "đã thu hồi quyền quản lý", 
+                "member"
+            );
+
+            // Gửi thông báo cho người bị tước quyền
             const notif = await Notifications.create({
                 recipient: memberId,
                 sender: userId,
-                content: `Bạn đã bị thu hồi quyền quản lý dự án "${project.title}"`, // Sửa lại nội dung cho đúng ngữ cảnh
+                content: `Bạn đã bị thu hồi quyền quản lý dự án "${project.title}"`,
                 type: 'project',
                 link: `/src/pages/Board.html?id=${projectId}`
             });
@@ -322,7 +336,6 @@ const projectCtrl = {
             res.json({ msg: "Đã thu hồi quyền quản lý!" });
         } catch (err) { return res.status(500).json({ err: err.message }); }
     },
-
     // --- 3. Kick thành viên khỏi dự án ---
     removeMember: async (req, res) => {
         try {

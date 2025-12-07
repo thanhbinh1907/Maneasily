@@ -311,7 +311,6 @@ const projectCtrl = {
                 $pull: { admins: memberId } // Xóa khỏi danh sách quản lý
             });
 
-            // [MỚI] Ghi log hoạt động
             await logActivity(
                 req, 
                 projectId, 

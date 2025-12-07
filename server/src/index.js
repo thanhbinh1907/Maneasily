@@ -40,13 +40,19 @@ let onlineUsers = [];
 
 io.on('connection', (socket) => {
     socket.on('join', (userId) => {
-        if (!onlineUsers.some(u => u.userId === userId)) {
-            onlineUsers.push({ userId, socketId: socket.id });
-        }
+        // [SỬA LỖI QUAN TRỌNG]
+        // Xóa kết nối cũ của user này (nếu có) để cập nhật socket.id mới nhất
+        onlineUsers = onlineUsers.filter(u => u.userId !== userId);
+        
+        // Thêm kết nối mới vào danh sách
+        onlineUsers.push({ userId, socketId: socket.id });
+        
+        console.log(`✅ User ${userId} đã online với Socket ID: ${socket.id}`);
     });
 
     socket.on('disconnect', () => {
         onlineUsers = onlineUsers.filter(u => u.socketId !== socket.id);
+        console.log(`❌ Socket ID ${socket.id} đã ngắt kết nối.`);
     });
 
     socket.on('joinBoard', (projectId) => {

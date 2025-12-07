@@ -297,3 +297,55 @@
 }
 #add-member-dropdown p { color: var(--text-sub) !important; }
 .member-option:hover { background-color: var(--bg-hover) !important; }
+
+
+/* [MỚI] STYLE CHO FILE & FOLDER (Fix Dark Mode) */
+.file-item {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    /* Sử dụng biến màu để tự động đổi theo theme */
+    background-color: var(--bg-surface); 
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-focus);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.file-item i {
+    transition: transform 0.2s;
+}
+
+.file-item:hover i {
+    transform: scale(1.1);
+}
+
+/* Nút xóa file (X đỏ) */
+.btn-delete-file {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.8rem;
+    color: #d93025;
+    display: none;
+    padding: 4px;
+    border-radius: 50%;
+    background: var(--bg-surface); /* Nền nút xóa cũng theo theme */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.file-item:hover .btn-delete-file {
+    display: block;
+}
+
+.btn-delete-file:hover {
+    background-color: #ffebe6;
+}

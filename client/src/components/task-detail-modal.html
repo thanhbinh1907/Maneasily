@@ -134,3 +134,21 @@
         </div>
     </div>
 </div>
+
+<div id="create-folder-modal" class="modal-overlay" style="z-index: 2200; display: none;">
+    <div class="modal-content" style="max-width: 350px;">
+        <div class="modal-header" style="margin-bottom: 15px;">
+            <h3 style="font-size: 1.1rem; margin: 0;">Tạo thư mục mới</h3>
+            <span class="close-modal" id="close-folder-modal"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <form id="form-create-folder">
+            <div class="form-group">
+                <input type="text" id="new-folder-name" placeholder="Nhập tên thư mục..." class="form-input" autocomplete="off" required>
+            </div>
+            <div class="modal-footer" style="padding-top: 10px; margin-top: 10px;">
+                <button type="button" class="btn-modal btn-cancel" id="cancel-create-folder">Hủy</button>
+                <button type="submit" class="btn-modal btn-submit">Tạo</button>
+            </div>
+        </form>
+    </div>
+</div>

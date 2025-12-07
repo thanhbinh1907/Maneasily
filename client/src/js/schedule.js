@@ -1,6 +1,7 @@
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
 import { io } from "socket.io-client";
+import { t } from './utils/i18n.js'; // [MỚI] Import hàm dịch
 
 // --- CẤU HÌNH GOOGLE CALENDAR API ---
 // [QUAN TRỌNG] Hãy thay mã của bạn vào đây
@@ -358,7 +359,7 @@ function renderTimeline(tasks) {
         data: {
             labels: timelineData.map(d => d.y), 
             datasets: [{
-                label: 'Tiến độ',
+                label: t('schedule.chart_timeline'), // Dịch label                
                 data: timelineData,
                 backgroundColor: timelineColors,
                 borderRadius: 4,
@@ -376,9 +377,9 @@ function renderTimeline(tasks) {
                         afterLabel: function(context) {
                             const taskIndex = context.dataIndex;
                             const task = validTasks[taskIndex];
-                            if (isTaskDone(task)) return 'Trạng thái: Đã hoàn thành';
-                            if (new Date(task.deadline) < now) return 'Trạng thái: Quá hạn';
-                            return 'Trạng thái: Đang thực hiện';
+                            if (isTaskDone(task)) return `Status: ${t('schedule.stat_done') || 'Done'}`;
+                            if (new Date(task.deadline) < now) return `Status: ${t('schedule.stat_overdue')}`;
+                            return `Status: ${t('schedule.stat_active')}`;
                         },
                         label: function(context) {
                             const start = new Date(context.raw.x[0]).toLocaleDateString('vi-VN');
@@ -434,7 +435,12 @@ function renderStatusChart(tasks) {
     chartInstances.status = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Chưa bắt đầu', 'Đang làm', 'Đã xong', 'Quá hạn'],
+            labels: [
+                'Not Started', // Bạn có thể thêm key này vào locales nếu muốn
+                t('schedule.stat_active'), 
+                'Done', 
+                t('schedule.stat_overdue')
+            ],
             datasets: [{
                 data: dataValues,
                 backgroundColor: ['#94a3b8', '#0c66e4', '#22c55e', '#e53e3e'],

@@ -3,6 +3,7 @@ import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';   
 import '../css/components/dashboard-layout.css'; 
 import '../css/components/modal.css'; 
+import { t } from './utils/i18n.js'; // Import hàm t()
 
 document.addEventListener('DOMContentLoaded', () => {
     const projectGrid = document.getElementById('project-sortable-list');

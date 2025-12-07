@@ -1,7 +1,9 @@
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
+import { applyTranslation } from './utils/i18n.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    applyTranslation();
     const signupForm = document.getElementById('signup-form');
     const emailInput = document.getElementById('email');
     const usernameInput = document.getElementById('username');

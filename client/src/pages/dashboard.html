@@ -8,6 +8,8 @@
   <script>
     (function() {
       const savedTheme = localStorage.getItem('theme');
+      const savedLang = localStorage.getItem('language') || 'vi'; // Load lang sớm
+      document.documentElement.setAttribute('lang', savedLang);
       if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
       }
@@ -32,29 +34,34 @@
             <div class="dashboard-content">
                 
                 <div class="welcome-banner">
-                    <h1 style="margin: 0 0 10px 0; font-size: 2rem;">Xin chào, <span id="user-display-name">...</span></h1>
-                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">Hôm nay là <span id="current-date" style="font-weight: 600;">...</span>. Chúc bạn một ngày làm việc hiệu quả.</p>
+                    <h1 style="margin: 0 0 10px 0; font-size: 2rem;">
+                        <span data-i18n="dash.welcome">Xin chào,</span> 
+                        <span id="user-display-name">...</span>
+                    </h1>
+                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">
+                        <span id="current-date" style="font-weight: 600;">...</span>
+                    </p>
                 </div>
 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon icon-orange"><i class="fa-solid fa-briefcase"></i></div>
                         <div class="stat-info">
-                            <h4>Dự án tham gia</h4>
+                            <h4 data-i18n="dash.project_joined">Dự án tham gia</h4>
                             <p class="stat-value" id="stat-projects">0</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon icon-blue"><i class="fa-solid fa-list-check"></i></div>
                         <div class="stat-info">
-                            <h4>Việc cần làm hôm nay</h4>
+                            <h4 data-i18n="dash.task_today">Việc cần làm hôm nay</h4>
                             <p class="stat-value" id="stat-tasks-today">0</p>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         <div class="stat-info">
-                            <h4>Công việc quá hạn</h4>
+                            <h4 data-i18n="dash.task_overdue">Công việc quá hạn</h4>
                             <p class="stat-value" id="stat-tasks-overdue">0</p>
                         </div>
                     </div>
@@ -63,21 +70,21 @@
                 <div class="dashboard-main-grid">
                     <div class="projects-section">
                         <div class="section-header">
-                            <h3 class="section-title">Dự án truy cập gần đây</h3>
-                            <a href="/src/pages/projects.html" class="btn-link">Xem tất cả</a>
+                            <h3 class="section-title" data-i18n="dash.recent_projects">Dự án truy cập gần đây</h3>
+                            <a href="/src/pages/projects.html" class="btn-link" data-i18n="dash.view_all">Xem tất cả</a>
                         </div>
                         <div id="recent-projects-list">
-                            <p style="color: var(--text-sub)">Đang tải...</p>
+                            <p style="color: var(--text-sub)" data-i18n="dash.loading">Đang tải...</p>
                         </div>
                     </div>
 
                     <div class="activity-section">
                         <div class="section-header">
-                            <h3 class="section-title">Hoạt động mới nhất</h3>
-                            <a href="/src/pages/activity.html" class="btn-link">Xem thêm</a>
+                            <h3 class="section-title" data-i18n="dash.recent_activity">Hoạt động mới nhất</h3>
+                            <a href="/src/pages/activity.html" class="btn-link" data-i18n="dash.view_more">Xem thêm</a>
                         </div>
                         <div class="activity-mini-list" id="recent-activity-list">
-                            <p style="color: var(--text-sub)">Đang tải...</p>
+                            <p style="color: var(--text-sub)" data-i18n="dash.loading">Đang tải...</p>
                         </div>
                     </div>
                 </div>

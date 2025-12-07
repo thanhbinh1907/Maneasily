@@ -4,6 +4,7 @@ import { showConfirm } from './utils/confirm.js';
 import { initNotifications } from './components/notification.js';
 import { initSearch } from './components/search.js';
 import { API_BASE_URL } from './config.js'; // Đảm bảo import API_BASE_URL
+import { applyTranslation, t } from './utils/i18n.js'; // [MỚI]
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Kiểm tra đăng nhập
@@ -16,6 +17,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const user = JSON.parse(userStr);
+
+    if (user.settings && user.settings.language) {
+        if (localStorage.getItem('language') !== user.settings.language) {
+            localStorage.setItem('language', user.settings.language);
+        }
+    }
+    applyTranslation(); // Chạy dịch lần 1
 
     // 2. Hiển thị thông tin cơ bản
     const avatarEl = document.getElementById('nav-user-avatar');

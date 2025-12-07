@@ -2,9 +2,7 @@
     <div class="nav-left">
         <div class="nav-search" style="position: relative;">
             <i class="fa-solid fa-magnifying-glass"></i>
-            
-            <input type="text" id="global-search-input" placeholder="Tìm kiếm..." autocomplete="off">
-            
+            <input type="text" id="global-search-input" data-i18n-placeholder="nav.search_placeholder" placeholder="Tìm kiếm..." autocomplete="off">
             <div id="search-results-dropdown" class="search-dropdown-menu"></div>
         </div>
     </div>
@@ -20,11 +18,11 @@
             
             <div class="dropdown-menu noti-dropdown" id="noti-dropdown-content">
                 <div class="noti-header">
-                    <span>Thông báo</span>
-                    <small id="btn-mark-all-read" style="cursor: pointer; color: #0c66e4;">Đánh dấu đã đọc</small>
+                    <span data-i18n="nav.notifications">Thông báo</span>
+                    <small id="btn-mark-all-read" data-i18n="nav.mark_read" style="cursor: pointer; color: #0c66e4;">Đánh dấu đã đọc</small>
                 </div>
                 <div class="noti-list" id="noti-list-container">
-                    <p style="padding: 10px; color: #666; text-align: center;">Không có thông báo mới.</p>
+                    <p style="padding: 10px; color: #666; text-align: center;" data-i18n="nav.no_notif">Không có thông báo mới.</p>
                 </div>
             </div>
         </div>
@@ -36,10 +34,12 @@
 
             <div class="dropdown-menu" id="user-dropdown-menu">
                 <a href="/src/pages/profile.html" class="dropdown-item">
-                    <i class="fa-regular fa-user"></i> Hồ sơ cá nhân
+                    <i class="fa-regular fa-user"></i> 
+                    <span data-i18n="nav.profile">Hồ sơ cá nhân</span>
                 </a>
                 <div class="dropdown-item logout" id="btn-logout">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> 
+                    <span data-i18n="nav.logout">Đăng xuất</span>
                 </div>
             </div>
         </div>

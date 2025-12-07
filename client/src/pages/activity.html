@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hoạt động dự án - Maneasily</title>
-    <script>
+  <script>
     (function() {
       const savedTheme = localStorage.getItem('theme');
+      const savedLang = localStorage.getItem('language') || 'vi';
+      document.documentElement.setAttribute('lang', savedLang);
       if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
       }
@@ -24,25 +26,27 @@
         {{> nav-top }}
         <div class="page-content activity-page">            
             <div class="activity-header">
-              <h2>Hoạt động dự án</h2>
+              <h2 data-i18n="activity.title">Hoạt động dự án</h2>
           </div>
           
           <div class="activity-scroll-wrapper">
               
               <div id="pinned-section" style="display: none; margin-bottom: 30px;">
                   <h3 class="section-title" style="color: #ffab00; margin-bottom: 10px; font-size: 1.1rem;">
-                      <i class="fa-solid fa-thumbtack"></i> Đã ghim
+                      <i class="fa-solid fa-thumbtack"></i> 
+                      <span data-i18n="activity.pinned">Đã ghim</span>
                   </h3>
                   <div class="activity-board-container" id="pinned-list">
-                      </div>
+                  </div>
               </div>
           
               <div id="other-section">
                   <h3 class="section-title" style="color: #44546f; margin-bottom: 10px; font-size: 1.1rem;">
-                      <i class="fa-solid fa-layer-group"></i> Tất cả dự án
+                      <i class="fa-solid fa-layer-group"></i> 
+                      <span data-i18n="activity.all_projects">Tất cả dự án</span>
                   </h3>
                   <div class="activity-board-container" id="other-list">
-                      </div>
+                  </div>
               </div>
           
           </div>
@@ -53,11 +57,11 @@
   <div id="activity-zoom-modal" class="modal-overlay">
       <div class="modal-content zoom-content">
           <div class="modal-header">
-              <h2 id="zoom-project-title">Tên dự án</h2>
+              <h2 id="zoom-project-title">...</h2>
               <button class="close-modal" id="close-zoom-modal">&times;</button>
           </div>
           <div class="modal-body zoom-body" id="zoom-logs-list">
-              </div>
+          </div>
       </div>
   </div>
 

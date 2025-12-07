@@ -1,8 +1,10 @@
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
 import '../css/components/modal.css'; // Import CSS cho modal quên pass
+import { applyTranslation } from './utils/i18n.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    applyTranslation();
     const signinForm = document.getElementById('signin-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');

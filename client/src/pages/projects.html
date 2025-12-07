@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Dự án của tôi - Maneasily</title>
-    <script>
+  <script>
     (function() {
       const savedTheme = localStorage.getItem('theme');
+      const savedLang = localStorage.getItem('language') || 'vi';
+      document.documentElement.setAttribute('lang', savedLang);
       if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
       }
@@ -27,14 +29,15 @@
 
         <div class="page-content">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Dự án của tôi</h2>
+                <h2 data-i18n="projects.my_projects">Dự án của tôi</h2>
                 <button id="btn-create-project" style="padding: 8px 16px; background: #ff7f32; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                    <i class="fa-solid fa-plus"></i> Tạo mới
+                    <i class="fa-solid fa-plus"></i> 
+                    <span data-i18n="projects.create_new">Tạo mới</span>
                 </button>
             </div>
 
             <div class="project-grid" id="project-sortable-list">
-                <div class="project-card create-card">Loading...</div>
+                <div class="project-card create-card" data-i18n="dash.loading">Loading...</div>
             </div>
         </div>
     </div>

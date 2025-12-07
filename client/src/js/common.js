@@ -1,5 +1,6 @@
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
+import { applyTranslation } from './utils/i18n.js'; // [MỚI]
 
 const originalFetch = window.fetch; 
 
@@ -57,7 +58,7 @@ function handleSessionExpired() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  
+  applyTranslation();
   // --- 1. XỬ LÝ LOGIN TỪ URL (Callback) ---
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');

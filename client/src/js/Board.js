@@ -9,6 +9,7 @@ import { showConfirm } from './utils/confirm.js';
 import { initTaskDetailModal, openTaskDetail } from './components/task-detail/index.js';
 import { io } from "socket.io-client";
 import { initSearch } from './components/search.js'; 
+import { t } from './utils/i18n.js'; // [MỚI] Import
 
 let currentProjectId = null;
 let boardContainer = null;
@@ -170,7 +171,7 @@ function createColumnElement(column) {
   if (isUserAdminOrManager) {
       const delColBtn = header.querySelector('.btn-delete-column');
       delColBtn.addEventListener('click', () => {
-          showConfirm(`Xóa cột "${column.title}" và toàn bộ công việc bên trong?`, async () => {
+          showConfirm(`${t('modal.confirm')} delete "${column.title}"?`, async () => {
               try {
                   const res = await fetch(`${API_BASE_URL}/column/${column._id}`, {
                       method: 'DELETE',
@@ -178,12 +179,12 @@ function createColumnElement(column) {
                   });
                   if (res.ok) {
                       columnEl.remove();
-                      toast.success("Đã xóa cột");
+                      toast.success(t('msg.deleted_success') || "Deleted successfully");
                   } else {
                       const d = await res.json();
-                      toast.error(d.err || "Lỗi xóa cột");
+                      toast.error(d.err || "Error");
                   }
-              } catch (err) { toast.error("Lỗi server"); }
+              } catch (err) { toast.error("Server error"); }
           });
       });
 

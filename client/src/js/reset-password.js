@@ -1,6 +1,8 @@
 import { toast } from './utils/toast.js';
+import { applyTranslation } from './utils/i18n.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    applyTranslation();
     const resetForm = document.getElementById('reset-form');
     const newPassInput = document.getElementById('new-password');
     const confirmPassInput = document.getElementById('confirm-password');

@@ -1,7 +1,7 @@
-// File: Maneasily/client/src/js/activity.js
 import Sortable from 'sortablejs';
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
+import { t } from './utils/i18n.js'; // [MỚI] Import hàm dịch
 
 let allProjectsData = [];
 let pinnedProjectIds = [];
@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadActivityBoard() {
     const container = document.getElementById('other-list');
-    container.innerHTML = '<p>Đang tải hoạt động...</p>';
+    // [MỚI] Dịch text đang tải
+    container.innerHTML = `<p>${t('dash.loading')}</p>`;
 
     try {
         const res = await fetch(`${API_BASE_URL}/activity/dashboard`, {
@@ -35,11 +36,9 @@ function renderBoard() {
     const otherContainer = document.getElementById('other-list');
     const pinnedSection = document.getElementById('pinned-section');
 
-    // Reset nội dung
     pinnedContainer.innerHTML = '';
     otherContainer.innerHTML = '';
 
-    // Phân loại dữ liệu
     const pinnedItems = [];
     const otherItems = [];
 
@@ -67,21 +66,21 @@ function renderBoard() {
             otherContainer.appendChild(createCardElement(item, false));
         });
     } else {
-        otherContainer.innerHTML = '<p style="color:#888; padding:10px;">Không có dự án nào.</p>';
+        // [MỚI] Dịch text không có dự án
+        otherContainer.innerHTML = `<p style="color:#888; padding:10px;">${t('dash.no_project')}</p>`;
     }
 
-    // 3. Khởi tạo Sortable cho PINNED (Chỉ sắp xếp nội bộ)
+    // 3. Khởi tạo Sortable
     new Sortable(pinnedContainer, {
-        group: 'pinned', // Nhóm riêng
+        group: 'pinned',
         animation: 150,
         handle: '.card-header',
         ghostClass: 'sortable-ghost',
-        onEnd: saveOrder // Lưu lại thứ tự khi thả
+        onEnd: saveOrder
     });
 
-    // 4. Khởi tạo Sortable cho OTHERS (Chỉ sắp xếp nội bộ)
     new Sortable(otherContainer, {
-        group: 'others', // Nhóm riêng -> Không thể kéo sang nhóm pinned
+        group: 'others',
         animation: 150,
         handle: '.card-header',
         ghostClass: 'sortable-ghost',
@@ -94,6 +93,7 @@ function createCardElement(item, isPinned) {
     card.className = `activity-project-card ${isPinned ? 'pinned' : ''}`;
     card.setAttribute('data-id', item.project._id);
 
+    // [MỚI] Dịch tooltip và nút Xem chi tiết
     card.innerHTML = `
         <div class="card-header">
             <h3>
@@ -101,7 +101,7 @@ function createCardElement(item, isPinned) {
                 ${item.project.title}
             </h3>
             <div class="card-actions">
-                <button class="btn-action btn-pin ${isPinned ? 'active' : ''}" title="${isPinned ? 'Bỏ ghim' : 'Ghim'}">
+                <button class="btn-action btn-pin ${isPinned ? 'active' : ''}" title="${isPinned ? 'Unpin' : 'Pin'}">
                     <i class="fa-solid fa-thumbtack"></i>
                 </button>
             </div>
@@ -110,11 +110,10 @@ function createCardElement(item, isPinned) {
             ${renderLogs(item.activities)}
         </div>
         <div class="card-footer">
-            <button class="btn-zoom"><i class="fa-solid fa-expand"></i> Xem chi tiết</button>
+            <button class="btn-zoom"><i class="fa-solid fa-expand"></i> ${t('dash.view_more')}</button>
         </div>
     `;
 
-    // Event Listeners
     card.querySelector('.btn-pin').addEventListener('click', () => togglePin(item.project._id));
     card.querySelector('.btn-zoom').addEventListener('click', () => openZoomModal(item));
 
@@ -122,7 +121,8 @@ function createCardElement(item, isPinned) {
 }
 
 function renderLogs(logs) {
-    if(!logs || logs.length === 0) return '<p style="text-align:center; color:#999;">Chưa có hoạt động.</p>';
+    // [MỚI] Dịch text không có hoạt động
+    if(!logs || logs.length === 0) return `<p style="text-align:center; color:#999;">${t('dash.no_activity')}</p>`;
     
     return logs.map(log => `
         <div class="log-item">
@@ -138,42 +138,28 @@ function renderLogs(logs) {
 }
 
 function getActionText(log) {
-    // Map action key sang tiếng Việt hoặc format đẹp
-    // Bạn cần quy ước các key action ở backend (VD: 'create_task', 'join_project')
-    const map = {
-        'create_task': 'đã tạo công việc',
-        'update_task': 'đã cập nhật',
-        'delete_task': 'đã xóa',
-        'add_member': 'đã thêm thành viên',
-        // ...
-    };
-    return map[log.action] || log.action;
+    // Nếu bạn muốn dịch cả hành động (action) từ server, bạn cần thêm map ở đây
+    // Ví dụ: server trả về "created task", bạn dùng t('action.created_task')
+    // Hiện tại giữ nguyên text từ server nếu chưa có key dịch
+    return log.action;
 }
 
-// --- LOGIC GHIM ---
 async function togglePin(projectId) {
     if (pinnedProjectIds.includes(projectId)) {
         pinnedProjectIds = pinnedProjectIds.filter(id => id !== projectId);
     } else {
         pinnedProjectIds.push(projectId);
     }
-    // Reload UI tạm thời (logic sort lại nằm ở renderBoard nếu muốn client tự sort, 
-    // hoặc gọi server sort. Ở đây ta gọi saveOrder để server lưu và reload)
     await saveOrder(); 
-    loadActivityBoard(); // Reload để server sort lại đúng vị trí
+    loadActivityBoard();
 }
 
-// --- LOGIC LƯU THỨ TỰ ---
 async function saveOrder() {
     const pinnedContainer = document.getElementById('pinned-list');
     const otherContainer = document.getElementById('other-list');
 
-    // Lấy ID từ cả 2 danh sách và nối lại
     const pinnedOrder = Array.from(pinnedContainer.children).map(el => el.getAttribute('data-id'));
     const otherOrder = Array.from(otherContainer.children).map(el => el.getAttribute('data-id'));
-    
-    // Backend sẽ ưu tiên Pinned trước, sau đó đến thứ tự trong mảng này
-    // Nên ta cứ gửi lên toàn bộ danh sách theo thứ tự mắt thấy
     const fullProjectOrder = [...pinnedOrder, ...otherOrder];
 
     try {
@@ -188,7 +174,6 @@ async function saveOrder() {
     } catch (e) { console.error("Lỗi lưu sắp xếp", e); }
 }
 
-// --- LOGIC ZOOM MODAL ---
 const modal = document.getElementById('activity-zoom-modal');
 const closeBtn = document.getElementById('close-zoom-modal');
 let currentZoomProjectId = null;
@@ -202,11 +187,10 @@ function openZoomModal(item) {
     currentZoomProjectId = item.project._id;
     currentZoomSkip = 5;
     
-    // Thêm nút "Tải thêm" nếu cần
     if(item.activities.length >= 5) {
         const btnMore = document.createElement('button');
         btnMore.className = 'btn-zoom'; 
-        btnMore.textContent = 'Tải thêm hoạt động cũ hơn...';
+        btnMore.textContent = t('dash.view_more') + '...'; // Dịch nút tải thêm
         btnMore.onclick = loadMoreLogs;
         list.appendChild(btnMore);
     }
@@ -216,7 +200,7 @@ function openZoomModal(item) {
 
 async function loadMoreLogs(e) {
     const btn = e.target;
-    btn.textContent = 'Đang tải...';
+    btn.textContent = t('dash.loading'); // Dịch loading
     
     try {
         const res = await fetch(`${API_BASE_URL}/activity/logs?projectId=${currentZoomProjectId}&skip=${currentZoomSkip}`, {
@@ -225,17 +209,16 @@ async function loadMoreLogs(e) {
         const data = await res.json();
         
         if(data.activities.length > 0) {
-            btn.remove(); // Xóa nút cũ
+            btn.remove(); 
             const list = document.getElementById('zoom-logs-list');
             const html = renderLogs(data.activities);
-            list.insertAdjacentHTML('beforeend', html); // Thêm log mới xuống dưới
+            list.insertAdjacentHTML('beforeend', html);
             
             currentZoomSkip += 20;
-            // Thêm lại nút nếu còn
             if(data.activities.length >= 20) {
                 const newBtn = document.createElement('button');
                 newBtn.className = 'btn-zoom'; 
-                newBtn.textContent = 'Tải thêm...';
+                newBtn.textContent = t('dash.view_more');
                 newBtn.onclick = loadMoreLogs;
                 list.appendChild(newBtn);
             }

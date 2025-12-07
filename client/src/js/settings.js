@@ -1,3 +1,4 @@
+// File: client/src/js/settings.js
 import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
 import { setLanguage, getLanguage, t } from './utils/i18n.js';
@@ -7,35 +8,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('maneasily_token');
     if (!token) return window.location.href = '/src/pages/signin.html';
 
-    // --- KHAI BÁO CÁC ELEMENT (Đặt trong try-catch hoặc kiểm tra null nếu cần) ---
-    // Tab Tài khoản
+    // --- KHAI BÁO ELEMENT ---
     const avatarInput = document.getElementById('set-avatar');
     const avatarPreview = document.getElementById('preview-avatar');
     const usernameInput = document.getElementById('set-username');
     const emailInput = document.getElementById('set-email');
-    
-    // Tab Chung
     const themeSelect = document.getElementById('set-theme');
-    const langSelect = document.getElementById('set-lang'); // [MỚI]
+    const langSelect = document.getElementById('set-lang');
     
-    // Tab Thông báo
     const notifInvite = document.getElementById('notif-email-invite');
-    const notifDeadline = document.getElementById('notif-email-deadline');
-    // const notifNews = document.getElementById('notif-email-news'); // (Có thể bỏ nếu HTML không có)
     const notifSound = document.getElementById('notif-sound');
     const notifToast = document.getElementById('notif-toast');
     
-    // Tab Riêng tư
+    // [MỚI] Các element cho Deadline Reminder
+    const deadlineToggle = document.getElementById('deadline-enable-toggle');
+    const deadlineOptions = document.getElementById('deadline-options');
+    const deadlineDays = document.getElementById('deadline-days');
+    const deadlineHours = document.getElementById('deadline-hours');
+
     const privSearchable = document.getElementById('priv-searchable');
     const privRequireInvite = document.getElementById('priv-require-invite');
-
     const saveBtn = document.getElementById('btn-save-settings');
 
-    // Helper: Kiểm tra element tồn tại trước khi gán
     const setChecked = (el, val) => { if (el) el.checked = val; };
-    const setValue = (el, val) => { if (el) el.value = val; };
 
-    // 2. LOAD DỮ LIỆU TỪ SERVER
+    // --- [MỚI] LẮNG NGHE SỰ KIỆN TỪ HEADER ---
+    window.addEventListener('theme-change', (e) => {
+        if (themeSelect) themeSelect.value = e.detail; 
+    });
+
+    // --- [MỚI] LOGIC ẨN HIỆN DEADLINE OPTIONS ---
+    if (deadlineToggle) {
+        deadlineToggle.addEventListener('change', () => {
+            if (deadlineToggle.checked) {
+                deadlineOptions.style.display = 'block';
+            } else {
+                deadlineOptions.style.display = 'none';
+            }
+        });
+    }
+
+    // 2. LOAD DỮ LIỆU
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me`, {
             headers: { 'Authorization': token }
@@ -46,35 +59,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             const u = data.user;
             const s = u.settings || {}; 
 
-            // --- Fill Data ---
             if (avatarInput) avatarInput.value = u.avatar || '';
             if (avatarPreview) avatarPreview.src = u.avatar || 'https://www.gravatar.com/avatar/default?d=mp';
             if (usernameInput) usernameInput.value = u.username;
             if (emailInput) emailInput.value = u.email;
-
-            // Theme & Lang
             if (themeSelect) themeSelect.value = s.theme || 'light';
             
-            // [LOGIC ĐA NGÔN NGỮ]
-            // Ưu tiên localStorage (để UX mượt), sau đó đến DB
             const currentLang = localStorage.getItem('language') || s.language || 'vi';
             if (langSelect) langSelect.value = currentLang;
-            setLanguage(currentLang); // Apply ngay
+            setLanguage(currentLang);
 
             // Notifications
             const n = s.notifications || {};
             setChecked(notifInvite, n.emailOnInvite ?? true);
-            setChecked(notifDeadline, n.emailOnDeadline ?? true);
-            // setChecked(notifNews, n.emailOnNews ?? true);
             setChecked(notifSound, n.soundEnabled ?? true);
             setChecked(notifToast, n.toastEnabled ?? true);
             
+            // [MỚI] Load Deadline Settings (khớp với model Backend)
+            const d = n.deadlineReminder || {};
+            const isDeadlineEnabled = d.enabled ?? true;
+            setChecked(deadlineToggle, isDeadlineEnabled);
+            
+            if (deadlineDays) deadlineDays.value = d.daysBefore ?? 1;
+            if (deadlineHours) deadlineHours.value = d.hoursBefore ?? 2;
+
+            // Kích hoạt trạng thái hiển thị ban đầu
+            if (deadlineOptions) {
+                deadlineOptions.style.display = isDeadlineEnabled ? 'block' : 'none';
+            }
+
             // Privacy
             const p = s.privacy || {};
             setChecked(privSearchable, p.searchable ?? true);
             setChecked(privRequireInvite, p.requireInvite ?? false);
 
-            // Update Theme UI
             if (s.theme) {
                 document.documentElement.setAttribute('data-theme', s.theme);
                 localStorage.setItem('theme', s.theme);
@@ -92,37 +110,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 4. CHUYỂN TAB (Tabs Logic)
+    // 4. CHUYỂN TAB
     const tabBtns = document.querySelectorAll('.nav-btn');
     const tabs = document.querySelectorAll('.settings-tab');
-
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
             const targetId = btn.dataset.tab;
             tabs.forEach(t => t.classList.remove('active'));
-            const targetContent = document.getElementById(targetId);
-            if (targetContent) targetContent.classList.add('active');
+            document.getElementById(targetId)?.classList.add('active');
         });
     });
 
     // 5. LƯU CÀI ĐẶT (SAVE)
     if (saveBtn) {
         saveBtn.addEventListener('click', async () => {
-            // Dùng hàm t() để dịch nút
             const originalBtnText = t("settings.save_btn");
             saveBtn.innerText = t("settings.saving");
             saveBtn.disabled = true;
 
-            // Lấy giá trị an toàn
             const username = usernameInput ? usernameInput.value.trim() : "";
             const avatar = avatarInput ? avatarInput.value.trim() : "";
             const theme = themeSelect ? themeSelect.value : "light";
             const language = langSelect ? langSelect.value : "vi";
 
-            // Gom dữ liệu
+            // [MỚI] Gom dữ liệu theo đúng cấu trúc User Model
             const newSettings = {
                 username: username,
                 avatar: avatar,
@@ -131,10 +144,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     language: language,
                     notifications: {
                         emailOnInvite: notifInvite ? notifInvite.checked : true,
-                        emailOnDeadline: notifDeadline ? notifDeadline.checked : true,
-                        // emailOnNews: notifNews ? notifNews.checked : true,
                         soundEnabled: notifSound ? notifSound.checked : true,
-                        toastEnabled: notifToast ? notifToast.checked : true
+                        toastEnabled: notifToast ? notifToast.checked : true,
+                        
+                        // Cấu trúc mới cho Deadline Reminder
+                        deadlineReminder: {
+                            enabled: deadlineToggle ? deadlineToggle.checked : true,
+                            daysBefore: deadlineDays ? parseInt(deadlineDays.value) : 1,
+                            hoursBefore: deadlineHours ? parseInt(deadlineHours.value) : 2
+                        }
                     },
                     privacy: {
                         searchable: privSearchable ? privSearchable.checked : true,
@@ -157,10 +175,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (res.ok) {
                     toast.success(t("msg.update_success"));
-                    
                     localStorage.setItem('maneasily_user', JSON.stringify(data.user));
 
-                    // Áp dụng Theme
                     if (newSettings.settings.theme === 'dark') {
                         document.documentElement.setAttribute('data-theme', 'dark');
                         localStorage.setItem('theme', 'dark');
@@ -169,10 +185,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         localStorage.setItem('theme', 'light');
                     }
 
-                    // Áp dụng Ngôn ngữ ngay lập tức
+                    window.dispatchEvent(new CustomEvent('theme-change', { detail: theme }));
                     setLanguage(language);
 
-                    // Cập nhật Header UI
                     const navAvatar = document.getElementById('nav-user-avatar');
                     const navName = document.getElementById('nav-user-name');
                     if (navAvatar) navAvatar.src = data.user.avatar;
@@ -185,7 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error(e);
                 toast.error("Lỗi kết nối server");
             } finally {
-                // Cập nhật lại text nút sau khi ngôn ngữ có thể đã đổi
                 saveBtn.innerText = t("settings.save_btn");
                 saveBtn.disabled = false;
             }
@@ -194,10 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 6. ĐỔI MẬT KHẨU
     document.getElementById('btn-reset-pass')?.addEventListener('click', async () => {
-        if (!emailInput) return;
-        const email = emailInput.value;
-        if (!email) return;
-        
+        if (!emailInput || !emailInput.value) return;
         const btn = document.getElementById('btn-reset-pass');
         const originalText = btn.innerText;
         btn.innerText = "Processing..."; btn.disabled = true;
@@ -206,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: emailInput.value })
             });
             if(res.ok) toast.success("Đã gửi email đặt lại mật khẩu!");
             else toast.error("Có lỗi xảy ra");

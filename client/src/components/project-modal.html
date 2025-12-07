@@ -1,25 +1,25 @@
 <div id="create-project-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Tạo dự án mới</h2>
+            <h2 data-i18n="project.create_title">Tạo dự án mới</h2>
             <button class="close-modal" id="btn-close-create">&times;</button>
         </div>
         <form id="create-project-form">
             <div class="form-group">
-                <label>Tên dự án <span style="color:red">*</span></label>
+                <label><span data-i18n="project.name">Tên dự án</span> <span style="color:red">*</span></label>
                 <input type="text" id="p-title" required>
             </div>
             <div class="form-group">
-                <label>Mô tả</label>
+                <label data-i18n="project.desc">Mô tả</label>
                 <textarea id="p-dec"></textarea>
             </div>
             <div class="form-group">
-                <label>Ảnh bìa (URL)</label>
+                <label data-i18n="project.cover">Ảnh bìa (URL)</label>
                 <input type="url" id="p-img">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modal btn-cancel" id="btn-cancel-create">Hủy</button>
-                <button type="submit" class="btn-modal btn-submit">Tạo</button>
+                <button type="button" class="btn-modal btn-cancel" id="btn-cancel-create" data-i18n="common.cancel">Hủy</button>
+                <button type="submit" class="btn-modal btn-submit" data-i18n="project.btn_create">Tạo</button>
             </div>
         </form>
     </div>
@@ -28,15 +28,15 @@
 <div id="delete-project-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
-            <h2 style="color: #d93025;">Xóa dự án?</h2>
+            <h2 style="color: #d93025;" data-i18n="project.delete_title">Xóa dự án?</h2>
             <button class="close-modal" id="btn-close-delete">&times;</button>
         </div>
         <div class="modal-body">
-            <p class="delete-warning-text">Hành động này không thể hoàn tác. Toàn bộ dữ liệu sẽ bị xóa.</p>
+            <p class="delete-warning-text" data-i18n="project.delete_warning">Hành động này không thể hoàn tác. Toàn bộ dữ liệu sẽ bị xóa.</p>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn-modal btn-cancel" id="btn-cancel-delete">Hủy</button>
-            <button type="button" class="btn-modal btn-danger" id="btn-confirm-delete">Xóa vĩnh viễn</button>
+            <button type="button" class="btn-modal btn-cancel" id="btn-cancel-delete" data-i18n="common.cancel">Hủy</button>
+            <button type="button" class="btn-modal btn-danger" id="btn-confirm-delete" data-i18n="project.btn_delete_confirm">Xóa vĩnh viễn</button>
         </div>
     </div>
 </div>

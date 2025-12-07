@@ -1,17 +1,17 @@
 <div id="add-column-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 400px;">
         <div class="modal-header">
-            <h2>Thêm cột mới</h2>
+            <h2 data-i18n="board.modal_add_column_title">Thêm cột mới</h2>
             <span class="close-modal" id="close-add-column">&times;</span>
         </div>
         <form id="form-add-column">
             <div class="form-group">
-                <label>Tên cột</label>
-                <input type="text" id="column-title-input" placeholder="Ví dụ: Đang làm, Review..." required autofocus>
+                <label data-i18n="board.add_column">Tên cột</label>
+                <input type="text" id="column-title-input" data-i18n-placeholder="board.column_title_placeholder" placeholder="Ví dụ: Đang làm, Review..." required autofocus>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modal btn-cancel" id="cancel-add-column">Hủy</button>
-                <button type="submit" class="btn-modal btn-submit">Thêm cột</button>
+                <button type="button" class="btn-modal btn-cancel" id="cancel-add-column" data-i18n="common.cancel">Hủy</button>
+                <button type="submit" class="btn-modal btn-submit" data-i18n="board.btn_add_column">Thêm cột</button>
             </div>
         </form>
     </div>

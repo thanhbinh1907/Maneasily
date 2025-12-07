@@ -1,24 +1,24 @@
+import { t } from '../../utils/i18n.js'; // [MỚI] Import hàm dịch
+
 export const formatTimeRemaining = (deadline, startTime) => {
     const now = new Date();
 
-    // 1. [MỚI] Ưu tiên: Kiểm tra thời gian bắt đầu (Nếu chưa đến giờ)
+    // 1. Kiểm tra thời gian bắt đầu
     if (startTime) {
         const start = new Date(startTime);
-        const diffStart = start - now; // Tính mili-giây chênh lệch
+        const diffStart = start - now;
 
         if (diffStart > 0) {
-            // Nếu thời gian chênh lệch > 0 => Chưa bắt đầu
             const hours = Math.floor(diffStart / (1000 * 60 * 60));
             const days = Math.floor(hours / 24);
             
             let text = "";
             if (days > 0) {
-                text = `Bắt đầu sau: ${days} ngày ${hours % 24} giờ`;
+                text = `${t('time.starts_in')} ${days} ${t('time.day')} ${hours % 24} ${t('time.hour')}`;
             } else {
-                text = `Bắt đầu sau: ${hours} giờ ${Math.floor((diffStart / (1000 * 60)) % 60)} phút`;
+                text = `${t('time.starts_in')} ${hours} ${t('time.hour')} ${Math.floor((diffStart / (1000 * 60)) % 60)} ${t('time.minute')}`;
             }
 
-            // Trả về HTML màu cam cho trạng thái chờ
             return { 
                 html: `<span style="color:#e67e22; font-weight:600"><i class="fa-regular fa-hourglass-half"></i> ${text}</span>`, 
                 isOverdue: false 
@@ -26,7 +26,7 @@ export const formatTimeRemaining = (deadline, startTime) => {
         }
     }
 
-    // 2. Logic cũ: Kiểm tra Deadline (Chỉ chạy khi đã bắt đầu)
+    // 2. Kiểm tra Deadline
     if (!deadline) return { html: "", isOverdue: false };
     
     const diff = new Date(deadline) - now;
@@ -34,7 +34,7 @@ export const formatTimeRemaining = (deadline, startTime) => {
     
     if (isOverdue) {
         return { 
-            html: `<span class="time-late" style="color:#d93025; font-weight:bold">⚠️ Đã quá hạn!</span>`, 
+            html: `<span class="time-late" style="color:#d93025; font-weight:bold">⚠️ ${t('time.overdue')}</span>`, 
             isOverdue: true 
         };
     }
@@ -42,7 +42,10 @@ export const formatTimeRemaining = (deadline, startTime) => {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
     
-    const text = days > 0 ? `Còn lại: ${days} ngày ${hours % 24} giờ` : `Còn lại: ${hours} giờ`;
+    const text = days > 0 
+        ? `${t('time.remaining')} ${days} ${t('time.day')} ${hours % 24} ${t('time.hour')}` 
+        : `${t('time.remaining')} ${hours} ${t('time.hour')}`;
+        
     return { 
         html: `<span class="time-ok" style="color:#2e8b57">${text}</span>`, 
         isOverdue: false 
@@ -92,8 +95,16 @@ export const TaskView = {
         // [CẬP NHẬT] Gọi hàm formatTimeRemaining với cả 2 tham số
         const timeDisplay = document.getElementById('time-remaining-display');
         if (timeDisplay) {
-            // Truyền thêm task.startTime vào đây
-            timeDisplay.innerHTML = formatTimeRemaining(task.deadline, task.startTime).html;
+            // Kiểm tra xem đã xong chưa
+            const isAllDone = task.works && task.works.length > 0 && task.works.every(w => w.isDone);
+            
+            if (isAllDone) {
+                // Nếu xong rồi -> Hiện chữ xanh "Đã hoàn thành"
+                timeDisplay.innerHTML = `<span style="color:#2e8b57; font-weight:bold"><i class="fa-solid fa-check-circle"></i> ${t('task.status_done')}</span>`;
+            } else {
+                // Nếu chưa xong -> Hiện đếm ngược hoặc quá hạn
+                timeDisplay.innerHTML = formatTimeRemaining(task.deadline, task.startTime).html;
+            }
         }
     },
 
@@ -102,7 +113,7 @@ export const TaskView = {
         if (!list) return;
         
         if (members.length === 0) {
-            list.innerHTML = '<span style="color:#999; font-size:0.8rem;">Chưa có thành viên</span>';
+            list.innerHTML = `<span style="color:#999; font-size:0.8rem;">${t('task.no_members')}</span>`;
             return;
         }
 
@@ -200,7 +211,10 @@ export const TaskView = {
         const currentIds = taskMembers.map(m => m._id);
         const available = allMembers.filter(m => !currentIds.includes(m._id));
 
-        if (available.length === 0) { list.innerHTML = '<div style="font-size:0.8rem; color:#999;">Hết thành viên.</div>'; return; }
+        if (available.length === 0) { 
+            list.innerHTML = `<div style="font-size:0.8rem; color:#999;">${t('task.no_available_members')}</div>`; 
+            return; 
+        }
         list.innerHTML = available.map(m => `
             <div class="member-option" onclick="window.addMemberToTask('${m._id}')" style="display:flex; align-items:center; gap:10px; padding:6px; cursor:pointer;">
                 <img src="${m.avatar}" style="width:24px; height:24px; border-radius:50%;">
@@ -280,8 +294,8 @@ export const TaskView = {
             // Nút thao tác (chỉ hiện nếu là comment của mình)
             const actions = isMyComment ? `
                 <div class="comment-actions" style="font-size: 0.75rem; margin-top: 5px; color: #5e6c84;">
-                    <span style="cursor:pointer; margin-right:8px; text-decoration:underline;" onclick="window.enableEditComment('${c._id}')">Sửa</span>
-                    <span style="cursor:pointer; text-decoration:underline;" onclick="window.deleteComment('${c._id}')">Xóa</span>
+                    <span style="cursor:pointer; margin-right:8px; text-decoration:underline;" onclick="window.enableEditComment('${c._id}')">${t('comment.edit')}</span>
+                    <span style="cursor:pointer; text-decoration:underline;" onclick="window.deleteComment('${c._id}')">${t('comment.delete')}</span>
                 </div>
             ` : '';
 
@@ -301,8 +315,8 @@ export const TaskView = {
                     <div id="comment-edit-${c._id}" style="display:none;">
                         <textarea id="input-edit-${c._id}" style="width:100%; padding:8px; border:1px solid #0079bf; border-radius:6px; min-height:60px;">${c.content}</textarea>
                         <div style="margin-top:5px; display:flex; gap:5px;">
-                            <button onclick="window.saveEditComment('${c._id}')" class="btn-modal btn-submit" style="padding:4px 10px; font-size:0.8rem;">Lưu</button>
-                            <button onclick="window.cancelEditComment('${c._id}')" class="btn-modal btn-cancel" style="padding:4px 10px; font-size:0.8rem;">Hủy</button>
+                            <button onclick="window.saveEditComment('${c._id}')" class="btn-modal btn-submit" style="padding:4px 10px; font-size:0.8rem;">${t('comment.save')}</button>
+                            <button onclick="window.cancelEditComment('${c._id}')" class="btn-modal btn-cancel" style="padding:4px 10px; font-size:0.8rem;">${t('comment.cancel')}</button>
                         </div>
                     </div>
 

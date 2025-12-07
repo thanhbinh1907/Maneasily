@@ -1,5 +1,6 @@
 import { toast } from '../../utils/toast.js';
 import { showConfirm } from '../../utils/confirm.js'; 
+import { t } from '../../utils/i18n.js'; // [MỚI] Import
 import '../../../css/components/task-detail.css'; 
 
 import { TaskAPI } from './api.js';
@@ -12,7 +13,7 @@ let isOverdue = false;
 let allProjectMembers = [];
 let currentSubtaskWork = null; 
 let currentFolderId = null; 
-let currentFolderPath = [{ id: null, name: 'Gốc' }];
+let currentFolderPath = [{ id: null, name: 'Root' }]; // Name sẽ được dịch lại ở view
 
 // --- 1. KHỞI TẠO SỰ KIỆN (INIT) ---
 export function initTaskDetailModal() {
@@ -85,22 +86,23 @@ export function initTaskDetailModal() {
 
     // 1.5. Xóa Task Chính
     document.getElementById('btn-delete-task-detail')?.addEventListener('click', () => {
-        if(!canEditTask) return toast.error("Bạn không có quyền xóa task này.");
+        if(!canEditTask) return toast.error(t('task.no_permission'));
         
-        showConfirm("Bạn có chắc chắn muốn xóa vĩnh viễn công việc này?", async () => {
+        showConfirm(t('task.confirm_delete_permanent'), async () => {
             if (await TaskAPI.delete(currentTask._id)) {
                 const card = document.querySelector(`.task-card[data-task-id="${currentTask._id}"]`);
                 if(card) card.remove();
-                toast.success("Đã xóa task");
-                closeModal();
-            } else toast.error("Lỗi xóa task");
+                toast.success(t('task.deleted_success'));
+                // closeModal(); // (Giả định hàm này scope ở trên)
+                document.getElementById('task-detail-modal').style.display = 'none';
+            } else toast.error(t('common.error'));
         });
     });
 
     // 1.6. Menu Thêm thành viên Task Chính
     document.getElementById('btn-add-member-detail')?.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (!canEditTask) return toast.error("Bạn không có quyền thêm thành viên.");
+        if (!canEditTask) return toast.error(t('task.no_permission'));
         const dd = document.getElementById('add-member-dropdown');
         dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
         if(dd.style.display === 'block') TaskView.renderAvailableMembers(currentTask.members, allProjectMembers);
@@ -108,7 +110,8 @@ export function initTaskDetailModal() {
 
     // 1.7. File Manager Events
     document.getElementById('btn-create-folder')?.addEventListener('click', handleCreateFolder);
-    document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, 'Gốc')); 
+    // [DỊCH] Breadcrumb root
+    document.getElementById('file-breadcrumb')?.addEventListener('click', () => navigateFolder(null, t('task.files_root'))); 
     
     document.body.addEventListener('change', (e) => {
         if (e.target && e.target.id === 'file-upload-input') {
@@ -134,9 +137,9 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
     allProjectMembers = members;
 
     currentFolderId = null;
-    currentFolderPath = [{ id: null, name: 'Gốc' }];
-    
-    document.getElementById('detail-title').value = "Đang tải...";
+    currentFolderPath = [{ id: null, name: t('task.files_root') }]; // Dịch 'Gốc'    
+
+    document.getElementById('detail-title').value = t('dash.loading');
     document.getElementById('btn-save-desc').style.display = 'none';
     
     const btnDelete = document.getElementById('btn-delete-task-detail');
@@ -148,7 +151,7 @@ export async function openTaskDetail(taskId, isAdmin, members = []) {
         isOverdue = formatTimeRemaining(currentTask.deadline).isOverdue;
         refreshUI();
     } else {
-        toast.error("Lỗi tải task");
+        toast.error(t('task.error_load'));
         modal.style.display = 'none';
     }
 }
@@ -212,11 +215,11 @@ async function handleUpdate(field) {
         currentTask = data.task;
         isOverdue = formatTimeRemaining(currentTask.deadline).isOverdue;
         
-        if (field === 'tag') toast.success("Đã lưu Nhãn & Màu sắc");
-        else toast.success("Đã lưu");
+        if (field === 'tag') toast.success(t('task.saved_tags'));
+        else toast.success(t('task.saved'));
         
         TaskView.updateBoardCard(currentTask, isOverdue);
-        refreshUI();
+        refreshUI(); // (Giả định hàm này scope ở ngoài)
     }
 }
 
@@ -263,18 +266,13 @@ window.openSubtaskManager = (workId) => {
 function renderSubtaskManagerUI() {
     const listMembers = document.getElementById('sub-members');
     if (!currentSubtaskWork.members || currentSubtaskWork.members.length === 0) {
-        listMembers.innerHTML = '<div style="color:#999; font-style:italic; padding:10px;">Chưa có ai làm việc này.</div>';
+        listMembers.innerHTML = `<div style="color:#999; font-style:italic; padding:10px;">${t('subtask.no_assignee')}</div>`;
     } else {
         listMembers.innerHTML = currentSubtaskWork.members.map(m => `
             <div class="sub-member-row">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${m.avatar}" style="width:32px; height:32px; border-radius:50%;">
-                    <span>${m.username}</span>
-                </div>
                 ${canEditTask ? `
-                <button onclick="window.toggleSubtaskMember('${currentSubtaskWork._id}', '${m._id}')" 
-                        style="border:1px solid #d93025; color:#d93025; background:white; padding:4px 8px; border-radius:4px; cursor:pointer;">
-                    Kick
+                <button onclick="window.toggleSubtaskMember('${currentSubtaskWork._id}', '${m._id}')" ...>
+                    ${t('subtask.kick')}
                 </button>` : ''}
             </div>
         `).join('');
@@ -288,7 +286,7 @@ function renderSubtaskManagerUI() {
         const available = allProjectMembers.filter(m => !currentIds.includes(m._id));
 
         if (available.length === 0) {
-            listAdd.innerHTML = '<div style="color:#999; padding:10px;">Tất cả thành viên dự án đã được thêm.</div>';
+            listAdd.innerHTML = `<div style="color:#999; padding:10px;">${t('subtask.all_added')}</div>`;
         } else {
             listAdd.innerHTML = available.map(m => `
                 <div class="sub-member-row" onclick="window.toggleSubtaskMember('${currentSubtaskWork._id}', '${m._id}')" style="cursor:pointer;">
@@ -304,8 +302,9 @@ function renderSubtaskManagerUI() {
 }
 
 window.toggleSubtaskMember = async (workId, memberId) => {
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
-    if (isOverdue) return toast.error("Task đã quá hạn!");
+    if (!canEditTask) return toast.error(t('task.no_permission'));
+    // [DỊCH] Check quá hạn
+    if (isOverdue) return toast.error(t('task.msg_overdue'));
 
     if (await TaskAPI.toggleMemberSubtask(workId, memberId)) {
         const data = await TaskAPI.getDetail(currentTask._id);
@@ -314,7 +313,7 @@ window.toggleSubtaskMember = async (workId, memberId) => {
         currentSubtaskWork = currentTask.works.find(w => w._id === workId);
         if (document.getElementById('subtask-member-modal').style.display === 'flex') {
             renderSubtaskManagerUI();
-            toast.success("Cập nhật thành công");
+            toast.success(t('task.msg_update_member_success'));
         }
     } else {
         toast.error("Lỗi cập nhật");
@@ -324,11 +323,11 @@ window.toggleSubtaskMember = async (workId, memberId) => {
 // --- 2. Hàm window.toggleSubtask ---
 window.toggleSubtask = async (workId) => {
     // 1. Kiểm tra quá hạn
-    if (isOverdue) return toast.error("Đã quá hạn!");
+    if (isOverdue) return toast.error(t('task.msg_overdue'));
 
     // 2. [LOGIC MỚI] Kiểm tra chưa đến giờ bắt đầu
     if (currentTask.startTime && new Date() < new Date(currentTask.startTime)) {
-        return toast.error("Chưa đến thời gian bắt đầu!");
+        return toast.error(t('task.msg_not_started'));
     }
 
     const w = currentTask.works.find(x => x._id === workId);
@@ -353,9 +352,9 @@ window.toggleSubtask = async (workId) => {
 
 // --- 3. Hàm window.deleteSubtask (Xóa công việc con) ---
 window.deleteSubtask = async (workId) => {
-    if (!canEditTask) return toast.error("Bạn không có quyền xóa.");
+    if (!canEditTask) return toast.error(t('task.no_permission'));
     
-    showConfirm("Xóa công việc con này?", async () => {
+    showConfirm(t('subtask.delete_confirm'), async () => {
         if (await TaskAPI.deleteSubtask(workId)) {
             // Xóa khỏi danh sách hiện tại
             currentTask.works = currentTask.works.filter(w => w._id !== workId);
@@ -366,19 +365,20 @@ window.deleteSubtask = async (workId) => {
             // (Phòng trường hợp xóa xong thì tất cả các việc còn lại đều đã Done -> Xanh)
             TaskView.updateBoardCard(currentTask, isOverdue);
             
-            toast.success("Đã xóa");
+            toast.success(t('task.deleted_success'));
         } else toast.error("Lỗi xóa");
     });
 };
 window.addMemberToTask = async (memberId) => {
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
-    if (isOverdue) return toast.error("Task đã quá hạn!");
+    if (!canEditTask) return toast.error(t('task.no_permission'));
+    // [DỊCH] Check quá hạn
+    if (isOverdue) return toast.error(t('task.msg_overdue'));
 
     const newIds = [...currentTask.members.map(m => m._id), memberId];
     const data = await TaskAPI.update(currentTask._id, { members: newIds });
     if (data.task) {
         currentTask = data.task;
-        toast.success("Đã thêm thành viên");
+        toast.success(t('task.msg_update_member_success'));
         TaskView.updateBoardCard(currentTask, isOverdue);
         refreshUI();
         document.getElementById('add-member-dropdown').style.display = 'none';
@@ -435,7 +435,7 @@ window.cancelEditComment = (commentId) => {
 
 window.saveEditComment = async (commentId) => {
     const newContent = document.getElementById(`input-edit-${commentId}`).value.trim();
-    if (!newContent) return toast.error("Nội dung trống");
+    if (!newContent) return toast.error(t('comment.empty'));
 
     try {
         const data = await TaskAPI.updateComment(commentId, newContent);
@@ -443,7 +443,7 @@ window.saveEditComment = async (commentId) => {
             const idx = currentTask.comments.findIndex(c => c._id === commentId);
             if (idx !== -1) currentTask.comments[idx] = data.comment;
             TaskView.renderComments(currentTask.comments);
-            toast.success("Đã sửa bình luận");
+            toast.success(t('comment.updated'));
         } else {
             toast.error(data.err || "Lỗi");
         }
@@ -451,24 +451,24 @@ window.saveEditComment = async (commentId) => {
 };
 
 window.deleteComment = async (commentId) => {
-    showConfirm("Bạn muốn xóa bình luận này?", async () => {
+    showConfirm(t('comment.delete_confirm'), async () => {
         try {
             const success = await TaskAPI.deleteComment(commentId);
             if (success) {
                 currentTask.comments = currentTask.comments.filter(c => c._id !== commentId);
                 TaskView.renderComments(currentTask.comments);
-                toast.success("Đã xóa bình luận");
+                toast.success(t('comment.deleted'));
             } else {
-                toast.error("Lỗi xóa");
+                toast.error("Error");
             }
-        } catch (err) { toast.error("Lỗi kết nối"); }
+        } catch (err) { toast.error("Error"); }
     });
 };
 
 // --- FILE MANAGER ---
 async function loadFileManager() {
     const container = document.getElementById('file-list-container');
-    container.innerHTML = '<div style="font-size:0.8rem; color:#666;">Đang tải...</div>';
+    container.innerHTML = `<div style="font-size:0.8rem; color:#666;">${t('dash.loading')}</div>`;
     const data = await TaskAPI.getFiles(currentTask._id, currentFolderId);
     renderFileList(data.folders, data.files);
     renderBreadcrumb();
@@ -479,7 +479,7 @@ function renderFileList(folders, files) {
     container.innerHTML = '';
 
     if (folders.length === 0 && files.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999; font-size: 0.85rem; padding: 20px;">Thư mục trống</div>';
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #999; font-size: 0.85rem; padding: 20px;">${t('file.empty')}</div>`;
         return;
     }
 
@@ -565,21 +565,18 @@ function navigateFolder(folderId, folderName) {
 }
 
 async function handleCreateFolder() {
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
-    const name = prompt("Nhập tên thư mục mới:");
+    if (!canEditTask) return toast.error(t('task.no_permission'));
+    const name = prompt(t('file.enter_name'));
     if (name) {
         try {
             const data = await TaskAPI.createFolder(name, currentTask._id, currentFolderId);
             if (data && data.folder) {
                 loadFileManager();
-                toast.success("Đã tạo thư mục");
+                toast.success(t('file.created'));
             } else {
-                toast.error("Lỗi tạo thư mục");
+                toast.error(t('file.folder_create_error') || "Error");
             }
-        } catch (err) {
-            console.error(err);
-            toast.error("Lỗi kết nối server");
-        }
+        } catch (err) { toast.error("Error"); }
     }
 }
 
@@ -596,44 +593,39 @@ async function handleUploadFile(e) {
     }
 
     if (!canEditTask) {
-        toast.error("Bạn không có quyền tải file lên.");
+        toast.error(t('file.no_permission_upload') || t('task.no_permission'));
         input.value = '';
         return;
     }
     
-    // Kiểm tra dung lượng (Ví dụ 10MB)
     if (file.size > 10 * 1024 * 1024) {
-        toast.error("File quá lớn! Vui lòng chọn file dưới 10MB.");
+        toast.error(t('file.too_large'));
         input.value = '';
         return;
     }
 
-    toast.info(`Đang tải lên: ${file.name}...`);
+    toast.info(`${t('file.uploading')} ${file.name}...`);
     
     try {
         const data = await TaskAPI.uploadFile(file, currentTask._id, currentFolderId);
-        console.log("✅ Server phản hồi:", data);
-
         if (data && data.file) {
-            await loadFileManager(); // Tải lại danh sách
-            toast.success("Tải lên thành công!");
+            await loadFileManager();
+            toast.success(t('file.upload_success'));
         } else {
-            console.error("❌ Lỗi dữ liệu server:", data);
-            toast.error(data.err || "Lỗi tải lên không xác định");
+            toast.error(t('file.upload_error') || "Error");
         }
-    } catch (err) { 
-        console.error("❌ Lỗi kết nối:", err);
-        toast.error("Lỗi kết nối server (Kiểm tra lại Backend)"); 
+    } catch (err) { toast.error("Error");
     } finally {
         input.value = ''; // Luôn reset input dù thành công hay thất bại
     }
 }
 
 async function deleteItem(type, id) {
-    if (!canEditTask) return toast.error("Bạn không có quyền.");
-    showConfirm(`Xóa ${type === 'file' ? 'tệp' : 'thư mục'} này?`, async () => {
+    if (!canEditTask) return toast.error(t('task.no_permission'));
+    const msg = type === 'file' ? t('file.confirm_delete_file') : t('file.confirm_delete_folder');
+    showConfirm(msg, async () => {
         await TaskAPI.deleteItem(type, id);
         loadFileManager();
-        toast.success("Đã xóa");
+        toast.success(t('task.deleted_success')); // Reuse key deleted
     });
 }

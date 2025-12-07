@@ -355,7 +355,9 @@ async function checkOverdueNotification() {
         if(res.ok) {
             const data = await res.json();
             if(data.tasks && data.tasks.length > 0) {
-                toast.error(`Bạn có ${data.tasks.length} công việc đã quá hạn!`);
+                // [DỊCH] Thông báo có n task quá hạn
+                const msg = t('task.msg_global_overdue').replace('{n}', data.tasks.length);
+                toast.error(msg);
             }
         }
     } catch(e) { /* Ignore */ }

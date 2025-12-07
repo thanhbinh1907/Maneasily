@@ -33,9 +33,11 @@
             <div class="board-header">
                 <div class="board-header-left">
                     <nav class="board-breadcrumb">
-                        <a href="/src/pages/projects.html">Dự án</a>
+                        <a href="/src/pages/projects.html" data-i18n="board.breadcrumb_projects">Dự án</a>
+                        
                         <i class="fa-solid fa-chevron-right"></i>
-                        <span id="board-title">Đang tải...</span>
+                        
+                        <span id="board-title" data-i18n="dash.loading">Đang tải...</span>
                     </nav>
                     <button class="btn-star"><i class="fa-regular fa-star"></i></button>
                 </div>
@@ -45,11 +47,13 @@
                     <div class="divider-vertical"></div>
                     
                     <button class="btn-board-tool" id="btn-manage-members">
-                        <i class="fa-solid fa-user-plus"></i> Quản lý thành viên
+                        <i class="fa-solid fa-user-plus"></i> 
+                        <span data-i18n="board.manage_members">Quản lý thành viên</span>
                     </button>
-                    
+
                     <button class="btn-board-tool primary" id="btn-add-column-header">
-                        <i class="fa-solid fa-plus"></i> Thêm cột
+                        <i class="fa-solid fa-plus"></i> 
+                        <span data-i18n="board.add_column">Thêm cột</span>
                     </button>
                 </div>
             </div>

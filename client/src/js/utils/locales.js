@@ -111,7 +111,143 @@ export const resources = {
         "msg.create_success": "Tạo thành công!",
         "msg.update_success": "Cập nhật thành công!",
         "msg.deleted_success": "Đã xóa thành công!",
-        "msg.confirm_delete_column": "Xóa cột này và toàn bộ công việc bên trong?"
+        "msg.confirm_delete_column": "Xóa cột này và toàn bộ công việc bên trong?",
+
+        // --- Project Modal (Tạo/Xóa dự án) ---
+        "project.create_title": "Tạo dự án mới",
+        "project.name": "Tên dự án",
+        "project.desc": "Mô tả",
+        "project.cover": "Ảnh bìa (URL)",
+        "project.delete_title": "Xóa dự án?",
+        "project.delete_warning": "Hành động này không thể hoàn tác. Toàn bộ dữ liệu sẽ bị xóa.",
+        "project.btn_create": "Tạo",
+        "project.btn_delete_confirm": "Xóa vĩnh viễn",
+
+        // --- Board (Giao diện bảng) ---
+        "board.add_column": "Thêm cột",
+        "board.manage_members": "Quản lý thành viên",
+        "board.column_title_placeholder": "Ví dụ: Đang làm, Review...",
+        "board.btn_add_column": "Thêm cột",
+        "board.modal_add_column_title": "Thêm cột mới",
+
+        // --- Task Modal (Tạo Task) ---
+        "task.create_title": "Thêm nhiệm vụ mới",
+        "task.title_placeholder": "Tên nhiệm vụ...",
+        "task.desc_placeholder": "Mô tả chi tiết",
+        "task.tag_placeholder": "Thẻ (Tag)",
+        "task.color_label": "Chọn màu thẻ:",
+        "task.start_date": "Bắt đầu",
+        "task.deadline": "Hạn chót",
+        "task.btn_add": "Thêm nhiệm vụ",
+
+        // --- Task Detail (Chi tiết Task) ---
+        "task.in_list": "Trong danh sách:",
+        "task.desc_label": "Mô tả",
+        "task.desc_save": "Lưu",
+        "task.subtask_label": "Danh sách công việc",
+        "task.subtask_placeholder": "Thêm một mục...",
+        "task.subtask_add": "Thêm",
+        "task.files_label": "Tài liệu đính kèm",
+        "task.files_root": "Gốc",
+        "task.comments_label": "Bình luận",
+        "task.comment_placeholder": "Viết bình luận...",
+        "task.comment_btn": "Bình luận",
+        
+        // Sidebar của Task Detail
+        "task.sidebar_members": "Thành viên",
+        "task.sidebar_add_member": "Thêm thành viên",
+        "task.sidebar_choose_member": "Chọn người để thêm:",
+        "task.sidebar_tags": "Nhãn (Tag)",
+        "task.sidebar_tag_placeholder": "VD: Frontend",
+        "task.sidebar_save_tag": "Lưu Nhãn",
+        "task.sidebar_time": "Thời gian",
+        "task.sidebar_start": "Bắt đầu:",
+        "task.sidebar_deadline": "Hạn chót:",
+        "task.sidebar_actions": "Hành động",
+        "task.sidebar_delete": "Xóa công việc",
+
+        // --- Subtask Member Modal ---
+        "subtask.manage_members": "Quản lý thành viên",
+        "subtask.tab_joined": "Đang tham gia",
+        "subtask.tab_add": "Thêm thành viên",
+
+        // --- Share Modal ---
+        "share.title": "Thêm thành viên",
+        "share.tab_invite": "Mời thành viên",
+        "share.tab_link": "Sao chép liên kết",
+        "share.search_label": "Tìm kiếm người dùng",
+        "share.search_placeholder": "Nhập tên hoặc email...",
+        "share.current_members": "Thành viên trong dự án:",
+        "share.link_desc": "Bất kỳ ai có liên kết này đều có thể tham gia dự án.",
+        "share.btn_copy": "Sao chép",
+
+        // Common
+        "common.cancel": "Hủy",
+        "common.delete": "Xóa",
+
+        // --- Bổ sung cho Task Logic ---
+        "task.no_permission": "Bạn không có quyền thực hiện hành động này.",
+        "task.confirm_delete_permanent": "Bạn có chắc chắn muốn xóa vĩnh viễn công việc này?",
+        "task.deleted_success": "Đã xóa công việc.",
+        "task.saved": "Đã lưu.",
+        "task.saved_tags": "Đã lưu Nhãn & Màu sắc.",
+        "task.error_load": "Lỗi tải thông tin công việc.",
+        "task.no_members": "Chưa có thành viên.",
+        "task.no_available_members": "Hết thành viên để thêm.",
+        
+        // Time status
+        "time.starts_in": "Bắt đầu sau:",
+        "time.remaining": "Còn lại:",
+        "time.overdue": "Đã quá hạn!",
+        "time.day": "ngày",
+        "time.hour": "giờ",
+        "time.minute": "phút",
+
+        // Subtask
+        "subtask.no_assignee": "Chưa có ai làm việc này.",
+        "subtask.all_added": "Tất cả thành viên đã được thêm.",
+        "subtask.kick": "Mời ra",
+        "subtask.delete_confirm": "Xóa công việc con này?",
+
+        // Comments
+        "comment.edit": "Sửa",
+        "comment.delete": "Xóa",
+        "comment.save": "Lưu",
+        "comment.cancel": "Hủy",
+        "comment.empty": "Nội dung trống!",
+        "comment.delete_confirm": "Bạn muốn xóa bình luận này?",
+        "comment.updated": "Đã sửa bình luận.",
+        "comment.deleted": "Đã xóa bình luận.",
+
+        // Files
+        "file.empty": "Thư mục trống",
+        "file.uploading": "Đang tải lên:",
+        "file.upload_success": "Tải lên thành công!",
+        "file.too_large": "File quá lớn! Vui lòng chọn file dưới 10MB.",
+        "file.confirm_delete_file": "Xóa tệp này?",
+        "file.confirm_delete_folder": "Xóa thư mục này?",
+        "file.created": "Đã tạo thư mục.",
+        "file.enter_name": "Nhập tên thư mục mới:",
+
+        // --- Bổ sung cho Task Status & Notifications ---
+        "task.status_done": "Đã hoàn thành!",
+        "task.msg_overdue": "Công việc đã quá hạn, không thể chỉnh sửa!",
+        "task.msg_not_started": "Chưa đến thời gian bắt đầu!",
+        "task.msg_update_member_success": "Đã cập nhật thành viên.",
+        "task.msg_global_overdue": "Bạn có {n} công việc đã quá hạn!", // {n} là số lượng
+        
+        // Time
+        "time.starts_in": "Bắt đầu sau:",
+        "time.remaining": "Còn lại:",
+        "time.overdue": "Đã quá hạn!",
+        "time.day": "ngày",
+        "time.hour": "giờ",
+        "time.minute": "phút",
+
+        // --- Board ---
+        "board.breadcrumb_projects": "Dự án", // [MỚI]
+        "board.add_column": "Thêm cột",
+        "board.manage_members": "Quản lý thành viên",
     },
     en: {
         // --- Sidebar ---
@@ -223,6 +359,142 @@ export const resources = {
         "msg.create_success": "Created successfully!",
         "msg.update_success": "Updated successfully!",
         "msg.deleted_success": "Deleted successfully!",
-        "msg.confirm_delete_column": "Delete this column and all its tasks?"
+        "msg.confirm_delete_column": "Delete this column and all its tasks?",
+
+        // --- Project Modal ---
+        "project.create_title": "Create New Project",
+        "project.name": "Project Name",
+        "project.desc": "Description",
+        "project.cover": "Cover Image (URL)",
+        "project.delete_title": "Delete Project?",
+        "project.delete_warning": "This action cannot be undone. All data will be lost.",
+        "project.btn_create": "Create",
+        "project.btn_delete_confirm": "Delete Permanently",
+
+        // --- Board ---
+        "board.add_column": "Add Column",
+        "board.manage_members": "Manage Members",
+        "board.column_title_placeholder": "Ex: In Progress, Review...",
+        "board.btn_add_column": "Add Column",
+        "board.modal_add_column_title": "Add New Column",
+
+        // --- Task Modal ---
+        "task.create_title": "Add New Task",
+        "task.title_placeholder": "Task title...",
+        "task.desc_placeholder": "Detailed description",
+        "task.tag_placeholder": "Tag",
+        "task.color_label": "Select color:",
+        "task.start_date": "Start Date",
+        "task.deadline": "Deadline",
+        "task.btn_add": "Add Task",
+
+        // --- Task Detail ---
+        "task.in_list": "In list:",
+        "task.desc_label": "Description",
+        "task.desc_save": "Save",
+        "task.subtask_label": "Checklist",
+        "task.subtask_placeholder": "Add an item...",
+        "task.subtask_add": "Add",
+        "task.files_label": "Attachments",
+        "task.files_root": "Root",
+        "task.comments_label": "Comments",
+        "task.comment_placeholder": "Write a comment...",
+        "task.comment_btn": "Comment",
+
+        // Task Detail Sidebar
+        "task.sidebar_members": "Members",
+        "task.sidebar_add_member": "Add Member",
+        "task.sidebar_choose_member": "Choose member:",
+        "task.sidebar_tags": "Tags",
+        "task.sidebar_tag_placeholder": "Ex: Frontend",
+        "task.sidebar_save_tag": "Save Tag",
+        "task.sidebar_time": "Timing",
+        "task.sidebar_start": "Start:",
+        "task.sidebar_deadline": "Due:",
+        "task.sidebar_actions": "Actions",
+        "task.sidebar_delete": "Delete Task",
+
+        // --- Subtask Member Modal ---
+        "subtask.manage_members": "Manage Members",
+        "subtask.tab_joined": "Joined",
+        "subtask.tab_add": "Add Member",
+
+        // --- Share Modal ---
+        "share.title": "Add Members",
+        "share.tab_invite": "Invite",
+        "share.tab_link": "Copy Link",
+        "share.search_label": "Search Users",
+        "share.search_placeholder": "Enter name or email...",
+        "share.current_members": "Project Members:",
+        "share.link_desc": "Anyone with this link can join the project.",
+        "share.btn_copy": "Copy",
+
+        // Common
+        "common.cancel": "Cancel",
+        "common.delete": "Delete",
+
+        // --- Additions for Task Logic ---
+        "task.no_permission": "You do not have permission to perform this action.",
+        "task.confirm_delete_permanent": "Are you sure you want to permanently delete this task?",
+        "task.deleted_success": "Task deleted.",
+        "task.saved": "Saved.",
+        "task.saved_tags": "Tags & Color saved.",
+        "task.error_load": "Error loading task.",
+        "task.no_members": "No members yet.",
+        "task.no_available_members": "No members available to add.",
+
+        // Time status
+        "time.starts_in": "Starts in:",
+        "time.remaining": "Remaining:",
+        "time.overdue": "Overdue!",
+        "time.day": "days",
+        "time.hour": "hours",
+        "time.minute": "mins",
+
+        // Subtask
+        "subtask.no_assignee": "No one assigned yet.",
+        "subtask.all_added": "All members added.",
+        "subtask.kick": "Kick",
+        "subtask.delete_confirm": "Delete this subtask?",
+
+        // Comments
+        "comment.edit": "Edit",
+        "comment.delete": "Delete",
+        "comment.save": "Save",
+        "comment.cancel": "Cancel",
+        "comment.empty": "Content is empty!",
+        "comment.delete_confirm": "Delete this comment?",
+        "comment.updated": "Comment updated.",
+        "comment.deleted": "Comment deleted.",
+
+        // Files
+        "file.empty": "Empty folder",
+        "file.uploading": "Uploading:",
+        "file.upload_success": "Upload successful!",
+        "file.too_large": "File too large! Please choose file under 10MB.",
+        "file.confirm_delete_file": "Delete this file?",
+        "file.confirm_delete_folder": "Delete this folder?",
+        "file.created": "Folder created.",
+        "file.enter_name": "Enter folder name:",
+
+        // --- Additions for Task Status & Notifications ---
+        "task.status_done": "Completed!",
+        "task.msg_overdue": "Task is overdue, cannot edit!",
+        "task.msg_not_started": "Task has not started yet!",
+        "task.msg_update_member_success": "Member updated successfully.",
+        "task.msg_global_overdue": "You have {n} overdue tasks!",
+
+        // Time
+        "time.starts_in": "Starts in:",
+        "time.remaining": "Remaining:",
+        "time.overdue": "Overdue!",
+        "time.day": "days",
+        "time.hour": "hours",
+        "time.minute": "mins",
+
+        // --- Board ---
+        "board.breadcrumb_projects": "Projects", // [NEW]
+        "board.add_column": "Add Column",
+        "board.manage_members": "Manage Members",
     }
 };

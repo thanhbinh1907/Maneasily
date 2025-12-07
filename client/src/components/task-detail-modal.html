@@ -12,19 +12,19 @@
                 <div class="detail-section">
                     <input type="text" id="detail-title" value="Tên công việc" autocomplete="off">
                     <div style="margin-top: 5px; color: #666; font-size: 0.9rem;">
-                        Trong danh sách: <span id="detail-column-name" style="font-weight: 600;">...</span>
+                        <span data-i18n="task.in_list">Trong danh sách:</span> <span id="detail-column-name" style="font-weight: 600;">...</span>
                     </div>
                 </div>
 
                 <div class="detail-section">
-                    <div class="detail-label"><i class="fa-solid fa-align-left"></i> Mô tả</div>
-                    <textarea id="detail-desc" placeholder="Thêm mô tả chi tiết..."></textarea>
-                    <button id="btn-save-desc" class="btn-modal btn-submit" style="margin-top:10px; display:none;">Lưu</button>
+                    <div class="detail-label"><i class="fa-solid fa-align-left"></i> <span data-i18n="task.desc_label">Mô tả</span></div>
+                    <textarea id="detail-desc" data-i18n-placeholder="task.desc_placeholder" placeholder="Thêm mô tả chi tiết..."></textarea>
+                    <button id="btn-save-desc" class="btn-modal btn-submit" style="margin-top:10px; display:none;" data-i18n="task.desc_save">Lưu</button>
                 </div>
 
                 <div class="detail-section">
                     <div class="detail-label">
-                        <i class="fa-regular fa-square-check"></i> Danh sách công việc 
+                        <i class="fa-regular fa-square-check"></i> <span data-i18n="task.subtask_label">Danh sách công việc</span> 
                         <span id="subtask-count" style="background:#eee; padding:2px 6px; border-radius:10px; margin-left:5px;">0</span>
                     </div>
                     
@@ -38,19 +38,19 @@
                     <div id="subtask-list"></div>
                     
                     <div id="add-subtask-wrapper" style="margin-top: 10px;">
-                        <input type="text" id="new-subtask-input" placeholder="Thêm một mục..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" autocomplete="off">
+                        <input type="text" id="new-subtask-input" data-i18n-placeholder="task.subtask_placeholder" placeholder="Thêm một mục..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" autocomplete="off">
                         <div style="margin-top: 5px;">
-                            <button id="btn-add-subtask" class="btn-modal btn-submit" style="padding: 6px 12px;">Thêm</button>
+                            <button id="btn-add-subtask" class="btn-modal btn-submit" style="padding: 6px 12px;" data-i18n="task.subtask_add">Thêm</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="detail-section">
-                    <div class="detail-label"><i class="fa-regular fa-folder-open"></i> Tài liệu đính kèm</div>
+                    <div class="detail-label"><i class="fa-regular fa-folder-open"></i> <span data-i18n="task.files_label">Tài liệu đính kèm</span></div>
                     
                     <div class="file-manager-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #fafbfc; padding: 8px; border-radius: 6px; border: 1px solid #dfe1e6;">
                         <div id="file-breadcrumb" style="font-weight: 600; color: #172b4d; font-size: 0.9rem; cursor: pointer;">
-                            <i class="fa-solid fa-house"></i> Gốc
+                            <i class="fa-solid fa-house"></i> <span data-i18n="task.files_root">Gốc</span>
                         </div>
                         <div style="display: flex; gap: 5px;">
                             <button id="btn-create-folder" style="padding: 4px 8px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;" title="Tạo thư mục">
@@ -68,12 +68,12 @@
                 </div>
 
                 <div class="detail-section">
-                    <div class="detail-label"><i class="fa-regular fa-comments"></i> Bình luận</div>
+                    <div class="detail-label"><i class="fa-regular fa-comments"></i> <span data-i18n="task.comments_label">Bình luận</span></div>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <img id="my-comment-avatar" src="" class="comment-avatar" style="background: #eee;">
                         <div style="flex-grow: 1;">
-                            <textarea id="comment-input" placeholder="Viết bình luận..." style="width: 100%; height: 50px; padding: 10px; border: 1px solid #dfe1e6; border-radius: 4px;"></textarea>
-                            <button id="btn-post-comment" class="btn-modal btn-submit" style="margin-top: 5px;">Bình luận</button>
+                            <textarea id="comment-input" data-i18n-placeholder="task.comment_placeholder" placeholder="Viết bình luận..." style="width: 100%; height: 50px; padding: 10px; border: 1px solid #dfe1e6; border-radius: 4px;"></textarea>
+                            <button id="btn-post-comment" class="btn-modal btn-submit" style="margin-top: 5px;" data-i18n="task.comment_btn">Bình luận</button>
                         </div>
                     </div>
                     <div id="comment-list"></div>
@@ -82,23 +82,23 @@
 
             <div class="detail-sidebar">
                 <div class="sidebar-group">
-                    <h4>Thành viên</h4>
+                    <h4 data-i18n="task.sidebar_members">Thành viên</h4>
                     <div id="detail-members-list" style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;"></div>
                     
                     <button class="sidebar-btn" id="btn-add-member-detail" style="position: relative;">
-                        <i class="fa-solid fa-user-plus"></i> Thêm thành viên
+                        <i class="fa-solid fa-user-plus"></i> <span data-i18n="task.sidebar_add_member">Thêm thành viên</span>
                     </button>
                 
                     <div id="add-member-dropdown" style="display: none; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px; margin-top: 5px; max-height: 200px; overflow-y: auto;">
-                        <p style="font-size: 0.8rem; color: #666; margin: 0 0 5px 0;">Chọn người để thêm:</p>
+                        <p style="font-size: 0.8rem; color: #666; margin: 0 0 5px 0;" data-i18n="task.sidebar_choose_member">Chọn người để thêm:</p>
                         <div id="available-members-list" style="display: flex; flex-direction: column; gap: 5px;">
                             </div>
                     </div>
                 </div>
 
                 <div class="sidebar-group">
-                    <h4>Nhãn (Tag)</h4>
-                    <input type="text" id="detail-tag-input" placeholder="VD: Frontend" style="width: 100%; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 4px;" autocomplete="off">
+                    <h4 data-i18n="task.sidebar_tags">Nhãn (Tag)</h4>
+                    <input type="text" id="detail-tag-input" data-i18n-placeholder="task.sidebar_tag_placeholder" placeholder="VD: Frontend" style="width: 100%; padding: 5px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 4px;" autocomplete="off">
                     <div class="color-selector" style="margin-bottom: 10px;">
                         <input type="radio" name="detailColor" value="#eb5a46" id="d1"><label for="d1" style="background: #eb5a46;"></label>
                         <input type="radio" name="detailColor" value="#00c2e0" id="d2"><label for="d2" style="background: #00c2e0;"></label>
@@ -111,24 +111,24 @@
                                    title="Chọn màu tùy chỉnh">
                         </div>
                     </div>
-                    <button class="sidebar-btn" id="btn-save-tag">Lưu Nhãn</button>
+                    <button class="sidebar-btn" id="btn-save-tag" data-i18n="task.sidebar_save_tag">Lưu Nhãn</button>
                 </div>
 
                 <div class="sidebar-group">
-                    <h4>Thời gian</h4>
+                    <h4 data-i18n="task.sidebar_time">Thời gian</h4>
                     
-                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;">Bắt đầu:</label>
+                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;" data-i18n="task.sidebar_start">Bắt đầu:</label>
                     <input type="datetime-local" id="detail-start-time" style="width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
 
-                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;">Hạn chót:</label>
+                    <label style="font-size: 0.75rem; color: #5e6c84; display:block; margin-bottom: 2px;" data-i18n="task.sidebar_deadline">Hạn chót:</label>
                     <input type="datetime-local" id="detail-deadline" style="width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
                     
                     <div id="time-remaining-display" class="time-remaining"></div>
                 </div>
 
                 <div class="sidebar-group" style="margin-top: auto;">
-                    <h4>Hành động</h4>
-                    <button class="sidebar-btn" id="btn-delete-task-detail" style="background: #ffebe6; color: #d93025;"><i class="fa-regular fa-trash-can"></i> Xóa công việc</button>
+                    <h4 data-i18n="task.sidebar_actions">Hành động</h4>
+                    <button class="sidebar-btn" id="btn-delete-task-detail" style="background: #ffebe6; color: #d93025;"><i class="fa-regular fa-trash-can"></i> <span data-i18n="task.sidebar_delete">Xóa công việc</span></button>
                 </div>
             </div>
         </div>

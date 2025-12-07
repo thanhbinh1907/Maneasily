@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         projectGrid.innerHTML = `
             <div class="project-card create-card" id="card-create-trigger">
                 <i class="fa-solid fa-plus" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <span>Tạo dự án mới</span>
+                <span>${t('project.create_title')}</span> 
             </div>`;
         
         document.getElementById('card-create-trigger').addEventListener('click', () => toggleModal(createModal, true));

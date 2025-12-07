@@ -203,7 +203,7 @@ const userCtrl = {
                 return res.status(403).json({ err: "Bạn không có quyền." });
             }
 
-            // Lấy thông tin dự án để ghi log và thông báo
+            // [QUAN TRỌNG] Lấy thông tin dự án để có tên (title)
             const project = await Projects.findById(invite.project);
             const projectName = project ? project.title : "Dự án";
 
@@ -212,17 +212,18 @@ const userCtrl = {
                 await Projects.findByIdAndUpdate(invite.project, { $addToSet: { members: userId } });
                 await Users.findByIdAndUpdate(userId, { $addToSet: { projects: invite.project } });
                 
-                // [SỬA Ở ĐÂY] Thay "Thành viên mới" bằng projectName
+                // [SỬA LOGIC GHI LOG]
+                // Thay vì ghi cứng "Thành viên mới" hay tên user, hãy dùng projectName
                 await logActivity(
                     req, 
                     invite.project, 
                     "joined", 
-                    projectName, // <-- Đã sửa thành tên dự án
+                    projectName, // <--- Target là Tên Dự Án
                     "đã tham gia dự án", 
                     "member"
                 );
 
-                // Báo cho người mời biết
+                // Báo cho người mời
                 const notif = await Notifications.create({
                     recipient: invite.sender,
                     sender: userId,

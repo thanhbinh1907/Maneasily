@@ -20,10 +20,13 @@ export function initTaskDetailModal() {
     // 1.1. Init Main Modal
     const modal = document.getElementById('task-detail-modal');
     const closeBtn = document.getElementById('close-detail-modal');
+    
     const closeModal = () => { if(modal) modal.style.display = 'none'; };
     
     closeBtn?.addEventListener('click', closeModal);
-    modal?.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+    modal?.addEventListener('mousedown', (e) => { 
+        if(e.target === modal) closeModal(); 
+    });
 
     // 1.2. Init Subtask Manager Modal
     const subModal = document.getElementById('subtask-member-modal');
@@ -31,7 +34,9 @@ export function initTaskDetailModal() {
     const closeSubModal = () => { if(subModal) subModal.style.display = 'none'; };
     
     closeSubBtn?.addEventListener('click', closeSubModal);
-    subModal?.addEventListener('click', (e) => { if(e.target === subModal) closeSubModal(); });
+    subModal?.addEventListener('mousedown', (e) => { 
+        if(e.target === subModal) closeSubModal(); 
+    });
 
     // Tab chuyển đổi trong Subtask Modal
     const tabBtns = document.querySelectorAll('.subtask-tab-btn');
@@ -105,12 +110,11 @@ export function initTaskDetailModal() {
     
     document.body.addEventListener('change', (e) => {
         if (e.target && e.target.id === 'file-upload-input') {
-            console.log("⚡ Đã bắt được sự kiện chọn file!"); 
             handleUploadFile(e);
         }
     });
 
-    // --- [MỚI] INIT MODAL TẠO THƯ MỤC ---
+    // --- INIT MODAL TẠO THƯ MỤC ---
     const folderModal = document.getElementById('create-folder-modal');
     const folderForm = document.getElementById('form-create-folder');
     const folderInput = document.getElementById('new-folder-name');
@@ -126,6 +130,11 @@ export function initTaskDetailModal() {
 
     cancelFolderBtn?.addEventListener('click', closeFolderModal);
     closeFolderBtn?.addEventListener('click', closeFolderModal);
+    
+    // Fix đóng modal khi click ra ngoài overlay
+    folderModal?.addEventListener('mousedown', (e) => {
+        if(e.target === folderModal) closeFolderModal();
+    });
 
     folderForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -485,25 +494,26 @@ function renderFileList(folders, files) {
     folders.forEach(f => {
         const el = document.createElement('div');
         el.className = 'file-item';
-        el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
+        // [QUAN TRỌNG] Đã xóa inline styles để dùng class CSS .file-item cho Dark Mode
         el.innerHTML = `
             <i class="fa-solid fa-folder" style="font-size: 2rem; color: #ffab00; display: block; margin-bottom: 5px;"></i>
             <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.name}</div>
-            <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
+            <i class="fa-solid fa-xmark btn-delete-file"></i>
         `;
         el.addEventListener('click', (e) => {
             if(!e.target.classList.contains('btn-delete-file')) navigateFolder(f._id, f.name);
         });
-        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('folder', f._id));
-        el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
-        el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
+        el.querySelector('.btn-delete-file').addEventListener('click', (e) => {
+            e.stopPropagation(); // Ngăn click nhầm vào folder
+            deleteItem('folder', f._id);
+        });
         container.appendChild(el);
     });
 
     files.forEach(f => {
         const el = document.createElement('div');
         el.className = 'file-item';
-        el.style.cssText = 'border: 1px solid #dfe1e6; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; background: #fff;';
+        // [QUAN TRỌNG] Đã xóa inline styles để dùng class CSS .file-item cho Dark Mode
         
         let icon = 'fa-file'; let color = '#6b778c';
         if (f.mimetype && f.mimetype.includes('image')) { icon = 'fa-file-image'; color = '#a6c5f7'; }
@@ -521,15 +531,16 @@ function renderFileList(folders, files) {
         el.innerHTML = `
             <i class="fa-solid ${icon}" style="font-size: 2rem; color: ${color}; display: block; margin-bottom: 5px;"></i>
             <div style="font-size: 0.8rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.originalName}">${f.originalName}</div>
-            <i class="fa-solid fa-xmark btn-delete-file" style="position: absolute; top: 2px; right: 5px; font-size: 0.8rem; color: #d93025; display: none;"></i>
+            <i class="fa-solid fa-xmark btn-delete-file"></i>
         `;
         
         el.addEventListener('click', (e) => {
             if(!e.target.classList.contains('btn-delete-file')) window.open(fileUrl, '_blank');
         });
-        el.querySelector('.btn-delete-file').addEventListener('click', () => deleteItem('file', f._id));
-        el.addEventListener('mouseenter', () => el.querySelector('.btn-delete-file').style.display = 'block');
-        el.addEventListener('mouseleave', () => el.querySelector('.btn-delete-file').style.display = 'none');
+        el.querySelector('.btn-delete-file').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteItem('file', f._id);
+        });
         
         container.appendChild(el);
     });
@@ -543,7 +554,9 @@ function renderBreadcrumb() {
         span.innerHTML = (index === 0) ? `<i class="fa-solid fa-house"></i>` : item.name;
         span.style.cursor = 'pointer'; span.style.padding = '0 4px';
         if (index === currentFolderPath.length - 1) {
-            span.style.fontWeight = 'bold'; span.style.color = '#000';
+            span.style.fontWeight = 'bold'; 
+            // Màu chữ của breadcrumb nên để CSS xử lý hoặc dùng style tối thiểu
+            span.style.color = 'var(--text-main)'; 
         } else {
             span.style.color = '#0079bf'; span.innerHTML += ' <span style="color:#666">/</span> ';
         }
@@ -563,7 +576,6 @@ function navigateFolder(folderId, folderName) {
     loadFileManager();
 }
 
-// [CẬP NHẬT] Hàm tạo thư mục sử dụng Modal
 function handleCreateFolder() {
     if (!canEditTask) return toast.error(t('task.no_permission'));
     

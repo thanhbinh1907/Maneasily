@@ -4,8 +4,8 @@ import { io } from "socket.io-client";
 
 // --- CẤU HÌNH GOOGLE CALENDAR API ---
 // [QUAN TRỌNG] Hãy thay mã của bạn vào đây
-const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE'; 
-const API_KEY = 'YOUR_GOOGLE_API_KEY_HERE';
+const CLIENT_ID = '619871342940-cki6nuae5863i35ui3q76h9bkevtlvkl.apps.googleusercontent.com'; 
+const API_KEY = 'AIzaSyD2AkpU5gG941lRO2jVYh14hjSE5pQ5KjQ';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
@@ -159,34 +159,43 @@ function setupExportMenu() {
     }
 }
 
-// --- 5. LOGIC XUẤT GOOGLE CALENDAR (CORE) ---
+// --- 5. LOGIC XUẤT GOOGLE CALENDAR (ĐÃ TỐI ƯU) ---
 
-// Hàm này được gọi từ HTML (onclick)
 window.exportSchedule = async (range) => {
-    // Đóng menu
     const exportMenu = document.getElementById('export-menu');
     if (exportMenu) exportMenu.style.display = 'none';
 
-    // Kiểm tra cấu hình
     if (CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID_HERE') {
-        return toast.error("Chưa cấu hình Google Client ID trong code!");
+        return toast.error("Chưa cấu hình Google Client ID!");
     }
 
-    // Thiết lập callback khi đăng nhập thành công
-    tokenClient.callback = async (resp) => {
-        if (resp.error) {
-            throw (resp);
-        }
-        await pushToGoogleCalendar(range);
-    };
+    // A. Lấy email của người dùng đang đăng nhập
+    const user = JSON.parse(localStorage.getItem('maneasily_user'));
+    const userEmail = user ? user.email : '';
 
-    // Kiểm tra quyền truy cập (Token)
-    if (gapi.client.getToken() === null) {
-        // Chưa có quyền -> Hiện Popup xin quyền
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    } else {
-        // Đã có quyền -> Chạy luôn
+    // B. Cấu hình lại Token Client mỗi lần bấm nút để cập nhật callback
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        // [QUAN TRỌNG] Gợi ý tài khoản: Google sẽ tự chọn email này, không bắt user chọn lại
+        login_hint: userEmail, 
+        callback: async (resp) => {
+            if (resp.error) {
+                console.error(resp);
+                return;
+            }
+            await pushToGoogleCalendar(range);
+        },
+    });
+
+    // C. Kiểm tra xem đã có Token hợp lệ chưa
+    // Nếu đã có token trong phiên làm việc này -> Chạy luôn không hỏi
+    if (gapi.client.getToken() !== null) {
         await pushToGoogleCalendar(range);
+    } else {
+        // D. Nếu chưa có -> Xin quyền
+        // [QUAN TRỌNG] Bỏ 'prompt: consent' để nếu đã cấp quyền trước đó rồi thì nó tự trôi qua luôn
+        tokenClient.requestAccessToken({ prompt: '' });
     }
 };
 

@@ -119,16 +119,39 @@
                                     </label>
                                 </div>
                         
-                                <div class="toggle-item">
-                                    <div class="toggle-info">
-                                        <strong data-i18n="settings.notif_deadline">Nhắc nhở hạn chót (Deadline)</strong>
-                                        <p data-i18n="settings.notif_deadline_desc">Gửi cảnh báo khi công việc sắp hết hạn.</p>
+                                <div class="toggle-item" style="flex-wrap: wrap;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                        <div class="toggle-info">
+                                            <strong data-i18n="settings.notif_deadline">Nhắc nhở hạn chót (Deadline)</strong>
+                                            <p data-i18n="settings.notif_deadline_desc">Gửi cảnh báo khi công việc sắp hết hạn.</p>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="deadline-enable-toggle"> 
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="notif-email-deadline"> <span class="slider round"></span>
-                                    </label>
+
+                                    <div id="deadline-options" style="width: 100%; display: none; margin-top: 15px; padding-left: 10px; padding-top: 15px; border-top: 1px dashed var(--border-color); animation: fadeIn 0.3s;">
+                                        <div style="display: flex; gap: 20px;">
+                                            <div style="flex: 1;">
+                                                <label style="font-size: 0.85rem; color: var(--text-sub); display: block; margin-bottom: 5px;">
+                                                    Nhắc trước (Ngày)
+                                                </label>
+                                                <input type="number" id="deadline-days" min="0" max="30" class="form-input" style="padding: 6px 10px;" placeholder="VD: 1">
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <label style="font-size: 0.85rem; color: var(--text-sub); display: block; margin-bottom: 5px;">
+                                                    Khẩn cấp (Giờ)
+                                                </label>
+                                                <input type="number" id="deadline-hours" min="0" max="24" class="form-input" style="padding: 6px 10px;" placeholder="VD: 2">
+                                            </div>
+                                        </div>
+                                        <p style="font-size: 0.75rem; color: var(--text-placeholder); margin-top: 8px;">
+                                            * Hệ thống sẽ gửi mail nhắc nhở vào 7:00 sáng (theo ngày) và kiểm tra mỗi 30 phút (theo giờ).
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                                </div>
                             
                             <div class="settings-card">
                                 <h3><i class="fa-regular fa-bell" style="margin-right: 8px;"></i> <span data-i18n="settings.in_app">Trong ứng dụng</span></h3>

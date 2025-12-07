@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Tab Chung
     const themeSelect = document.getElementById('set-theme');
-    const langSelect = document.getElementById('set-lang'); // [MỚI]
+    const langSelect = document.getElementById('set-lang'); 
     
     // Tab Thông báo
     const notifInvite = document.getElementById('notif-email-invite');
@@ -34,6 +34,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Helper: Kiểm tra element tồn tại trước khi gán
     const setChecked = (el, val) => { if (el) el.checked = val; };
     const setValue = (el, val) => { if (el) el.value = val; };
+
+    // --- [MỚI] LẮNG NGHE SỰ KIỆN TỪ HEADER ---
+    // Nếu người dùng bấm nút trăng/sao trên header, cập nhật select box này ngay lập tức
+    window.addEventListener('theme-change', (e) => {
+        if (themeSelect) {
+            themeSelect.value = e.detail; 
+        }
+    });
 
     // 2. LOAD DỮ LIỆU TỪ SERVER
     try {
@@ -169,10 +177,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         localStorage.setItem('theme', 'light');
                     }
 
+                    // --- [MỚI] PHÁT SỰ KIỆN ĐỂ HEADER BIẾT ---
+                    // Giúp nút icon trên header (Mặt trăng/Mặt trời) đổi ngay lập tức
+                    window.dispatchEvent(new CustomEvent('theme-change', { detail: theme }));
+
                     // Áp dụng Ngôn ngữ ngay lập tức
                     setLanguage(language);
 
-                    // Cập nhật Header UI
+                    // Cập nhật Header UI (Avatar, Tên)
                     const navAvatar = document.getElementById('nav-user-avatar');
                     const navName = document.getElementById('nav-user-name');
                     if (navAvatar) navAvatar.src = data.user.avatar;

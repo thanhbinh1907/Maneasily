@@ -43,21 +43,18 @@
                 </div>
             </div>
 
-            <div class="schedule-toolbar" style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
-    
-                <div class="dropdown export-dropdown" style="position: relative;">
-                    <button id="btn-export-calendar" class="btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer;">
-                        <i class="fa-regular fa-calendar-plus"></i> 
-                        <span data-i18n="schedule.export_google">Xuất Google Calendar</span>
-                    </button>
+            <div class="dropdown export-dropdown" style="position: relative;">
+                <button id="btn-export-calendar" class="btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); cursor: pointer;">
+                    <i class="fa-regular fa-calendar-plus"></i> 
+                    <span data-i18n="schedule.export_google">Xuất Google Calendar</span>
+                </button>
+                
+                <div id="export-menu" class="dropdown-menu" style="display: none;">
+                    <div class="dropdown-item" onclick="window.exportSchedule('week')" data-i18n="schedule.export_week">Trong Tuần này</div>
+                    <div class="dropdown-item" onclick="window.exportSchedule('month')" data-i18n="schedule.export_month">Trong Tháng này</div>
                     
-                    <div id="export-menu" class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; width: 160px; z-index: 100; margin-top: 5px;">
-                        <div class="dropdown-item" onclick="window.exportSchedule('week')" data-i18n="schedule.export_week">Trong Tuần này</div>
-                        <div class="dropdown-item" onclick="window.exportSchedule('month')" data-i18n="schedule.export_month">Trong Tháng này</div>
-                        <div class="dropdown-item" onclick="window.exportSchedule('all')" style="border-top: 1px solid #eee;" data-i18n="schedule.export_all">Tất cả công việc</div>
-                    </div>
+                    <div class="dropdown-item" onclick="window.exportSchedule('all')" style="border-top: 1px solid var(--border-color);" data-i18n="schedule.export_all">Tất cả công việc</div>
                 </div>
-            
             </div>
 
             <div class="stats-overview-grid">

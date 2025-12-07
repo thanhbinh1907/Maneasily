@@ -2,12 +2,22 @@ import { API_BASE_URL } from './config.js';
 import { toast } from './utils/toast.js';
 import { applyTranslation } from './utils/i18n.js';
 
+
 document.addEventListener('DOMContentLoaded', () => {
     applyTranslation();
     const signupForm = document.getElementById('signup-form');
     const emailInput = document.getElementById('email');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
+    const btnGoogle = document.getElementById('btn-google');
+    const btnGithub = document.getElementById('btn-github');
+
+    if (btnGoogle) {
+        btnGoogle.href = `${API_BASE_URL}/auth/google`; 
+    }
+    if (btnGithub) {
+        btnGithub.href = `${API_BASE_URL}/auth/github`;
+    }
 
     // Kiểm tra nếu không tìm thấy form thì dừng (tránh lỗi ở các trang khác)
     if (!signupForm) return;

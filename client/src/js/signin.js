@@ -8,6 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const signinForm = document.getElementById('signin-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
+    const btnGoogle = document.getElementById('btn-google');
+    const btnGithub = document.getElementById('btn-github');
+
+    if (btnGoogle) {
+        // Kết quả sẽ là: https://server-cua-ban.onrender.com/api/auth/google
+        btnGoogle.href = `${API_BASE_URL}/auth/google`; 
+    }
+    if (btnGithub) {
+        btnGithub.href = `${API_BASE_URL}/auth/github`;
+    }
 
     // --- XỬ LÝ ĐĂNG NHẬP ---
     signinForm.addEventListener('submit', async (e) => {

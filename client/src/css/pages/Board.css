@@ -325,14 +325,47 @@
 
 /* Ghost & Dragging */
 .task-ghost {
-    background: var(--bg-hover);
-    border: 1px dashed var(--text-placeholder);
-    opacity: 0.5;
+    background-color: var(--bg-hover) !important;
+    border: 1px dashed var(--text-placeholder) !important;
+    opacity: 0.4;
 }
 
 .column-ghost {
-    background: var(--bg-hover);
+    background-color: var(--bg-hover) !important;
     opacity: 0.5;
+}
+
+/* Fallback: Thẻ đang được kéo (Thay thế cho native drag image) */
+.sortable-fallback {
+    /* Ép buộc sử dụng biến màu của Theme hiện tại */
+    background-color: var(--bg-surface) !important;
+    color: var(--text-main) !important;
+    
+    /* Style cho đẹp hơn */
+    border: 1px solid var(--border-focus) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+    opacity: 1 !important; /* Không làm mờ */
+    cursor: grabbing !important;
+    transform: rotate(2deg); /* Nghiêng nhẹ tạo hiệu ứng nhấc lên */
+    
+    /* Đảm bảo nó nổi lên trên cùng */
+    z-index: 10000 !important;
+    position: fixed !important; /* Quan trọng để không bị che */
+}
+
+/* --- FIX CỨNG CHO DARK MODE (Dự phòng) --- */
+/* Nếu biến CSS bị lỗi context, dòng này sẽ cứu cánh */
+[data-theme="dark"] .sortable-fallback {
+    background-color: #1e2130 !important; /* Màu nền tối */
+    color: #e2e8f0 !important;            /* Màu chữ sáng */
+    border-color: #ff7f32 !important;     /* Viền cam */
+}
+
+/* Đảm bảo icon và text bên trong thẻ đang kéo cũng đúng màu */
+.sortable-fallback .task-title,
+.sortable-fallback .task-desc,
+.sortable-fallback i {
+    color: inherit !important;
 }
 
 /* 6. COLOR PICKER */

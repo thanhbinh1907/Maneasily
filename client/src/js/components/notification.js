@@ -2,6 +2,8 @@ import { API_BASE_URL } from '../config.js';
 import { toast } from '../utils/toast.js';
 import { io } from "socket.io-client"; 
 
+import dingSound from '../../assets/sounds/ding.mp3';
+
 export function initNotifications() {
     const bellBtn = document.getElementById('noti-bell-btn');
     const dropdown = document.getElementById('noti-dropdown-content');
@@ -14,36 +16,44 @@ export function initNotifications() {
     let isLoading = false;
     let hasMore = true;
 
-    // --- 1. KẾT NỐI SOCKET.IO (REAL-TIME) ---
-    // Lưu ý: Port là 5000 (server), thay đổi nếu bạn deploy
+    // --- 1. KẾT NỐI SOCKET.IO ---
     const socket = io("http://localhost:5000"); 
     const user = JSON.parse(localStorage.getItem('maneasily_user'));
 
     if (user) {
-        // Gửi sự kiện 'join' để server biết user nào đang online
         socket.emit("join", user._id);
 
-        // Lắng nghe sự kiện có thông báo mới
         socket.on("newNotification", (newNotif) => {
-            // a. Hiện Toast thông báo góc màn hình
+            console.log("🔔 Đã nhận thông báo mới:", newNotif); // [DEBUG] Thêm log để kiểm tra
+
+            // a. Hiện Toast
             toast.info(`🔔 ${newNotif.content}`);
 
-            // b. Phát âm thanh (nếu được bật trong Cài đặt)
+            // b. Phát âm thanh
             const soundEnabled = user.settings?.notifications?.soundEnabled ?? true;
             if (soundEnabled) {
-                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a');
+                // [SỬA ĐOẠN NÀY] Thay URL bằng biến dingSound
+                const audio = new Audio(dingSound);
                 audio.volume = 0.5;
                 audio.play().catch(() => {}); // Bỏ qua lỗi nếu trình duyệt chặn tự phát
             }
 
-            // c. Cập nhật Badge (số đỏ trên chuông)
-            const currentCount = parseInt(badge.textContent || '0');
+            // c. Cập nhật Badge (Số đỏ)
+            // [CẬP NHẬT] Logic cập nhật badge an toàn hơn
+            let currentCount = 0;
+            if (badge.style.display !== 'none' && badge.textContent) {
+                currentCount = parseInt(badge.textContent);
+            }
             updateBadge(currentCount + 1);
 
-            // d. Thêm vào đầu danh sách (nếu danh sách đang mở)
-            const emptyMsg = listContainer.querySelector('.empty-msg');
-            if (emptyMsg) emptyMsg.remove();
+            // d. [QUAN TRỌNG] Thêm vào danh sách ngay lập tức (Real-time update UI)
+            // Nếu danh sách đang trống (có dòng "Không có thông báo"), xóa dòng đó đi
+            const emptyMsg = listContainer.querySelector('p'); 
+            if (emptyMsg && emptyMsg.textContent.includes("Không có thông báo")) {
+                emptyMsg.remove();
+            }
 
+            // Tạo HTML và chèn lên đầu danh sách
             const itemHTML = createNotifItemHTML(newNotif);
             listContainer.insertAdjacentHTML('afterbegin', itemHTML);
         });

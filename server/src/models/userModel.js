@@ -63,7 +63,11 @@ const userSchema = new mongoose.Schema(
             language: { type: String, default: 'vi' },
             notifications: {
                 emailOnInvite: { type: Boolean, default: true },
-                emailOnDeadline: { type: Boolean, default: true },
+                deadlineReminder: {
+                    enabled: { type: Boolean, default: true }, 
+                    daysBefore: { type: Number, default: 1 },  
+                    hoursBefore: { type: Number, default: 2 } 
+                },
                 soundEnabled: { type: Boolean, default: true }
             },
             privacy: {

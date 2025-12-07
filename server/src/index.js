@@ -19,6 +19,7 @@ import searchRouter from './routers/searchRouter.js';
 
 import session from 'express-session';
 import passport from 'passport';
+import { startScheduler } from './utils/scheduler.js';
 import './config/passport.js';
 
 dotenv.config();
@@ -104,6 +105,8 @@ app.use('/api', contactRouter);
 app.use('/api', activityRouter);
 app.use('/api', fileRouter);
 app.use('/api', searchRouter);
+
+startScheduler();
 
 // --- 5. Khởi động Server ---
 server.listen(PORT, () => {

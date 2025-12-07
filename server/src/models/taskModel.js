@@ -23,6 +23,10 @@ const taskSchema = new mongoose.Schema(
         deadline: {
             type: Date,
         },
+        reminderHistory: {
+            lastDailySent: { type: Date, default: null }, 
+            isHourlySent: { type: Boolean, default: false } 
+        },
         column: {
             type: mongoose.Types.ObjectId,
             ref: "columns",

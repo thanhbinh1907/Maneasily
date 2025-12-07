@@ -19,16 +19,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Tab Thông báo
     const notifInvite = document.getElementById('notif-email-invite');
-    const notifDeadline = document.getElementById('notif-email-deadline');
     const notifNews = document.getElementById('notif-email-news');
     const notifSound = document.getElementById('notif-sound');
     const notifToast = document.getElementById('notif-toast');
     
-    // Tab Riêng tư (Quan trọng)
+    // [CẬP NHẬT] Các element cho phần Deadline Reminder
+    const notifDeadlineToggle = document.getElementById('notif-deadline-toggle');
+    const deadlineConfigArea = document.getElementById('deadline-config-area');
+    const daysInput = document.getElementById('set-days-before');
+    const hoursInput = document.getElementById('set-hours-before');
+    
+    // Tab Riêng tư
     const privSearchable = document.getElementById('priv-searchable');
-    const privRequireInvite = document.getElementById('priv-require-invite'); // [MỚI]
+    const privRequireInvite = document.getElementById('priv-require-invite');
 
     const saveBtn = document.getElementById('btn-save-settings');
+
+    // Hàm ẩn/hiện khu vực cấu hình Deadline
+    const toggleDeadlineConfig = () => {
+        if (deadlineConfigArea && notifDeadlineToggle) {
+            deadlineConfigArea.style.display = notifDeadlineToggle.checked ? 'block' : 'none';
+        }
+    };
+
+    // Lắng nghe sự kiện toggle
+    if (notifDeadlineToggle) {
+        notifDeadlineToggle.addEventListener('change', toggleDeadlineConfig);
+    }
 
     // 2. LOAD DỮ LIỆU TỪ SERVER
     try {
@@ -39,7 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (res.ok) {
             const u = data.user;
-            const s = u.settings || {}; // Lấy object settings
+            const s = u.settings || {}; 
+            const n = s.notifications || {};
 
             // --- Fill Data ---
             avatarInput.value = u.avatar || '';
@@ -51,22 +69,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             themeSelect.value = s.theme || 'light';
             langSelect.value = s.language || 'vi';
             
-            // Notifications (Dùng toán tử ?? để lấy mặc định là true nếu chưa set)
-            const n = s.notifications || {};
+            // Notifications cơ bản
             notifInvite.checked = n.emailOnInvite ?? true;
-            notifDeadline.checked = n.emailOnDeadline ?? true;
             notifNews.checked = n.emailOnNews ?? true;
             notifSound.checked = n.soundEnabled ?? true;
             notifToast.checked = n.toastEnabled ?? true;
             
-            // Privacy (Cập nhật mới)
+            // [CẬP NHẬT] Load cấu hình Deadline
+            // Nếu DB cũ chưa có deadlineReminder thì dùng default
+            const dl = n.deadlineReminder || { enabled: true, daysBefore: 1, hoursBefore: 2 };
+            
+            if (notifDeadlineToggle) notifDeadlineToggle.checked = dl.enabled;
+            if (daysInput) daysInput.value = dl.daysBefore;
+            if (hoursInput) hoursInput.value = dl.hoursBefore;
+            
+            // Chạy logic ẩn hiện lần đầu
+            toggleDeadlineConfig();
+
+            // Privacy
             const p = s.privacy || {};
-            // Cho phép tìm kiếm (Mặc định: Bật)
             privSearchable.checked = p.searchable ?? true; 
-            // Yêu cầu duyệt (Mặc định: Tắt - tức là tự vào)
             privRequireInvite.checked = p.requireInvite ?? false; 
 
-            // (Optional) Update Theme UI ngay nếu đang sai lệch
+            // Update Theme UI nếu cần
             if (s.theme && s.theme !== localStorage.getItem('theme')) {
                 document.documentElement.setAttribute('data-theme', s.theme);
                 localStorage.setItem('theme', s.theme);
@@ -102,28 +127,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveBtn.innerText = "Đang lưu...";
         saveBtn.disabled = true;
 
-        // Gom dữ liệu vào cấu trúc chuẩn
+        // [CẬP NHẬT] Lấy giá trị Deadline, đảm bảo là số nguyên
+        const daysVal = parseInt(daysInput.value) || 1;
+        const hoursVal = parseInt(hoursInput.value) || 2;
+
         const newSettings = {
-            // Thông tin cơ bản (User Root)
             username: usernameInput.value.trim(),
             avatar: avatarInput.value.trim(),
             
-            // Cấu trúc Settings Object
             settings: {
                 theme: themeSelect.value,
                 language: langSelect.value,
                 
                 notifications: {
                     emailOnInvite: notifInvite.checked,
-                    emailOnDeadline: notifDeadline.checked,
-
+                    emailOnNews: notifNews.checked,
                     soundEnabled: notifSound.checked,
-                    toastEnabled: notifToast.checked
+                    toastEnabled: notifToast.checked,
+                    
+                    // [MỚI] Object deadlineReminder
+                    deadlineReminder: {
+                        enabled: notifDeadlineToggle.checked,
+                        daysBefore: daysVal,
+                        hoursBefore: hoursVal
+                    }
                 },
                 
                 privacy: {
                     searchable: privSearchable.checked,
-                    requireInvite: privRequireInvite.checked // Lưu biến này thay cho isPrivate
+                    requireInvite: privRequireInvite.checked
                 }
             }
         };
@@ -143,10 +175,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (res.ok) {
                 toast.success("Đã lưu cài đặt!");
                 
-                // Cập nhật LocalStorage với dữ liệu mới nhất từ Server
+                // Cập nhật LocalStorage
                 localStorage.setItem('maneasily_user', JSON.stringify(data.user));
 
-                // Áp dụng Theme ngay lập tức
+                // Áp dụng Theme
                 if (newSettings.settings.theme === 'dark') {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     localStorage.setItem('theme', 'dark');
@@ -155,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     localStorage.setItem('theme', 'light');
                 }
 
-                // Cập nhật Header UI (Avatar/Name)
+                // Cập nhật Header UI
                 const navAvatar = document.getElementById('nav-user-avatar');
                 const navName = document.getElementById('nav-user-name');
                 if (navAvatar) navAvatar.src = data.user.avatar;
@@ -173,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 6. ĐỔI MẬT KHẨU (Gửi Email)
+    // 6. ĐỔI MẬT KHẨU
     document.getElementById('btn-reset-pass')?.addEventListener('click', async () => {
         const email = emailInput.value;
         if (!email) return;

@@ -117,14 +117,34 @@
                                     </label>
                                 </div>
                         
-                                <div class="toggle-item">
-                                    <div class="toggle-info">
-                                        <strong>Nhắc nhở hạn chót (Deadline)</strong>
-                                        <p>Gửi cảnh báo khi công việc sắp hết hạn.</p>
+                                <div class="toggle-item" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                        <div class="toggle-info">
+                                            <strong>Nhắc nhở hạn chót (Deadline)</strong>
+                                            <p>Nhận email cảnh báo khi công việc sắp hết hạn.</p>
+                                        </div>
+                                        <label class="switch">
+                                            <input type="checkbox" id="notif-deadline-toggle"> 
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="notif-email-deadline"> <span class="slider round"></span>
-                                    </label>
+                                
+                                    <div id="deadline-config-area" style="width: 100%; padding-left: 20px; display: none; border-left: 2px solid var(--primary-color);">
+                                        <div class="form-group" style="margin-bottom: 10px;">
+                                            <label style="font-size: 0.9rem;">Gửi mail hàng ngày trước:</label>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="number" id="set-days-before" class="form-input" min="1" max="30" style="width: 80px;">
+                                                <span>ngày</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.9rem;">Gửi mail khẩn cấp trước:</label>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="number" id="set-hours-before" class="form-input" min="1" max="24" style="width: 80px;">
+                                                <span>giờ</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                         
                                 <div class="toggle-item">

@@ -1,6 +1,6 @@
 import Sortable from 'sortablejs';
 import { initProfileModal } from './components/profile-modal.js';
-import { API_BASE_URL } from './config.js';
+import { API_BASE_URL, SOCKET_URL } from './config.js'; // Import
 import { initShareFeature, renderProjectMembers } from './components/share-modal.js';
 import { toast } from './utils/toast.js';
 import { initTaskModal, openTaskModal } from './components/task-modal.js';
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentProjectId = projectId; 
 
     // --- 1. KẾT NỐI SOCKET ---
-    socket = io("http://localhost:5000");
+    socket = io(SOCKET_URL);
         
     socket.on('connect', () => {
         console.log("⚡ Đã kết nối Socket, đang vào phòng:", projectId);

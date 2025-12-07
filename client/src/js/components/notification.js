@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config.js';
+import { API_BASE_URL, SOCKET_URL } from '../config.js'; // [1] Import thêm SOCKET_URL
 import { toast } from '../utils/toast.js';
 import { io } from "socket.io-client"; 
 
@@ -17,7 +17,7 @@ export function initNotifications() {
     let hasMore = true;
 
     // --- 1. KẾT NỐI SOCKET.IO ---
-    const socket = io("http://localhost:5000"); 
+    const socket = io(SOCKET_URL); 
     const user = JSON.parse(localStorage.getItem('maneasily_user'));
 
     if (user) {

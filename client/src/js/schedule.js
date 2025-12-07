@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config.js';
+import { API_BASE_URL, SOCKET_URL } from './config.js'; // Import
 import { toast } from './utils/toast.js';
 import { io } from "socket.io-client";
 import { t } from './utils/i18n.js'; // [MỚI] Import hàm dịch
@@ -59,7 +59,7 @@ function initGoogleApi() {
 
 // --- 1. SOCKET REAL-TIME ---
 async function initRealtimeUpdate() {
-    socket = io("http://localhost:5000");
+    socket = io(SOCKET_URL);
     const user = JSON.parse(localStorage.getItem('maneasily_user'));
     
     if (!user) return;

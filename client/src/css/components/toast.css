@@ -1,16 +1,108 @@
 #toast-container {
-    position: fixed; top: 20px; right: 20px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 10px;
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000; /* Đảm bảo nằm trên mọi thứ */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none; /* Để click xuyên qua vùng trống */
 }
-.toast {
-    min-width: 250px; padding: 16px; border-radius: 8px; color: white;
-    font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-    display: flex; align-items: center; gap: 10px;
-}
-.toast-success { background-color: #2e8b57; } /* Xanh lá */
-.toast-error { background-color: #d93025; }   /* Đỏ */
-.toast i { font-size: 1.2rem; }
 
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+.toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 450px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: #ffffff; /* Nền trắng sang trọng */
+    color: #172b4d;      /* Chữ màu tối dễ đọc */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0,0,0,0.02);
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start; /* Căn trên để hỗ trợ text dài */
+    gap: 14px;
+    border: 1px solid #f0f0f0;
+    position: relative;
+    overflow: hidden;
+    
+    /* Animation: Trượt vào -> Chờ 4s -> Mờ dần */
+    animation: toastSlideIn 0.4s cubic-bezier(0.21, 1.02, 0.73, 1), 
+               toastFadeOut 0.4s ease 4s forwards;
+}
+
+/* Thanh thời gian (Progress Bar) chạy dưới đáy */
+.toast::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 3px;
+    width: 100%;
+    background-color: currentColor; /* Lấy màu của text/icon */
+    opacity: 0.15;
+    animation: toastProgress 4s linear forwards;
+}
+
+/* Icon */
+.toast i.icon-status {
+    font-size: 1.4rem;
+    margin-top: 1px;
+}
+
+/* Các loại thông báo */
+.toast-success { border-left: 4px solid #2e8b57; }
+.toast-success .icon-status { color: #2e8b57; }
+
+.toast-error { border-left: 4px solid #d93025; }
+.toast-error .icon-status { color: #d93025; }
+
+.toast-info { border-left: 4px solid #0079bf; }
+.toast-info .icon-status { color: #0079bf; }
+
+.toast-warning { border-left: 4px solid #f59f00; }
+.toast-warning .icon-status { color: #f59f00; }
+
+/* Nội dung text */
+.toast span {
+    flex-grow: 1;
+    line-height: 1.5;
+}
+
+/* Nút đóng (X) */
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1rem;
+    transition: color 0.2s;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+}
+.toast-close:hover { color: #333; }
+
+/* Animation Keyframes */
+@keyframes toastSlideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastFadeOut {
+    to { opacity: 0; transform: translateX(20px); }
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Hỗ trợ Dark Mode (nếu app bạn có) */
+[data-theme="dark"] .toast {
+    background: #1e2130;
+    color: #e2e8f0;
+    border-color: #2d3246;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
